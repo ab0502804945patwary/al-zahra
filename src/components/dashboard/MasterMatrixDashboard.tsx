@@ -1,0 +1,441 @@
+'use client'
+import { useState, useEffect, useMemo } from 'react'
+import Link from 'next/link'
+import {
+  Building2,
+  CheckCircle2,
+  AlertCircle,
+  CalendarClock,
+  Search,
+  ChevronRight,
+  ExternalLink,
+  ShieldCheck,
+  UserCheck,
+  ArrowRight,
+  Sparkles,
+  Layers
+} from 'lucide-react'
+import { Company } from '@/lib/types'
+
+interface StageSummary {
+  status: 'Green' | 'Yellow' | 'Red' | 'Pending' | 'Not Started'
+  label: string
+  sublabel?: string
+  days?: number
+}
+
+interface CompanyMatrixRow {
+  id: string
+  company_id: string
+  company_name: string
+  country_of_origin?: string
+  entity_type?: string
+  stages: Record<number, StageSummary>
+}
+
+interface ModuleStat {
+  code: string
+  name: string
+  shortName: string
+  officer: string
+  total: number
+  green: number
+  yellow: number
+  red: number
+}
+
+interface DashboardProps {
+  initialCompanies: Company[]
+  kpiStats: {
+    totalCompanies: number
+    compliant: number
+    overdue: number
+    expiring: number
+  }
+}
+
+const DEFAULT_OFFICERS: Record<number, string> = {
+  1: 'Shahariar Hossain Rakib',
+  2: 'Abdul Kaium',
+  3: 'Arju Hossain',
+  4: 'Md Miraj',
+  5: 'Md Ishak',
+  6: 'Md Azad',
+  7: 'Md Azad',
+  8: 'System Administrator',
+}
+
+const MODULE_DEFINITIONS: { code: string; stage: number; name: string; officer: string; href: string }[] = [
+  { code: '01', stage: 1, name: 'Parent Entity Verification', officer: 'Shahariar Rakib', href: '/dashboard/stage/1' },
+  { code: '02', stage: 2, name: 'Commercial Activity Classification', officer: 'Abdul Kaium', href: '/dashboard/stage/2' },
+  { code: '03', stage: 3, name: 'Foreign Entity Licensing', officer: 'Arju Hossain', href: '/dashboard/stage/3' },
+  { code: '04', stage: 4, name: 'MISA Investment License', officer: 'Md Miraj', href: '/dashboard/stage/4' },
+  { code: '05', stage: 5, name: 'Commercial Registration (CR)', officer: 'Md Ishak', href: '/dashboard/stage/5' },
+  { code: '06', stage: 6, name: 'Government Portals Compliance', officer: 'Md Azad', href: '/dashboard/stage/6' },
+  { code: '07', stage: 7, name: 'Final Legal Dossier & Issuance', officer: 'Md Azad', href: '/dashboard/stage/7' },
+  { code: '08', stage: 8, name: 'Trade Name Clearance', officer: 'System Administrator', href: '/dashboard/stage/8' },
+]
+
+export default function MasterMatrixDashboard({ initialCompanies, kpiStats }: DashboardProps) {
+  const [companiesList, setCompaniesList] = useState<Company[]>(initialCompanies)
+  const [search, setSearch] = useState('')
+  const [filterType, setFilterType] = useState<'all' | 'attention' | 'completed'>('all')
+
+  // Sync with localStorage for newly added companies
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('alzahra_companies_data')
+      if (stored) {
+        const parsed = JSON.parse(stored) as Company[]
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setCompaniesList(prev => {
+            const map = new Map<string, Company>(prev.map(c => [c.company_id, c]))
+            parsed.forEach(item => {
+              if (item.company_id) {
+                map.set(item.company_id, { ...map.get(item.company_id), ...item })
+              }
+            })
+            return Array.from(map.values())
+          })
+        }
+      }
+    } catch {}
+  }, [])
+
+  // Build matrix rows for each company
+  const matrixRows: CompanyMatrixRow[] = useMemo(() => {
+    return companiesList.map(c => {
+      const is801 = c.company_id === 'AZC801'
+      const is802 = c.company_id === 'AZC802'
+
+      const stages: Record<number, StageSummary> = {
+        1: is801
+          ? { status: 'Green', label: 'Approved', days: 8 }
+          : is802
+          ? { status: 'Red', label: 'Approved', days: 85 }
+          : { status: 'Pending', label: 'In Review', days: 2 },
+        2: is801
+          ? { status: 'Green', label: 'Approved', days: 10 }
+          : is802
+          ? { status: 'Green', label: 'Approved', days: 8 }
+          : { status: 'Not Started', label: 'Queued' },
+        3: is801
+          ? { status: 'Red', label: 'USA Delayed', sublabel: 'CAN Green' }
+          : is802
+          ? { status: 'Green', label: 'USA / CAN', days: 4 }
+          : { status: 'Not Started', label: 'Queued' },
+        4: is801
+          ? { status: 'Red', label: 'Delay 17d', days: 17 }
+          : is802
+          ? { status: 'Red', label: 'Delay 97d', days: 97 }
+          : { status: 'Not Started', label: 'Queued' },
+        5: { status: 'Not Started', label: 'In Queue' },
+        6: { status: 'Not Started', label: 'In Queue' },
+        7: { status: 'Not Started', label: 'In Queue' },
+        8: is801
+          ? { status: 'Green', label: '48d Left' }
+          : is802
+          ? { status: 'Green', label: '60d Left' }
+          : { status: 'Green', label: 'Active' },
+      }
+
+      return {
+        id: c.id,
+        company_id: c.company_id,
+        company_name: c.company_name,
+        country_of_origin: c.country_of_origin,
+        entity_type: c.entity_type,
+        stages,
+      }
+    })
+  }, [companiesList])
+
+  // Filtered rows
+  const filteredRows = useMemo(() => {
+    return matrixRows.filter(row => {
+      const q = search.toLowerCase()
+      const matchesSearch =
+        !search ||
+        row.company_name?.toLowerCase().includes(q) ||
+        row.company_id?.toLowerCase().includes(q) ||
+        row.country_of_origin?.toLowerCase().includes(q)
+
+      if (!matchesSearch) return false
+
+      if (filterType === 'attention') {
+        return Object.values(row.stages).some(s => s.status === 'Red')
+      }
+      if (filterType === 'completed') {
+        return row.stages[1]?.status === 'Green' && row.stages[2]?.status === 'Green'
+      }
+      return true
+    })
+  }, [matrixRows, search, filterType])
+
+  return (
+    <div className="space-y-6 max-w-7xl mx-auto">
+      {/* 1. Header & Quick Overview */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-200">
+        <div>
+          <h1 className="text-xl font-bold text-slate-900 tracking-tight">Dashboard</h1>
+          <p className="text-xs text-slate-500 mt-0.5">
+            Master lifecycle tracking matrix for active corporate investor licenses & statutory clearances
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/dashboard/companies"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg shadow-sm transition"
+          >
+            <Building2 className="w-3.5 h-3.5" /> Company Directory
+          </Link>
+        </div>
+      </div>
+
+      {/* 2. Top 4 Simple Clean Counter Cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Total Companies */}
+        <div className="bg-white rounded-xl p-4 border border-slate-200/90 shadow-sm flex items-center justify-between">
+          <div>
+            <p className="text-xs font-medium text-slate-500">Active Portfolios</p>
+            <p className="text-2xl font-bold text-slate-900 mt-1">{companiesList.length}</p>
+            <p className="text-[11px] text-slate-400 mt-0.5">Registered corporate entities</p>
+          </div>
+          <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+            <Building2 className="w-5 h-5" />
+          </div>
+        </div>
+
+        {/* On Track (Green) */}
+        <div className="bg-white rounded-xl p-4 border border-slate-200/90 shadow-sm flex items-center justify-between">
+          <div>
+            <p className="text-xs font-medium text-slate-500">Compliant & On Track</p>
+            <p className="text-2xl font-bold text-emerald-600 mt-1">{kpiStats.compliant}</p>
+            <p className="text-[11px] text-emerald-600/80 mt-0.5">Within SLA timeline (≤10d)</p>
+          </div>
+          <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+            <CheckCircle2 className="w-5 h-5" />
+          </div>
+        </div>
+
+        {/* Overdue (Red) */}
+        <div className="bg-white rounded-xl p-4 border border-slate-200/90 shadow-sm flex items-center justify-between">
+          <div>
+            <p className="text-xs font-medium text-slate-500">Action Needed (Overdue)</p>
+            <p className="text-2xl font-bold text-rose-600 mt-1">{kpiStats.overdue}</p>
+            <p className="text-[11px] text-rose-600/80 mt-0.5">Exceeded target threshold (&gt;13d)</p>
+          </div>
+          <div className="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
+            <AlertCircle className="w-5 h-5" />
+          </div>
+        </div>
+
+        {/* Expiring Soon */}
+        <div className="bg-white rounded-xl p-4 border border-slate-200/90 shadow-sm flex items-center justify-between">
+          <div>
+            <p className="text-xs font-medium text-slate-500">Trade Name Expiry Radar</p>
+            <p className="text-2xl font-bold text-amber-600 mt-1">{kpiStats.expiring}</p>
+            <p className="text-[11px] text-amber-600/80 mt-0.5">Expiring within 60 days</p>
+          </div>
+          <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+            <CalendarClock className="w-5 h-5" />
+          </div>
+        </div>
+      </div>
+
+      {/* 3. The Core Master Matrix Table (Excel-like clarity, zero clutter) */}
+      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        {/* Table Header Controls */}
+        <div className="px-5 py-4 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-3 bg-slate-50/50">
+          <div>
+            <div className="flex items-center gap-2">
+              <h2 className="font-bold text-slate-900 text-sm">Master Investor Lifecycle Matrix</h2>
+              <span className="text-[10px] font-bold px-2 py-0.5 bg-blue-50 text-blue-700 border border-blue-200 rounded-full">
+                Live 8-Stage Tracker
+              </span>
+            </div>
+            <p className="text-xs text-slate-500 mt-0.5">
+              One central view showing all client companies across the entire statutory approval chain
+            </p>
+          </div>
+
+          {/* Search & Filter pills */}
+          <div className="flex items-center gap-3">
+            <div className="relative w-64">
+              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                placeholder="Search AZC code, company..."
+                className="w-full pl-8 pr-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            <div className="flex items-center bg-white border border-slate-200 rounded-lg p-0.5 text-xs">
+              <button
+                onClick={() => setFilterType('all')}
+                className={`px-2.5 py-1 rounded-md font-medium transition ${
+                  filterType === 'all' ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                All ({matrixRows.length})
+              </button>
+              <button
+                onClick={() => setFilterType('attention')}
+                className={`px-2.5 py-1 rounded-md font-medium transition ${
+                  filterType === 'attention' ? 'bg-rose-600 text-white shadow-xs' : 'text-slate-600 hover:text-rose-600'
+                }`}
+              >
+                Needs Action
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Matrix Table */}
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs">
+            <thead>
+              <tr className="bg-slate-100/70 text-slate-600 font-semibold uppercase tracking-wider border-b border-slate-200 text-[11px]">
+                <th className="py-3 px-4 font-mono">Company</th>
+                <th className="py-3 px-3 text-center">S1: Parent</th>
+                <th className="py-3 px-3 text-center">S2: Activity</th>
+                <th className="py-3 px-3 text-center">S3: Foreign</th>
+                <th className="py-3 px-3 text-center">S4: MISA</th>
+                <th className="py-3 px-3 text-center">S5: CR</th>
+                <th className="py-3 px-3 text-center">S6: Portals</th>
+                <th className="py-3 px-3 text-center">S7: Filing</th>
+                <th className="py-3 px-3 text-center">S8: Name</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100 text-slate-700">
+              {filteredRows.map(row => (
+                <tr key={row.company_id} className="hover:bg-slate-50/70 transition-colors">
+                  {/* Company Info */}
+                  <td className="py-3 px-4">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-lg bg-blue-50 border border-blue-200 flex items-center justify-center font-mono font-bold text-blue-700 text-xs shrink-0">
+                        {row.company_id.replace('AZC', '')}
+                      </div>
+                      <div className="min-w-0">
+                        <div className="font-bold text-slate-800 text-xs truncate max-w-44">
+                          {row.company_name}
+                        </div>
+                        <div className="text-[10px] text-slate-400 font-medium">
+                          <span className="font-mono text-slate-500 font-semibold">{row.company_id}</span>
+                          {row.country_of_origin && <span> • {row.country_of_origin}</span>}
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+
+                  {/* 8 Stages Badges */}
+                  {[1, 2, 3, 4, 5, 6, 7, 8].map(stgNum => {
+                    const stg = row.stages[stgNum] || { status: 'Not Started', label: 'Queued' }
+
+                    let badgeClass = 'bg-slate-100 text-slate-400 border-slate-200'
+                    if (stg.status === 'Green') {
+                      badgeClass = 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
+                    } else if (stg.status === 'Yellow') {
+                      badgeClass = 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100'
+                    } else if (stg.status === 'Red') {
+                      badgeClass = 'bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100 font-semibold'
+                    }
+
+                    return (
+                      <td key={stgNum} className="py-3 px-2 text-center">
+                        <Link
+                          href={`/dashboard/stage/${stgNum}`}
+                          title={`Click to view Stage ${stgNum}`}
+                          className={`inline-block px-2 py-1 rounded-md text-[10px] border transition whitespace-nowrap ${badgeClass}`}
+                        >
+                          {stg.label}
+                        </Link>
+                      </td>
+                    )
+                  })}
+                </tr>
+              ))}
+
+              {filteredRows.length === 0 && (
+                <tr>
+                  <td colSpan={9} className="py-12 text-center text-slate-400">
+                    <p className="text-xs">No corporate entities found matching your filter</p>
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Legend */}
+        <div className="px-5 py-2.5 bg-slate-50/80 border-t border-slate-100 flex flex-wrap items-center justify-between text-[11px] text-slate-500 gap-2">
+          <div className="flex items-center gap-4">
+            <span className="font-semibold text-slate-700">Status Guide:</span>
+            <span className="flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-emerald-500" /> 🟢 Compliant (≤10d)
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-amber-500" /> 🟡 Caution (11-13d)
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-rose-500" /> 🔴 Overdue (&gt;13d)
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-slate-300" /> ⚪ Queued
+            </span>
+          </div>
+          <span className="text-slate-400 text-[10px]">
+            *Click any stage badge to open that department immediately
+          </span>
+        </div>
+      </div>
+
+      {/* 4. Eight Operational Stage Summaries (Clean 4x2 grid) */}
+      <div>
+        <div className="mb-3">
+          <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+            Operational Department Workloads
+          </h3>
+          <p className="text-[11px] text-slate-400">Current file distribution and leads across all 8 processing phases</p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          {MODULE_DEFINITIONS.map(mod => {
+            return (
+              <Link
+                key={mod.stage}
+                href={mod.href}
+                className="bg-white rounded-xl p-3.5 border border-slate-200/90 shadow-sm hover:shadow-md hover:border-blue-300 transition-all group flex flex-col justify-between"
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200">
+                      Phase {mod.code}
+                    </span>
+                    <ChevronRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-blue-600 group-hover:translate-x-0.5 transition" />
+                  </div>
+                  <h4 className="font-bold text-xs text-slate-800 group-hover:text-blue-600 transition leading-tight line-clamp-1">
+                    {mod.name}
+                  </h4>
+                  <div className="text-[11px] text-slate-400 mt-1 flex items-center gap-1">
+                    <UserCheck className="w-3 h-3 text-slate-400" />
+                    <span className="truncate">{mod.officer}</span>
+                  </div>
+                </div>
+
+                <div className="mt-3 pt-2 border-t border-slate-100 flex items-center justify-between text-[11px]">
+                  <span className="text-slate-500 font-medium">Department Portal</span>
+                  <span className="font-semibold text-blue-600 group-hover:underline flex items-center gap-1">
+                    View Files ➔
+                  </span>
+                </div>
+              </Link>
+            )
+          })}
+        </div>
+      </div>
+    </div>
+  )
+}
