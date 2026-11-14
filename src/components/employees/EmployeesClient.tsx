@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   Plus,
   Edit2,
@@ -31,9 +31,57 @@ const MODULE_NAMES: Record<number, string> = {
   8: 'Trade Name Clearance',
 }
 
-export default function EmployeesClient({ employees }: Props) {
+export default function EmployeesClient({ employees: initialEmployees }: Props) {
+  const [employeesList, setEmployeesList] = useState<Employee[]>(initialEmployees)
   const [showAdd, setShowAdd] = useState(false)
   const [selected, setSelected] = useState<Employee | null>(null)
+
+  // Local storage synchronization to preserve additions and edits in local/demo mode
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('alzahra_employees_data')
+      if (stored) {
+        const parsed = JSON.parse(stored) as Employee[]
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          // Merge with initial, prioritizing stored custom items
+          setEmployeesList(prev => {
+            const map = new Map<string, Employee>(prev.map(e => [e.id, e]))
+            parsed.forEach(item => map.set(item.id, item))
+            return Array.from(map.values())
+          })
+        }
+      }
+    } catch (e) {
+      console.warn('Could not read from localStorage:', e)
+    }
+  }, [])
+
+  function handleSave(savedEmp: Employee) {
+    setEmployeesList(prev => {
+      const index = prev.findIndex(e => e.id === savedEmp.id)
+      let updated: Employee[]
+      if (index >= 0) {
+        updated = [...prev]
+        updated[index] = savedEmp
+      } else {
+        updated = [savedEmp, ...prev]
+      }
+      try {
+        localStorage.setItem('alzahra_employees_data', JSON.stringify(updated))
+      } catch {}
+      return updated
+    })
+  }
+
+  function handleDelete(id: string) {
+    setEmployeesList(prev => {
+      const updated = prev.filter(e => e.id !== id)
+      try {
+        localStorage.setItem('alzahra_employees_data', JSON.stringify(updated))
+      } catch {}
+      return updated
+    })
+  }
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
@@ -54,9 +102,9 @@ export default function EmployeesClient({ employees }: Props) {
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4">
         {[
-          { label: 'Total Personnel', value: employees.length, icon: Users, color: 'text-blue-600', bg: 'bg-blue-50' },
-          { label: 'System Administrators', value: employees.filter(e => e.role === 'admin').length, icon: ShieldCheck, color: 'text-indigo-600', bg: 'bg-indigo-50' },
-          { label: 'Active Personnel', value: employees.filter(e => e.is_active).length, icon: CheckCircle2, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+          { label: 'Total Personnel', value: employeesList.length, icon: Users, color: 'text-blue-600', bg: 'bg-blue-50' },
+          { label: 'System Administrators', value: employeesList.filter(e => e.role === 'admin').length, icon: ShieldCheck, color: 'text-indigo-600', bg: 'bg-indigo-50' },
+          { label: 'Active Personnel', value: employeesList.filter(e => e.is_active).length, icon: CheckCircle2, color: 'text-emerald-600', bg: 'bg-emerald-50' },
         ].map(s => {
           const Icon = s.icon
           return (
@@ -75,7 +123,7 @@ export default function EmployeesClient({ employees }: Props) {
 
       {/* Employee cards */}
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {employees.map(emp => (
+        {employeesList.map(emp => (
           <div
             key={emp.id}
             className={cn(
@@ -86,16 +134,43 @@ export default function EmployeesClient({ employees }: Props) {
             <div className="p-5">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-3">
-                  <div
-                    className={cn(
-                      'w-11 h-11 rounded-xl flex items-center justify-center text-white text-base font-bold shadow-sm',
-                      emp.role === 'admin'
-                        ? 'bg-gradient-to-br from-indigo-600 to-purple-600'
-                        : 'bg-gradient-to-br from-blue-600 to-cyan-600'
-                    )}
-                  >
-                    {emp.name.charAt(0)}
-                  </div>
+                  {/* Avatar rendering: photo if uploaded, otherwise gradient initial */}
+                  {emp.avatar_url ? (
+                    <div className="w-11 h-11 rounded-xl overflow-hidden ring-1 ring-slate-200/80 shadow-sm shrink-0 bg-slate-100">
+                      <img
+                        src={emp.avatar_url}
+                        alt={emp.name}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          const target = e.currentTarget as HTMLImageElement
+                          target.style.display = 'none'
+                          if (target.parentElement) {
+                            target.parentElement.classList.add(
+                              'flex',
+                              'items-center',
+                              'justify-center',
+                              'text-white',
+                              'font-bold',
+                              emp.role === 'admin' ? 'bg-indigo-600' : 'bg-blue-600'
+                            )
+                            target.parentElement.innerText = emp.name.charAt(0)
+                          }
+                        }}
+                      />
+                    </div>
+                  ) : (
+                    <div
+                      className={cn(
+                        'w-11 h-11 rounded-xl flex items-center justify-center text-white text-base font-bold shadow-sm shrink-0',
+                        emp.role === 'admin'
+                          ? 'bg-gradient-to-br from-indigo-600 to-purple-600'
+                          : 'bg-gradient-to-br from-blue-600 to-cyan-600'
+                      )}
+                    >
+                      {emp.name.charAt(0)}
+                    </div>
+                  )}
+
                   <div>
                     <div className="font-semibold text-slate-900 text-sm">{emp.name}</div>
                     <div className="flex items-center gap-1.5 mt-1">
@@ -161,8 +236,20 @@ export default function EmployeesClient({ employees }: Props) {
         ))}
       </div>
 
-      {showAdd && <EmployeeModal onClose={() => setShowAdd(false)} />}
-      {selected && <EmployeeModal employee={selected} onClose={() => setSelected(null)} />}
+      {showAdd && (
+        <EmployeeModal
+          onClose={() => setShowAdd(false)}
+          onSave={handleSave}
+        />
+      )}
+      {selected && (
+        <EmployeeModal
+          employee={selected}
+          onClose={() => setSelected(null)}
+          onSave={handleSave}
+          onDelete={handleDelete}
+        />
+      )}
     </div>
   )
 }

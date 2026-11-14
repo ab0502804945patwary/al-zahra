@@ -9,6 +9,7 @@ export interface Employee {
   role: UserRole
   assigned_stage?: number
   is_active: boolean
+  avatar_url?: string
   created_at: string
 }
 

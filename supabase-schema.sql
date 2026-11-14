@@ -18,6 +18,7 @@ CREATE TABLE employees (
   role TEXT NOT NULL DEFAULT 'employee' CHECK (role IN ('admin', 'employee')),
   assigned_stage INTEGER, -- NULL means all stages (admin)
   is_active BOOLEAN DEFAULT true,
+  avatar_url TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -365,3 +366,9 @@ CREATE POLICY "emp_stage8" ON stage8_name_clearance FOR ALL USING (get_user_stag
 INSERT INTO companies (company_id, country_of_origin, company_name, entity_type) VALUES
 ('AZC801', 'Afghanistan', 'Steel Com', 'Trading License'),
 ('AZC802', 'Bangladesh', 'al tamayyuz sharikat taj Trading', 'Trading License');
+
+
+-- ============================================
+-- MIGRATION: Add avatar_url to employees
+-- ============================================
+ALTER TABLE employees ADD COLUMN IF NOT EXISTS avatar_url TEXT;
