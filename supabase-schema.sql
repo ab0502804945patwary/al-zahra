@@ -1,0 +1,367 @@
+-- ============================================
+-- AL ZAHRA ERP - Supabase Schema
+-- Run this in Supabase SQL Editor
+-- ============================================
+
+-- Enable UUID extension
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- ============================================
+-- EMPLOYEES TABLE
+-- ============================================
+CREATE TABLE employees (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  email TEXT UNIQUE NOT NULL,
+  phone TEXT,
+  role TEXT NOT NULL DEFAULT 'employee' CHECK (role IN ('admin', 'employee')),
+  assigned_stage INTEGER, -- NULL means all stages (admin)
+  is_active BOOLEAN DEFAULT true,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ============================================
+-- COMPANIES TABLE (Master Data)
+-- ============================================
+CREATE TABLE companies (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  company_id TEXT UNIQUE NOT NULL, -- e.g., AZC801
+  country_of_origin TEXT,
+  company_name TEXT NOT NULL,
+  entity_type TEXT,
+  
+  -- Registration & Legal
+  cr_number TEXT,
+  cr_issue_date DATE,
+  cr_expire_date DATE,
+  misa_license_no TEXT,
+  misa_issue_date DATE,
+  misa_expire_date DATE,
+  tin_number TEXT,
+  vat_number TEXT,
+  chamber_registration_no TEXT,
+  gosi_qiwa_status TEXT,
+  
+  -- Contact & Location
+  official_email TEXT,
+  whatsapp_number TEXT,
+  national_address TEXT,
+  
+  -- Key Personnel
+  ceo_gm_name TEXT,
+  iqama_no TEXT,
+  shareholders_name TEXT,
+  shareholder_phone TEXT,
+  
+  -- Banking
+  bank_name TEXT,
+  account_name TEXT,
+  account_number TEXT,
+  iban_swift TEXT,
+  
+  -- Admin
+  file_portal_login TEXT,
+  account_status TEXT DEFAULT 'Active',
+  assigned_office TEXT,
+  drive_link TEXT,
+  remarks TEXT,
+  
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ============================================
+-- STAGE 1: MOTHER COMPANY
+-- ============================================
+CREATE TABLE stage1_mother_company (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  company_id TEXT REFERENCES companies(company_id) ON DELETE CASCADE,
+  client_name TEXT,
+  client_phone TEXT,
+  category TEXT,
+  priority TEXT,
+  current_stage TEXT,
+  submit_date DATE,
+  target_date DATE,
+  complete_date DATE,
+  payment_status TEXT,
+  remarks TEXT,
+  employee_id UUID REFERENCES employees(id),
+  drive_link TEXT,
+  -- Auto-calculated
+  overdue_status TEXT,
+  days_taken INTEGER,
+  status TEXT, -- Green, Yellow, Red
+  completion_percent INTEGER,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ============================================
+-- STAGE 2: ACTIVITY LIST
+-- ============================================
+CREATE TABLE stage2_activity_list (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  company_id TEXT REFERENCES companies(company_id) ON DELETE CASCADE,
+  client_name TEXT,
+  client_phone TEXT,
+  category TEXT,
+  priority TEXT,
+  current_stage TEXT,
+  submit_date DATE,
+  target_date DATE,
+  complete_date DATE,
+  payment_status TEXT,
+  remarks TEXT,
+  employee_id UUID REFERENCES employees(id),
+  drive_link TEXT,
+  overdue_status TEXT,
+  days_taken INTEGER,
+  status TEXT,
+  completion_percent INTEGER,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ============================================
+-- STAGE 3: FOREIGN COMPANY (USA + Canada)
+-- ============================================
+CREATE TABLE stage3_foreign_company (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  company_id TEXT REFERENCES companies(company_id) ON DELETE CASCADE,
+  client_name TEXT,
+  client_phone TEXT,
+  category TEXT,
+  priority TEXT,
+  current_stage TEXT,
+  
+  -- USA
+  usa_type TEXT,
+  usa_submit_date DATE,
+  usa_target_date DATE,
+  usa_complete_date DATE,
+  usa_overdue_status TEXT,
+  usa_days_taken INTEGER,
+  usa_status TEXT,
+  usa_completion_percent INTEGER,
+  usa_payment_status TEXT,
+  
+  -- Canada
+  canada_type TEXT,
+  canada_submit_date DATE,
+  canada_target_date DATE,
+  canada_complete_date DATE,
+  canada_overdue_status TEXT,
+  canada_days_taken INTEGER,
+  canada_status TEXT,
+  canada_completion_percent INTEGER,
+  canada_payment_status TEXT,
+  
+  remarks TEXT,
+  employee_id UUID REFERENCES employees(id),
+  drive_link TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ============================================
+-- STAGE 4: MISA LICENSE
+-- ============================================
+CREATE TABLE stage4_misa_license (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  company_id TEXT REFERENCES companies(company_id) ON DELETE CASCADE,
+  client_name TEXT,
+  client_phone TEXT,
+  category TEXT,
+  priority TEXT,
+  current_stage TEXT,
+  submit_date DATE,
+  target_date DATE,
+  complete_date DATE,
+  payment_status TEXT,
+  remarks TEXT,
+  employee_id UUID REFERENCES employees(id),
+  drive_link TEXT,
+  overdue_status TEXT,
+  days_taken INTEGER,
+  status TEXT,
+  completion_percent INTEGER,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ============================================
+-- STAGE 5: COMMERCIAL REGISTRATION
+-- ============================================
+CREATE TABLE stage5_commercial_registration (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  company_id TEXT REFERENCES companies(company_id) ON DELETE CASCADE,
+  client_name TEXT,
+  client_phone TEXT,
+  category TEXT,
+  priority TEXT,
+  current_stage TEXT,
+  submit_date DATE,
+  target_date DATE,
+  complete_date DATE,
+  payment_status TEXT,
+  remarks TEXT,
+  employee_id UUID REFERENCES employees(id),
+  drive_link TEXT,
+  overdue_status TEXT,
+  days_taken INTEGER,
+  status TEXT,
+  completion_percent INTEGER,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ============================================
+-- STAGE 6: OTHER WEBSITES
+-- ============================================
+CREATE TABLE stage6_other_websites (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  company_id TEXT REFERENCES companies(company_id) ON DELETE CASCADE,
+  client_name TEXT,
+  client_phone TEXT,
+  category TEXT,
+  priority TEXT,
+  current_stage TEXT,
+  submit_date DATE,
+  target_date DATE,
+  complete_date DATE,
+  payment_status TEXT,
+  remarks TEXT,
+  employee_id UUID REFERENCES employees(id),
+  drive_link TEXT,
+  overdue_status TEXT,
+  days_taken INTEGER,
+  status TEXT,
+  completion_percent INTEGER,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ============================================
+-- STAGE 7: FILE READY / FINAL STAGE
+-- ============================================
+CREATE TABLE stage7_file_ready (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  company_id TEXT REFERENCES companies(company_id) ON DELETE CASCADE,
+  client_name TEXT,
+  client_phone TEXT,
+  category TEXT,
+  priority TEXT,
+  current_stage TEXT,
+  submit_date DATE,
+  target_date DATE,
+  complete_date DATE,
+  payment_status TEXT,
+  remarks TEXT,
+  employee_id UUID REFERENCES employees(id),
+  drive_link TEXT,
+  overdue_status TEXT,
+  days_taken INTEGER,
+  status TEXT,
+  completion_percent INTEGER,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ============================================
+-- STAGE 8: NAME CLEARANCE
+-- ============================================
+CREATE TABLE stage8_name_clearance (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  company_id TEXT REFERENCES companies(company_id) ON DELETE CASCADE,
+  entity_type TEXT,
+  company_name_english TEXT,
+  arabic_name TEXT,
+  name_clearance_number TEXT,
+  submit_date DATE,
+  approval_date DATE,
+  expire_date DATE,
+  remaining_days INTEGER,
+  status TEXT DEFAULT 'Active',
+  cr_status TEXT,
+  notes TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ============================================
+-- ROW LEVEL SECURITY
+-- ============================================
+
+-- Enable RLS
+ALTER TABLE employees ENABLE ROW LEVEL SECURITY;
+ALTER TABLE companies ENABLE ROW LEVEL SECURITY;
+ALTER TABLE stage1_mother_company ENABLE ROW LEVEL SECURITY;
+ALTER TABLE stage2_activity_list ENABLE ROW LEVEL SECURITY;
+ALTER TABLE stage3_foreign_company ENABLE ROW LEVEL SECURITY;
+ALTER TABLE stage4_misa_license ENABLE ROW LEVEL SECURITY;
+ALTER TABLE stage5_commercial_registration ENABLE ROW LEVEL SECURITY;
+ALTER TABLE stage6_other_websites ENABLE ROW LEVEL SECURITY;
+ALTER TABLE stage7_file_ready ENABLE ROW LEVEL SECURITY;
+ALTER TABLE stage8_name_clearance ENABLE ROW LEVEL SECURITY;
+
+-- Helper function: get current user role
+CREATE OR REPLACE FUNCTION get_user_role()
+RETURNS TEXT AS $$
+  SELECT role FROM employees WHERE user_id = auth.uid() LIMIT 1;
+$$ LANGUAGE SQL SECURITY DEFINER;
+
+-- Helper function: get current user stage
+CREATE OR REPLACE FUNCTION get_user_stage()
+RETURNS INTEGER AS $$
+  SELECT assigned_stage FROM employees WHERE user_id = auth.uid() LIMIT 1;
+$$ LANGUAGE SQL SECURITY DEFINER;
+
+-- COMPANIES: Admin full access, Employees read-only
+CREATE POLICY "admin_all_companies" ON companies FOR ALL USING (get_user_role() = 'admin');
+CREATE POLICY "employee_read_companies" ON companies FOR SELECT USING (get_user_role() = 'employee');
+
+-- EMPLOYEES: Admin full access, Employee read own
+CREATE POLICY "admin_all_employees" ON employees FOR ALL USING (get_user_role() = 'admin');
+CREATE POLICY "employee_read_own" ON employees FOR SELECT USING (user_id = auth.uid());
+
+-- STAGE 1: Admin all, Stage 1 employee all
+CREATE POLICY "admin_stage1" ON stage1_mother_company FOR ALL USING (get_user_role() = 'admin');
+CREATE POLICY "emp_stage1" ON stage1_mother_company FOR ALL USING (get_user_stage() = 1);
+
+-- STAGE 2
+CREATE POLICY "admin_stage2" ON stage2_activity_list FOR ALL USING (get_user_role() = 'admin');
+CREATE POLICY "emp_stage2" ON stage2_activity_list FOR ALL USING (get_user_stage() = 2);
+
+-- STAGE 3
+CREATE POLICY "admin_stage3" ON stage3_foreign_company FOR ALL USING (get_user_role() = 'admin');
+CREATE POLICY "emp_stage3" ON stage3_foreign_company FOR ALL USING (get_user_stage() = 3);
+
+-- STAGE 4
+CREATE POLICY "admin_stage4" ON stage4_misa_license FOR ALL USING (get_user_role() = 'admin');
+CREATE POLICY "emp_stage4" ON stage4_misa_license FOR ALL USING (get_user_stage() = 4);
+
+-- STAGE 5
+CREATE POLICY "admin_stage5" ON stage5_commercial_registration FOR ALL USING (get_user_role() = 'admin');
+CREATE POLICY "emp_stage5" ON stage5_commercial_registration FOR ALL USING (get_user_stage() = 5);
+
+-- STAGE 6
+CREATE POLICY "admin_stage6" ON stage6_other_websites FOR ALL USING (get_user_role() = 'admin');
+CREATE POLICY "emp_stage6" ON stage6_other_websites FOR ALL USING (get_user_stage() = 6);
+
+-- STAGE 7
+CREATE POLICY "admin_stage7" ON stage7_file_ready FOR ALL USING (get_user_role() = 'admin');
+CREATE POLICY "emp_stage7" ON stage7_file_ready FOR ALL USING (get_user_stage() = 7);
+
+-- STAGE 8
+CREATE POLICY "admin_stage8" ON stage8_name_clearance FOR ALL USING (get_user_role() = 'admin');
+CREATE POLICY "emp_stage8" ON stage8_name_clearance FOR ALL USING (get_user_stage() = 8);
+
+-- ============================================
+-- SAMPLE DATA
+-- ============================================
+INSERT INTO companies (company_id, country_of_origin, company_name, entity_type) VALUES
+('AZC801', 'Afghanistan', 'Steel Com', 'Trading License'),
+('AZC802', 'Bangladesh', 'al tamayyuz sharikat taj Trading', 'Trading License');
