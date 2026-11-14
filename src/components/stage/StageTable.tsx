@@ -127,12 +127,13 @@ export default function StageTable({ stageId, entries, companies, employees, isU
                 <th className="py-3 px-4">Remaining Validity</th>
                 <th className="py-3 px-4">Status</th>
                 <th className="py-3 px-4">CR Association</th>
+                <th className="py-3 px-4">Notes</th>
                 <th className="py-3 px-4 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-slate-700">
               {filtered.length === 0 ? (
-                <tr><td colSpan={10} className="text-center py-12 text-slate-400">No records found</td></tr>
+                <tr><td colSpan={11} className="text-center py-12 text-slate-400">No records found</td></tr>
               ) : filtered.map(e => (
                 <tr key={e.id} className="hover:bg-slate-50/60 transition-colors">
                   <td className="py-3 px-4">
@@ -153,6 +154,7 @@ export default function StageTable({ stageId, entries, companies, employees, isU
                   </td>
                   <td className="py-3 px-4"><StatusBadge status={e.status} /></td>
                   <td className="py-3 px-4"><MilestoneBadge status={e.cr_status} /></td>
+                  <td className="py-3 px-4 text-slate-400 max-w-32 truncate">{e.notes || '—'}</td>
                   <td className="py-3 px-4 text-right">
                     <button onClick={() => setEditEntry(e)} className="p-1.5 hover:bg-slate-100 rounded-md transition text-slate-400 hover:text-slate-600">
                       <Edit2 className="w-3.5 h-3.5" />
@@ -201,8 +203,11 @@ export default function StageTable({ stageId, entries, companies, employees, isU
                   </span>
                 </th>
                 <th className="py-3 px-4 bg-blue-50/50">USA Submit</th>
+                <th className="py-3 px-4 bg-blue-50/50">USA Target</th>
                 <th className="py-3 px-4 bg-blue-50/50">USA Issued</th>
                 <th className="py-3 px-4 bg-blue-50/50">USA SLA</th>
+                <th className="py-3 px-4 bg-blue-50/50">USA Days</th>
+                <th className="py-3 px-4 bg-blue-50/50">USA %</th>
                 <th className="py-3 px-4 bg-blue-50/50">Payment</th>
                 <th className="py-3 px-4 bg-red-50/40">
                   <span className="inline-flex items-center gap-1.5">
@@ -211,15 +216,19 @@ export default function StageTable({ stageId, entries, companies, employees, isU
                   </span>
                 </th>
                 <th className="py-3 px-4 bg-red-50/40">CAN Submit</th>
+                <th className="py-3 px-4 bg-red-50/40">CAN Target</th>
                 <th className="py-3 px-4 bg-red-50/40">CAN Issued</th>
                 <th className="py-3 px-4 bg-red-50/40">CAN SLA</th>
+                <th className="py-3 px-4 bg-red-50/40">CAN Days</th>
+                <th className="py-3 px-4 bg-red-50/40">CAN %</th>
                 <th className="py-3 px-4 bg-red-50/40">Payment</th>
+                <th className="py-3 px-4">Employee</th>
                 <th className="py-3 px-4 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-slate-700">
               {filtered.length === 0 ? (
-                <tr><td colSpan={15} className="text-center py-12 text-slate-400">No cross-border records found</td></tr>
+                <tr><td colSpan={21} className="text-center py-12 text-slate-400">No cross-border records found</td></tr>
               ) : filtered.map(e => (
                 <tr key={e.id} className="hover:bg-slate-50/60 transition-colors">
                   <td className="py-3 px-4">
@@ -230,8 +239,11 @@ export default function StageTable({ stageId, entries, companies, employees, isU
                   <td className="py-3 px-4 text-slate-500">{e.priority || '—'}</td>
                   <td className="py-3 px-4 bg-blue-50/20 font-medium text-blue-700">{e.usa_type || '—'}</td>
                   <td className="py-3 px-4 bg-blue-50/20">{formatDate(e.usa_submit_date)}</td>
+                  <td className="py-3 px-4 bg-blue-50/20">{formatDate(e.usa_target_date)}</td>
                   <td className="py-3 px-4 bg-blue-50/20">{formatDate(e.usa_complete_date)}</td>
                   <td className="py-3 px-4 bg-blue-50/20"><StatusBadge status={e.usa_status} /></td>
+                  <td className="py-3 px-4">{e.usa_days_taken ?? '—'}</td>
+                  <td className="py-3 px-4">{e.usa_completion_percent != null ? e.usa_completion_percent + '%' : '—'}</td>
                   <td className="py-3 px-4 bg-blue-50/20">
                     <span className={cn('px-2 py-0.5 rounded text-[11px] font-medium', e.usa_payment_status === 'Paid' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-500')}>
                       {e.usa_payment_status || '—'}
@@ -239,14 +251,18 @@ export default function StageTable({ stageId, entries, companies, employees, isU
                   </td>
                   <td className="py-3 px-4 bg-red-50/10 font-medium text-rose-700">{e.canada_type || '—'}</td>
                   <td className="py-3 px-4 bg-red-50/10">{formatDate(e.canada_submit_date)}</td>
+                  <td className="py-3 px-4 bg-red-50/10">{formatDate(e.canada_target_date)}</td>
                   <td className="py-3 px-4 bg-red-50/10">{formatDate(e.canada_complete_date)}</td>
                   <td className="py-3 px-4 bg-red-50/10"><StatusBadge status={e.canada_status} /></td>
+                  <td className="py-3 px-4">{e.canada_days_taken ?? '—'}</td>
+                  <td className="py-3 px-4">{e.canada_completion_percent != null ? e.canada_completion_percent + '%' : '—'}</td>
                   <td className="py-3 px-4 bg-red-50/10">
                     <span className={cn('px-2 py-0.5 rounded text-[11px] font-medium', e.canada_payment_status === 'Paid' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-500')}>
                       {e.canada_payment_status || '—'}
                     </span>
                   </td>
-                                    <td className="py-3 px-4 text-right">
+                  <td className="py-3 px-4 whitespace-nowrap">{e.employees?.name || '—'}</td>
+                  <td className="py-3 px-4 text-right">
                     <button onClick={() => setEditEntry(e)} className="p-1.5 hover:bg-slate-100 rounded-md transition text-slate-400 hover:text-slate-600">
                       <Edit2 className="w-3.5 h-3.5" />
                     </button>
@@ -298,14 +314,15 @@ export default function StageTable({ stageId, entries, companies, employees, isU
               <th className="py-3 px-4">SLA Compliance</th>
               <th className="py-3 px-4">Fulfillment %</th>
               <th className="py-3 px-4">Payment</th>
-                            <th className="py-3 px-4">Notes</th>
+                            <th className="py-3 px-4">Employee</th>
+              <th className="py-3 px-4">Notes</th>
               <th className="py-3 px-4">Dossier</th>
               <th className="py-3 px-4 text-right">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 text-slate-700">
             {filtered.length === 0 ? (
-              <tr><td colSpan={17} className="text-center py-12 text-slate-400">No active files found in this workflow module.</td></tr>
+              <tr><td colSpan={18} className="text-center py-12 text-slate-400">No active files found in this workflow module.</td></tr>
             ) : filtered.map((e, idx) => (
               <tr key={e.id} className="hover:bg-slate-50/60 transition-colors">
                 <td className="py-3 px-4 text-slate-400 font-mono text-[11px]">{idx + 1}</td>
@@ -359,7 +376,8 @@ export default function StageTable({ stageId, entries, companies, employees, isU
                     {e.payment_status || '—'}
                   </span>
                 </td>
-                                <td className="py-3 px-4 text-slate-400 max-w-28 truncate">{e.remarks || '—'}</td>
+                                <td className="py-3 px-4 whitespace-nowrap">{e.employees?.name || '—'}</td>
+                <td className="py-3 px-4 text-slate-400 max-w-28 truncate">{e.remarks || '—'}</td>
                 <td className="py-3 px-4">
                   {e.drive_link ? (
                     <a href={e.drive_link} target="_blank" className="p-1 hover:bg-blue-50 rounded transition inline-flex text-blue-600">
