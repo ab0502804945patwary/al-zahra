@@ -18,7 +18,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
       employee = {
         id: 'demo-admin-id',
         user_id: 'demo-user-id',
-        name: 'Admin (Manager)',
+        name: 'Admin',
         email: 'admin@alzahra.com',
         role: 'admin',
         is_active: true,

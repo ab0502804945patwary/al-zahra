@@ -76,7 +76,9 @@ export default function TopBar({ employee }: TopBarProps) {
               </div>
             )}
             <div className="text-left hidden md:block">
-              <div className="text-xs font-semibold text-slate-800 leading-tight">{employee?.name || 'Administrator'}</div>
+              <div className="text-xs font-semibold text-slate-800 leading-tight">
+                {employee?.name === 'Admin (Manager)' ? 'Admin' : (employee?.name || 'Admin')}
+              </div>
               <div className="text-[10px] text-slate-400 font-medium capitalize mt-0.5">
                 {isAdmin ? 'System Administrator' : 'Operations Staff'}
               </div>
@@ -86,7 +88,9 @@ export default function TopBar({ employee }: TopBarProps) {
           {showMenu && (
             <div className="absolute right-0 top-full mt-2 w-52 bg-white rounded-xl shadow-xl border border-slate-200/80 overflow-hidden z-50 py-1">
               <div className="px-4 py-3 border-b border-slate-100 bg-slate-50/50">
-                <div className="text-xs font-bold text-slate-800">{employee?.name || 'Administrator'}</div>
+                <div className="text-xs font-bold text-slate-800">
+                  {employee?.name === 'Admin (Manager)' ? 'Admin' : (employee?.name || 'Admin')}
+                </div>
                 <div className="text-[11px] text-slate-400 font-mono truncate">{employee?.email || 'admin@alzahra.com'}</div>
               </div>
 
