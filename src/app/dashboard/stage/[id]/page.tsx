@@ -90,7 +90,7 @@ export default async function StagePage({ params }: { params: Promise<{ id: stri
   }
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto">
+    <div className="space-y-6 w-full max-w-[2000px] mx-auto">
       <StageHeader
         stageId={id}
         config={config}
