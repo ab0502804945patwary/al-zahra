@@ -1,5 +1,5 @@
-import { createClient } from '@/lib/supabase/server'
-import { redirect, notFound } from 'next/navigation'
+import { createClient, isSupabaseConfigured } from '@/lib/supabase/server'
+import { redirect } from 'next/navigation'
 import { cookies } from 'next/headers'
 import StaffProfileClient from '@/components/employees/StaffProfileClient'
 import { INITIAL_EMPLOYEES } from '@/lib/employeeData'
@@ -16,11 +16,10 @@ export default async function StaffProfilePage({ params }: PageProps) {
   const cookieStore = await cookies()
   const isDemo = cookieStore.get('demo_session')?.value === 'admin'
 
-  const supabase = await createClient()
-
   let employee: Employee | null = null
 
-  if (!isDemo) {
+  if (!isDemo && isSupabaseConfigured) {
+    const supabase = await createClient()
     try {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) redirect('/login')
@@ -52,7 +51,7 @@ export default async function StaffProfilePage({ params }: PageProps) {
       email: `${id}@alzahra.com`,
       role: 'employee',
       is_active: true,
-      created_at: new Date().toISOString(),
+      created_at: '2026-01-01T00:00:00.000Z',
       salary: {
         salary_type: 'monthly_fixed',
         base_salary: 6000,

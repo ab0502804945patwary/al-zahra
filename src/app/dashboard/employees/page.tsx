@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient, isSupabaseConfigured } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { cookies } from 'next/headers'
 import EmployeesClient from '@/components/employees/EmployeesClient'
@@ -10,9 +10,8 @@ export default async function EmployeesPage() {
   const cookieStore = await cookies()
   const isDemo = cookieStore.get('demo_session')?.value === 'admin'
 
-  const supabase = await createClient()
-
-  if (!isDemo) {
+  if (!isDemo && isSupabaseConfigured) {
+    const supabase = await createClient()
     try {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) redirect('/login')
@@ -22,7 +21,6 @@ export default async function EmployeesPage() {
 
       const { data: employees } = await supabase.from('employees').select('*').order('created_at')
       if (employees && employees.length > 0) {
-        // Merge with initial data so rich tasks/salary details are enriched
         const merged = employees.map(emp => {
           const match = INITIAL_EMPLOYEES.find(i => i.id === emp.id || i.email === emp.email)
           return match ? { ...match, ...emp } : emp
