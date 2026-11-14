@@ -2,7 +2,7 @@
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { Employee } from '@/lib/types'
-import { Bell, LogOut, Search, ShieldCheck, PanelLeft, PanelLeftOpen, UserCheck, User } from 'lucide-react'
+import { Bell, LogOut, Search, ShieldCheck, PanelLeft, PanelLeftOpen } from 'lucide-react'
 import { useState, useRef, useEffect } from 'react'
 import { useSidebar } from './DashboardShell'
 
@@ -30,12 +30,6 @@ export default function TopBar({ employee }: TopBarProps) {
       document.removeEventListener('mousedown', handleClickOutside)
     }
   }, [showMenu])
-
-  function handleSwitchDemoRole(target: string) {
-    document.cookie = `demo_session=${target}; path=/; max-age=86400; SameSite=Lax`
-    setShowMenu(false)
-    window.location.href = '/dashboard'
-  }
 
   async function handleLogout() {
     document.cookie = "demo_session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax"
@@ -110,78 +104,30 @@ export default function TopBar({ employee }: TopBarProps) {
           {showMenu && (
             <div
               ref={menuRef}
-              className="absolute right-0 top-full mt-2 w-60 bg-white rounded-xl shadow-xl border border-slate-200/80 overflow-hidden z-50 py-1 divide-y divide-slate-100"
+              className="absolute right-0 top-full mt-2 w-52 bg-white rounded-xl shadow-xl border border-slate-200/80 overflow-hidden z-50 py-1"
             >
-              {/* Profile Header */}
-              <div className="px-4 py-3 bg-slate-50/50">
+              <div className="px-4 py-3 border-b border-slate-100 bg-slate-50/50">
                 <div className="text-xs font-bold text-slate-800">
                   {employee?.name === 'Admin (Manager)' ? 'Admin' : (employee?.name || 'Admin')}
                 </div>
                 <div className="text-[11px] text-slate-400 font-mono truncate">{employee?.email || 'admin@alzahra.com'}</div>
-                <div className="mt-1.5">
-                  <span className={`inline-block text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                    isAdmin ? 'bg-blue-50 text-blue-700 border border-blue-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                  }`}>
-                    {isAdmin ? 'Role: Administrator' : `Role: Stage ${employee?.assigned_stage || 1} Specialist`}
-                  </span>
-                </div>
               </div>
 
-              {/* Demo Role Switcher */}
-              <div className="p-2 bg-slate-50/30">
-                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-2 py-1">
-                  Switch Demo Role:
-                </div>
-                {isAdmin ? (
-                  <button
-                    onClick={() => handleSwitchDemoRole('emp-1')}
-                    className="w-full text-left px-2.5 py-1.5 rounded-lg text-xs text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 flex items-center gap-2 transition"
-                  >
-                    <UserCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                    <span className="truncate">View as Shahariar (Stage 1)</span>
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => handleSwitchDemoRole('admin')}
-                    className="w-full text-left px-2.5 py-1.5 rounded-lg text-xs text-slate-700 hover:bg-blue-50 hover:text-blue-700 flex items-center gap-2 transition"
-                  >
-                    <ShieldCheck className="w-3.5 h-3.5 text-blue-600 shrink-0" />
-                    <span>View as Administrator</span>
-                  </button>
-                )}
-              </div>
-
-              {/* Navigation Links */}
-              <div className="p-1">
-                {isAdmin ? (
-                  <button
-                    onClick={() => { router.push('/dashboard/employees'); setShowMenu(false); }}
-                    className="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-slate-600 hover:bg-slate-50 hover:text-slate-900 rounded-lg transition"
-                  >
-                    <ShieldCheck className="w-3.5 h-3.5 text-slate-400" />
-                    <span>Access Privileges</span>
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => { router.push(`/dashboard/employees/${employee?.id || 'emp-1'}`); setShowMenu(false); }}
-                    className="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-slate-600 hover:bg-slate-50 hover:text-slate-900 rounded-lg transition"
-                  >
-                    <User className="w-3.5 h-3.5 text-slate-400" />
-                    <span>View My Staff Profile</span>
-                  </button>
-                )}
-              </div>
-
-              {/* Sign Out */}
-              <div className="p-1">
+              {isAdmin && (
                 <button
-                  onClick={handleLogout}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-rose-600 hover:bg-rose-50 rounded-lg transition font-medium"
+                  onClick={() => { router.push('/dashboard/employees'); setShowMenu(false); }}
+                  className="w-full flex items-center gap-2.5 px-4 py-2 text-xs text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition"
                 >
-                  <LogOut className="w-3.5 h-3.5" />
-                  <span>Sign Out Session</span>
+                  <ShieldCheck className="w-3.5 h-3.5 text-slate-400" /> Access Privileges
                 </button>
-              </div>
+              )}
+
+              <button
+                onClick={handleLogout}
+                className="w-full flex items-center gap-2.5 px-4 py-2 text-xs text-rose-600 hover:bg-rose-50 transition border-t border-slate-100 font-medium"
+              >
+                <LogOut className="w-3.5 h-3.5" /> Sign Out Session
+              </button>
             </div>
           )}
         </div>
