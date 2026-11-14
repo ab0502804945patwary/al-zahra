@@ -1,4 +1,5 @@
 'use client'
+import { Flag } from '@/components/ui/CountrySelect'
 import { useState, useEffect } from 'react'
 import { Plus, Edit2, Building2, Search, ExternalLink, Globe, CheckCircle2, ShieldCheck, Sparkles } from 'lucide-react'
 import { Company } from '@/lib/types'
@@ -130,7 +131,7 @@ export default function CompaniesClient({ companies: initialCompanies }: Props) 
                           {company.company_id}
                         </span>
                         <span>•</span>
-                        <span className="text-slate-500 font-sans">{company.country_of_origin}</span>
+                        <span className="text-slate-500 font-sans inline-flex items-center gap-1"><Flag country={company.country_of_origin} />{company.country_of_origin}</span>
                       </div>
                     </div>
                   </div>

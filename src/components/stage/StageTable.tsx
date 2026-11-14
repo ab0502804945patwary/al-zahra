@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { ExternalLink, Edit2, Search, CheckCircle2, Clock, AlertTriangle, AlertCircle, FileText } from 'lucide-react'
 import { cn, formatDate } from '@/lib/utils'
+import { Flag } from '@/components/ui/CountrySelect'
 import EditEntryModal from './EditEntryModal'
 
 function StatusBadge({ status }: { status?: string }) {
@@ -23,10 +24,26 @@ function StatusBadge({ status }: { status?: string }) {
       </span>
     )
   }
+  if (status === 'Active') {
+    return (
+      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+        Active
+      </span>
+    )
+  }
+  if (status === 'Warning') {
+    return (
+      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+        <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+        Warning
+      </span>
+    )
+  }
   return (
     <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200">
       <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
-      Overdue
+      {status === 'Urgent' || status === 'Expired' ? status : 'Overdue'}
     </span>
   )
 }
@@ -81,7 +98,7 @@ export default function StageTable({ stageId, entries, companies, employees, isU
   if (isNameClearance) {
     return (
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between gap-4">
+        <div className="px-4 sm:px-6 py-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
           <div>
             <h3 className="font-semibold text-slate-900 text-sm">Commercial Name Clearances</h3>
             <p className="text-xs text-slate-400">Trade name approvals and statutory validity tracking</p>
@@ -129,7 +146,7 @@ export default function StageTable({ stageId, entries, companies, employees, isU
                   <td className="py-3 px-4">{formatDate(e.expire_date)}</td>
                   <td className="py-3 px-4">
                     {e.remaining_days != null ? (
-                      <span className={cn('font-semibold', e.remaining_days <= 10 ? 'text-rose-600' : e.remaining_days <= 30 ? 'text-amber-600' : 'text-emerald-600')}>
+                      <span className={cn('font-semibold', e.remaining_days <= 30 ? 'text-rose-600' : e.remaining_days <= 40 ? 'text-amber-600' : 'text-emerald-600')}>
                         {e.remaining_days} days
                       </span>
                     ) : '—'}
@@ -154,7 +171,7 @@ export default function StageTable({ stageId, entries, companies, employees, isU
   if (isUSACanada) {
     return (
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between gap-4">
+        <div className="px-4 sm:px-6 py-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
           <div>
             <h3 className="font-semibold text-slate-900 text-sm">Cross-Border Foreign Licensing</h3>
             <p className="text-xs text-slate-400">United States and Canadian corporate verification dossiers</p>
@@ -247,7 +264,7 @@ export default function StageTable({ stageId, entries, companies, employees, isU
   // Standard workflow table
   return (
     <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-      <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between gap-4">
+      <div className="px-4 sm:px-6 py-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <div>
           <h3 className="font-semibold text-slate-900 text-sm">Active Processing Records</h3>
           <p className="text-xs text-slate-400">Detailed compliance lifecycle records and timeline monitoring</p>
@@ -295,7 +312,7 @@ export default function StageTable({ stageId, entries, companies, employees, isU
                 <td className="py-3 px-4">
                   <div className="font-semibold text-slate-900">{e.company_id}</div>
                   <div className="text-slate-500 text-[11px]">{e.companies?.company_name}</div>
-                  <div className="text-slate-400 text-[10px]">{e.companies?.country_of_origin}</div>
+                  <div className="text-slate-400 text-[10px] flex items-center gap-1"><Flag country={e.companies?.country_of_origin} />{e.companies?.country_of_origin}</div>
                 </td>
                 <td className="py-3 px-4">
                   <div className="font-medium text-slate-800">{e.client_name || '—'}</div>

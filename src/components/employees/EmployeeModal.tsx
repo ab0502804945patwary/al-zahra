@@ -517,7 +517,7 @@ export default function EmployeeModal({ employee, onClose, onSave, onDelete }: P
           </div>
 
           {/* Role & Module Assignment */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="text-xs font-medium text-slate-700 mb-1 block">Access Role</label>
               <select
@@ -550,7 +550,7 @@ export default function EmployeeModal({ employee, onClose, onSave, onDelete }: P
           </div>
 
           {/* Job Title & Department */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="text-xs font-medium text-slate-700 mb-1 block">Job Title / Designation</label>
               <input
@@ -576,7 +576,7 @@ export default function EmployeeModal({ employee, onClose, onSave, onDelete }: P
             <span className="text-[11px] font-bold text-emerald-800 flex items-center gap-1.5 uppercase tracking-wider">
               Salary & Compensation Structure
             </span>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="text-xs font-medium text-slate-700 mb-1 block">Salary Type</label>
                 <select

@@ -8,8 +8,14 @@ export function cn(...inputs: ClassValue[]) {
 export function calculateDaysTaken(submitDate: string | null, completeDate: string | null): number {
   if (!submitDate) return 0
   const start = new Date(submitDate)
-  const end = completeDate ? new Date(completeDate) : new Date('2026-11-14')
+  const end = completeDate ? new Date(completeDate) : new Date()
   return Math.floor((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24))
+}
+
+export function calculateOverdue(completeDate?: string | null, targetDate?: string | null): 'Completed' | 'Pending' | 'Overdue' | 'On Time' {
+  if (completeDate) return 'Completed'
+  if (!targetDate) return 'Pending'
+  return new Date() > new Date(targetDate) ? 'Overdue' : 'On Time'
 }
 
 export function calculateStatus(days: number, greenMax = 10, yellowMax = 13): 'Green' | 'Yellow' | 'Red' {
@@ -42,7 +48,17 @@ export function formatDate(date: string | null): string {
 
 export function getDaysUntilExpiry(expireDate: string | null): number {
   if (!expireDate) return 999
-  const today = new Date('2026-11-14')
+  const today = new Date()
   const expire = new Date(expireDate)
   return Math.floor((expire.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+}
+
+export function calculateNameClearance(approvalDate?: string | null) {
+  if (!approvalDate) return null
+  const approved = new Date(approvalDate)
+  if (isNaN(approved.getTime())) return null
+  const expire = new Date(approved.getTime() + 60 * 86400000)
+  const remaining = Math.ceil((expire.getTime() - Date.now()) / 86400000)
+  const status = remaining < 0 ? 'Expired' : remaining <= 30 ? 'Urgent' : remaining <= 40 ? 'Warning' : 'Active'
+  return { expire_date: expire.toISOString().slice(0, 10), remaining_days: remaining, status }
 }

@@ -16,6 +16,7 @@ import {
 import { createClient, isSupabaseConfigured } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { Company } from '@/lib/types'
+import CountrySelect from '@/components/ui/CountrySelect'
 
 interface Props {
   company?: Company
@@ -118,7 +119,7 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
   }
 
   const F = ({ label, name, type = 'text', half = false }: { label: string; name: string; type?: string; half?: boolean }) => (
-    <div className={half ? '' : 'col-span-2'}>
+    <div className={half ? '' : 'sm:col-span-2'}>
       <label className="text-xs font-medium text-slate-700 mb-1 block">{label}</label>
       <input
         type={type}
@@ -134,9 +135,9 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
       title: 'Company Profile & Identification',
       icon: Building2,
       customRenderer: (
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {/* Auto-generated Company ID field */}
-          <div className="col-span-2 sm:col-span-1">
+          <div className="sm:col-span-2 sm:col-span-1">
             <div className="flex items-center justify-between mb-1">
               <label className="text-xs font-medium text-slate-700">Company Identifier (ID) *</label>
               {!company && (
@@ -170,15 +171,10 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
 
           <div>
             <label className="text-xs font-medium text-slate-700 mb-1 block">Country of Origin / Nationality</label>
-            <input
-              type="text"
-              value={form.country_of_origin || ''}
-              onChange={e => set('country_of_origin', e.target.value)}
-              className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-            />
+            <CountrySelect value={form.country_of_origin} onChange={v => set('country_of_origin', v)} />
           </div>
 
-          <div className="col-span-2">
+          <div className="sm:col-span-2">
             <label className="text-xs font-medium text-slate-700 mb-1 block">Official Registered Name *</label>
             <input
               type="text"
@@ -190,7 +186,7 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
             />
           </div>
 
-          <div className="col-span-2">
+          <div className="sm:col-span-2">
             <label className="text-xs font-medium text-slate-700 mb-1 block">Entity Structure / License Type</label>
             <input
               type="text"
@@ -289,7 +285,7 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
                 {section.customRenderer ? (
                   section.customRenderer
                 ) : (
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {section.fields?.map(f => <F key={f.name} {...f} />)}
                   </div>
                 )}

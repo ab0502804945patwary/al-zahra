@@ -16,9 +16,11 @@ interface Props {
   stats: { total: number; green: number; yellow: number; red: number; completed: number; pending: number }
   companies: any[]
   employees: any[]
+  eligibleIds?: string[]
+  eligibilityHint?: string
 }
 
-export default function StageHeader({ stageId, config, stats, companies, employees }: Props) {
+export default function StageHeader({ stageId, config, stats, companies, employees, eligibleIds, eligibilityHint }: Props) {
   const [showModal, setShowModal] = useState(false)
   const [enrichedCompanies, setEnrichedCompanies] = useState<any[]>(companies)
 
@@ -99,7 +101,8 @@ export default function StageHeader({ stageId, config, stats, companies, employe
           stageId={stageId}
           isUSACanada={config.hasUSACanada}
           isNameClearance={config.isNameClearance}
-          companies={enrichedCompanies}
+          companies={eligibleIds ? enrichedCompanies.filter(c => eligibleIds.includes(c.company_id)) : enrichedCompanies}
+          eligibilityHint={eligibilityHint}
           employees={employees}
           onClose={() => setShowModal(false)}
         />

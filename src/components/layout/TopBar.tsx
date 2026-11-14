@@ -2,15 +2,16 @@
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { Employee } from '@/lib/types'
-import { Bell, LogOut, Search, ShieldCheck, PanelLeft, PanelLeftOpen } from 'lucide-react'
+import { Bell, LogOut, Search, ShieldCheck, PanelLeft, PanelLeftOpen, Menu } from 'lucide-react'
 import { useState, useRef, useEffect } from 'react'
 import { useSidebar } from './DashboardShell'
+import NotificationBell from './NotificationBell'
 
 interface TopBarProps { employee: Employee | null }
 
 export default function TopBar({ employee }: TopBarProps) {
   const router = useRouter()
-  const { collapsed, toggle } = useSidebar()
+  const { collapsed, toggle, setMobileOpen } = useSidebar()
   const supabase = createClient()
   const [showMenu, setShowMenu] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
@@ -41,36 +42,41 @@ export default function TopBar({ employee }: TopBarProps) {
 
   return (
     <header className="h-16 bg-white border-b border-slate-200/80 flex items-center px-4 sm:px-6 gap-3 sm:gap-4 shadow-xs z-20">
-      {/* Sidebar Drawer Toggle */}
+      {/* Mobile burger */}
+      <button
+        onClick={() => setMobileOpen(true)}
+        className="lg:hidden p-2 -ml-1 rounded-lg text-slate-600 hover:bg-slate-100 transition shrink-0"
+        aria-label="Open menu"
+      >
+        <Menu className="w-5 h-5" />
+      </button>
+
+      {/* Sidebar Drawer Toggle (desktop) */}
       <button
         onClick={toggle}
-        className="p-2 -ml-1 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition shrink-0"
+        className="hidden lg:block p-2 -ml-1 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition shrink-0"
         title={collapsed ? 'Expand category drawer' : 'Collapse category drawer'}
       >
         {collapsed ? <PanelLeftOpen className="w-4 h-4" /> : <PanelLeft className="w-4 h-4" />}
       </button>
 
       {/* Global Search Bar */}
-      <div className="flex-1 max-w-md">
+      <div className="flex-1 min-w-0 max-w-md">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
           <input
             type="text"
-            placeholder="Search entity by ID, trade name, commercial registration..."
+            placeholder="Search entity..."
             className="w-full pl-9 pr-12 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition"
           />
-          <kbd className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] font-mono text-slate-400 bg-slate-100 border border-slate-200 px-1.5 py-0.5 rounded">
+          <kbd className="hidden md:block absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] font-mono text-slate-400 bg-slate-100 border border-slate-200 px-1.5 py-0.5 rounded">
             Ctrl+K
           </kbd>
         </div>
       </div>
 
       <div className="flex items-center gap-3 ml-auto">
-        {/* System Notifications */}
-        <button className="relative p-2 rounded-lg text-slate-500 hover:text-slate-700 hover:bg-slate-100 transition">
-          <Bell className="w-4 h-4" />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-rose-500 rounded-full ring-2 ring-white" />
-        </button>
+        <NotificationBell />
 
         <div className="h-6 w-px bg-slate-200" />
 

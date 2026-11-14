@@ -67,14 +67,18 @@ interface SidebarProps { employee: Employee | null }
 
 export default function Sidebar({ employee }: SidebarProps) {
   const pathname = usePathname()
-  const { collapsed, toggle } = useSidebar()
+  const { collapsed: rawCollapsed, toggle, mobileOpen, setMobileOpen } = useSidebar()
+  const collapsed = rawCollapsed && !mobileOpen
+  const toggleOrClose = () => (mobileOpen ? setMobileOpen(false) : toggle())
   const isAdmin = employee?.role === 'admin'
 
   return (
     <aside
       className={cn(
-        'bg-white border-r border-slate-200 flex flex-col text-slate-600 select-none shadow-[1px_0_4px_rgba(0,0,0,0.02)] transition-all duration-300 ease-in-out shrink-0 z-30',
-        collapsed ? 'w-20' : 'w-72'
+        'bg-white border-r border-slate-200 flex flex-col text-slate-600 select-none shadow-[1px_0_4px_rgba(0,0,0,0.02)] transition-all duration-300 ease-in-out shrink-0',
+        'fixed inset-y-0 left-0 z-50 w-72 max-w-[85vw] lg:static lg:z-30 lg:translate-x-0',
+        mobileOpen ? 'translate-x-0' : '-translate-x-full',
+        !mobileOpen && collapsed ? 'lg:w-20' : 'lg:w-72'
       )}
     >
       {/* Brand Header */}
@@ -100,7 +104,7 @@ export default function Sidebar({ employee }: SidebarProps) {
             </Link>
 
             <button
-              onClick={toggle}
+              onClick={toggleOrClose}
               className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition shrink-0 ml-1"
               title="Collapse sidebar"
             >
@@ -109,7 +113,7 @@ export default function Sidebar({ employee }: SidebarProps) {
           </>
         ) : (
           <button
-            onClick={toggle}
+            onClick={toggleOrClose}
             className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-200/90 p-1 flex items-center justify-center shadow-xs transition hover:border-blue-400 hover:bg-blue-50/50 group"
             title="Click to expand sidebar"
           >
@@ -211,7 +215,7 @@ export default function Sidebar({ employee }: SidebarProps) {
         )}
       >
         <button
-          onClick={toggle}
+          onClick={toggleOrClose}
           className={cn(
             'flex items-center gap-2 p-2 rounded-lg text-xs text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition w-full',
             collapsed ? 'justify-center' : ''

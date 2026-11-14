@@ -2,18 +2,24 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
 import Sidebar from './Sidebar'
 import TopBar from './TopBar'
+import BottomNav from './BottomNav'
+import { usePathname } from 'next/navigation'
 import { Employee } from '@/lib/types'
 
 interface SidebarContextType {
   collapsed: boolean
   toggle: () => void
   setCollapsed: (v: boolean) => void
+  mobileOpen: boolean
+  setMobileOpen: (v: boolean) => void
 }
 
 export const SidebarContext = createContext<SidebarContextType>({
   collapsed: false,
   toggle: () => {},
   setCollapsed: () => {},
+  mobileOpen: false,
+  setMobileOpen: () => {},
 })
 
 export const useSidebar = () => useContext(SidebarContext)
@@ -26,6 +32,10 @@ export default function DashboardShell({
   children: React.ReactNode
 }) {
   const [collapsed, setCollapsed] = useState(false)
+  const [mobileOpen, setMobileOpen] = useState(false)
+  const pathname = usePathname()
+
+  useEffect(() => { setMobileOpen(false) }, [pathname])
 
   useEffect(() => {
     try {
@@ -47,14 +57,18 @@ export default function DashboardShell({
   }
 
   return (
-    <SidebarContext.Provider value={{ collapsed, toggle, setCollapsed }}>
+    <SidebarContext.Provider value={{ collapsed, toggle, setCollapsed, mobileOpen, setMobileOpen }}>
       <div className="flex h-screen bg-slate-50 overflow-hidden font-sans">
+        {mobileOpen && (
+          <div className="fixed inset-0 bg-slate-900/50 z-40 lg:hidden" onClick={() => setMobileOpen(false)} />
+        )}
         <Sidebar employee={employee} />
         <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
           <TopBar employee={employee} />
-          <main className="flex-1 overflow-y-auto p-6">
+          <main className="flex-1 overflow-y-auto p-3 sm:p-4 lg:p-6 pb-24 lg:pb-6">
             {children}
           </main>
+          <BottomNav />
         </div>
       </div>
     </SidebarContext.Provider>

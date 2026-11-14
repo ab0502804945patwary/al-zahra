@@ -3,7 +3,8 @@ import { useState } from 'react'
 import { X, Loader2, Trash2 } from 'lucide-react'
 import { createClient, isSupabaseConfigured } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { calculateDaysTaken, calculateStatus, calculateCompletion } from '@/lib/utils'
+import { COUNTRIES, CATEGORIES, PAYMENT_STATUSES, PRIORITIES, PHASE_OPTIONS, FOREIGN_FILING_OPTIONS, CANADA_OPTIONS, CR_STATUSES, toOptions, pickColumns } from '@/lib/stageRules'
+import { calculateNameClearance, calculateOverdue, calculateDaysTaken, calculateStatus, calculateCompletion } from '@/lib/utils'
 
 const STAGE_TABLES: Record<string, string> = {
   '1': 'stage1_mother_company', '2': 'stage2_activity_list', '3': 'stage3_foreign_company',
@@ -32,17 +33,24 @@ export default function EditEntryModal({ stageId, entry, companies, employees, o
       const days = calculateDaysTaken(form.submit_date, form.complete_date)
       const status = calculateStatus(days)
       const completion = calculateCompletion(status)
-      const overdue = form.complete_date ? 'Completed' : (days > 13 ? 'Overdue' : 'Pending')
+      const overdue = calculateOverdue(form.complete_date, form.target_date)
       payload = { ...payload, days_taken: days, status, completion_percent: completion, overdue_status: overdue }
     }
-    if (isNameClearance && form.expire_date) {
-      const days = Math.floor((new Date(form.expire_date).getTime() - Date.now()) / 86400000)
-      payload.remaining_days = days
+    if (isNameClearance) {
+      const nc = calculateNameClearance(form.approval_date)
+      if (nc) payload = { ...payload, ...nc }
+    }
+
+    if (isUSACanada) {
+      const usaDays = calculateDaysTaken(form.usa_submit_date, form.usa_complete_date)
+      if (form.usa_submit_date) { payload.usa_status = calculateStatus(usaDays); payload.usa_days_taken = usaDays; payload.usa_completion_percent = calculateCompletion(payload.usa_status); payload.usa_overdue_status = calculateOverdue(form.usa_complete_date, form.usa_target_date) }
+      const canDays = calculateDaysTaken(form.canada_submit_date, form.canada_complete_date)
+      if (form.canada_submit_date) { payload.canada_status = calculateStatus(canDays); payload.canada_days_taken = canDays; payload.canada_completion_percent = calculateCompletion(payload.canada_status); payload.canada_overdue_status = calculateOverdue(form.canada_complete_date, form.canada_target_date) }
     }
 
     if (isSupabaseConfigured) {
       try {
-        await supabase.from(STAGE_TABLES[stageId]).update(payload).eq('id', entry.id)
+        await supabase.from(STAGE_TABLES[stageId]).update(pickColumns(stageId, payload)).eq('id', entry.id)
       } catch (err) {
         console.log('Updated entry locally:', err)
       }
@@ -115,15 +123,15 @@ export default function EditEntryModal({ stageId, entry, companies, employees, o
 
           {!isNameClearance && (
             <>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <Field label="Authorized Client Contact" name="client_name" />
                 <Field label="Contact Phone" name="client_phone" />
               </div>
-              <div className="grid grid-cols-2 gap-3">
-                <Field label="Licensing Category" name="category" />
-                <Field label="Priority Tier" name="priority" />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <Sel label="Licensing Category" name="category" options={toOptions(CATEGORIES)} />
+                <Sel label="Priority Tier" name="priority" options={toOptions(PRIORITIES)} />
               </div>
-              <Field label="Workflow Phase Status" name="current_stage" />
+              <Sel label="Workflow Phase Status" name="current_stage" options={toOptions(PHASE_OPTIONS[stageId] || [])} />
             </>
           )}
 
@@ -134,15 +142,16 @@ export default function EditEntryModal({ stageId, entry, companies, employees, o
                   <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-700">USA</span>
                   <h3 className="text-xs font-semibold text-slate-800">United States Corporate Filing</h3>
                 </div>
-                <Field label="Filing Instrument / Type" name="usa_type" />
-                <div className="grid grid-cols-2 gap-3">
+                <Sel label="Filing Instrument / Type" name="usa_type" options={toOptions(FOREIGN_FILING_OPTIONS)} />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <Field label="USA Submission Date" name="usa_submit_date" type="date" />
                   <Field label="USA Completion Date" name="usa_complete_date" type="date" />
                 </div>
+                <Field label="USA Target Date" name="usa_target_date" type="date" />
                 <Sel
                   label="USA Payment Status"
                   name="usa_payment_status"
-                  options={[{ value: 'Paid', label: 'Paid' }, { value: 'Pending', label: 'Pending' }, { value: 'Unpaid', label: 'Unpaid' }]}
+                  options={toOptions(PAYMENT_STATUSES)}
                 />
               </div>
 
@@ -151,57 +160,54 @@ export default function EditEntryModal({ stageId, entry, companies, employees, o
                   <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-700">CAN</span>
                   <h3 className="text-xs font-semibold text-slate-800">Canadian Corporate Filing</h3>
                 </div>
-                <Field label="Filing Instrument / Type" name="canada_type" />
-                <div className="grid grid-cols-2 gap-3">
+                <Sel label="Filing Instrument / Type" name="canada_type" options={toOptions(CANADA_OPTIONS)} />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <Field label="Canada Submission Date" name="canada_submit_date" type="date" />
                   <Field label="Canada Completion Date" name="canada_complete_date" type="date" />
                 </div>
+                <Field label="Canada Target Date" name="canada_target_date" type="date" />
                 <Sel
                   label="Canada Payment Status"
                   name="canada_payment_status"
-                  options={[{ value: 'Paid', label: 'Paid' }, { value: 'Pending', label: 'Pending' }, { value: 'Unpaid', label: 'Unpaid' }]}
+                  options={toOptions(PAYMENT_STATUSES)}
                 />
               </div>
             </>
           ) : isNameClearance ? (
             <>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <Field label="Entity Structure" name="entity_type" />
                 <Field label="Clearance Reference Number" name="name_clearance_number" />
               </div>
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <Field label="Submission Date" name="submit_date" type="date" />
                 <Field label="Approval Date" name="approval_date" type="date" />
-                <Field label="Expiration Date" name="expire_date" type="date" />
+                
               </div>
-              <div className="grid grid-cols-2 gap-3">
-                <Sel
-                  label="Validity Status"
-                  name="status"
-                  options={[{ value: 'Active', label: 'Active' }, { value: 'Expired', label: 'Expired' }, { value: 'Pending', label: 'Pending' }]}
-                />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <Sel
                   label="CR Association Status"
                   name="cr_status"
-                  options={[{ value: 'Complete', label: 'Complete' }, { value: 'Pending', label: 'Pending' }, { value: 'In Progress', label: 'In Progress' }]}
+                  options={toOptions(CR_STATUSES)}
                 />
               </div>
               <Field label="Regulatory Notes" name="notes" />
             </>
           ) : (
             <>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <Field label="Submission Date" name="submit_date" type="date" />
                 <Field label="Target SLA Date" name="target_date" type="date" />
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <Field label="Completion Date" name="complete_date" type="date" />
                 <Sel
                   label="Payment Status"
                   name="payment_status"
-                  options={[{ value: 'Paid', label: 'Paid' }, { value: 'Pending', label: 'Pending' }, { value: 'Unpaid', label: 'Unpaid' }]}
+                  options={toOptions(PAYMENT_STATUSES)}
                 />
               </div>
+              <Sel label="Assigned Employee" name="employee_id" options={employees.map(e => ({ value: e.id, label: e.name }))} />
               <Field label="Electronic Dossier Link (Google Drive)" name="drive_link" />
               <Field label="Operational Remarks" name="remarks" />
             </>
