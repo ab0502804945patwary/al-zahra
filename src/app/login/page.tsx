@@ -23,16 +23,14 @@ export default function LoginPage() {
       setError(error.message)
       setLoading(false)
     } else {
-      router.push('/dashboard')
-      router.refresh()
+      window.location.href = '/dashboard'
     }
   }
 
   function handleDemoLogin() {
     setDemoLoading(true)
-    document.cookie = "demo_session=admin; path=/; max-age=86400"
-    router.push('/dashboard')
-    router.refresh()
+    document.cookie = "demo_session=admin; path=/; max-age=86400; SameSite=Lax"
+    window.location.href = '/dashboard'
   }
 
   return (

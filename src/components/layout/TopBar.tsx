@@ -14,12 +14,11 @@ export default function TopBar({ employee }: TopBarProps) {
   const isAdmin = employee?.role === 'admin'
 
   async function handleLogout() {
-    document.cookie = "demo_session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT"
+    document.cookie = "demo_session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax"
     try {
       await supabase.auth.signOut()
     } catch {}
-    router.push('/login')
-    router.refresh()
+    window.location.href = '/login'
   }
 
   return (
