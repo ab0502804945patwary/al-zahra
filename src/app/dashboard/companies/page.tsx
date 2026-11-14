@@ -16,7 +16,7 @@ const FALLBACK_COMPANIES: Company[] = [
     tin_number: '31098471200003',
     vat_number: '31098471200003',
     account_status: 'Active',
-    created_at: new Date().toISOString()
+    created_at: '2026-01-01T00:00:00.000Z'
   },
   {
     id: '2',
@@ -27,7 +27,7 @@ const FALLBACK_COMPANIES: Company[] = [
     ceo_gm_name: 'Belayet Hossain',
     whatsapp_number: '0569158296',
     account_status: 'Active',
-    created_at: new Date().toISOString()
+    created_at: '2026-01-01T00:00:00.000Z'
   }
 ]
 

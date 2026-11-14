@@ -21,7 +21,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
       email: 'admin@alzahra.com',
       role: 'admin' as const,
       is_active: true,
-      created_at: new Date().toISOString()
+      created_at: '2026-01-01T00:00:00.000Z'
     }
   } else {
     try {
