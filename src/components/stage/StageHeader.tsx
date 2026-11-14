@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Plus, CheckCircle2, Clock, AlertCircle, AlertTriangle, Layers, UserCheck } from 'lucide-react'
 import AddEntryModal from './AddEntryModal'
 
@@ -20,6 +20,28 @@ interface Props {
 
 export default function StageHeader({ stageId, config, stats, companies, employees }: Props) {
   const [showModal, setShowModal] = useState(false)
+  const [enrichedCompanies, setEnrichedCompanies] = useState<any[]>(companies)
+
+  // Sync with companies stored in localStorage so freshly registered entities appear instantly
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('alzahra_companies_data')
+      if (stored) {
+        const parsed = JSON.parse(stored)
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setEnrichedCompanies(prev => {
+            const map = new Map<string, any>(prev.map(c => [c.company_id, c]))
+            parsed.forEach((c: any) => {
+              if (c.company_id) {
+                map.set(c.company_id, { ...map.get(c.company_id), ...c })
+              }
+            })
+            return Array.from(map.values())
+          })
+        }
+      }
+    } catch {}
+  }, [])
 
   const kpis = [
     { label: 'Total Files', value: stats.total, icon: Layers, color: 'text-blue-600', bg: 'bg-blue-50' },
@@ -84,7 +106,7 @@ export default function StageHeader({ stageId, config, stats, companies, employe
           stageId={stageId}
           isUSACanada={config.hasUSACanada}
           isNameClearance={config.isNameClearance}
-          companies={companies}
+          companies={enrichedCompanies}
           employees={employees}
           onClose={() => setShowModal(false)}
         />

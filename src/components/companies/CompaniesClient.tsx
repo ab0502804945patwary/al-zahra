@@ -1,20 +1,72 @@
 'use client'
-import { useState } from 'react'
-import { Plus, Edit2, Building2, Search, ExternalLink, Globe, CheckCircle2, ShieldCheck } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Plus, Edit2, Building2, Search, ExternalLink, Globe, CheckCircle2, ShieldCheck, Sparkles } from 'lucide-react'
 import { Company } from '@/lib/types'
-import CompanyModal from './CompanyModal'
+import CompanyModal, { computeNextCompanyId } from './CompanyModal'
 
 interface Props { companies: Company[] }
 
-export default function CompaniesClient({ companies }: Props) {
+export default function CompaniesClient({ companies: initialCompanies }: Props) {
+  const [companiesList, setCompaniesList] = useState<Company[]>(initialCompanies)
   const [search, setSearch] = useState('')
   const [selected, setSelected] = useState<Company | null>(null)
   const [showAdd, setShowAdd] = useState(false)
 
-  const filtered = companies.filter(c =>
+  // Sync with localStorage for demo/offline resilience
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('alzahra_companies_data')
+      if (stored) {
+        const parsed = JSON.parse(stored) as Company[]
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setCompaniesList(prev => {
+            const map = new Map<string, Company>(prev.map(c => [c.id, c]))
+            parsed.forEach(item => {
+              const prevItem = map.get(item.id)
+              map.set(item.id, { ...prevItem, ...item })
+            })
+            return Array.from(map.values())
+          })
+        }
+      }
+    } catch (e) {
+      console.warn('Could not read companies from localStorage:', e)
+    }
+  }, [])
+
+  function handleSave(savedCompany: Company) {
+    setCompaniesList(prev => {
+      const index = prev.findIndex(c => c.id === savedCompany.id || c.company_id === savedCompany.company_id)
+      let updated: Company[]
+      if (index >= 0) {
+        updated = [...prev]
+        updated[index] = { ...prev[index], ...savedCompany }
+      } else {
+        updated = [savedCompany, ...prev]
+      }
+      try {
+        localStorage.setItem('alzahra_companies_data', JSON.stringify(updated))
+      } catch {}
+      return updated
+    })
+  }
+
+  function handleDelete(id: string) {
+    setCompaniesList(prev => {
+      const updated = prev.filter(c => c.id !== id)
+      try {
+        localStorage.setItem('alzahra_companies_data', JSON.stringify(updated))
+      } catch {}
+      return updated
+    })
+  }
+
+  const nextAutoId = computeNextCompanyId(companiesList)
+
+  const filtered = companiesList.filter(c =>
     !search ||
-    c.company_name.toLowerCase().includes(search.toLowerCase()) ||
-    c.company_id.toLowerCase().includes(search.toLowerCase()) ||
+    c.company_name?.toLowerCase().includes(search.toLowerCase()) ||
+    c.company_id?.toLowerCase().includes(search.toLowerCase()) ||
     c.country_of_origin?.toLowerCase().includes(search.toLowerCase())
   )
 
@@ -26,12 +78,18 @@ export default function CompaniesClient({ companies }: Props) {
           <h1 className="text-xl font-bold text-slate-900 tracking-tight">Corporate Directory & Master Data</h1>
           <p className="text-xs text-slate-500 mt-0.5">Central repository for statutory entity profiles, identifiers, and compliance dossiers</p>
         </div>
-        <button
-          onClick={() => setShowAdd(true)}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg shadow-sm transition"
-        >
-          <Plus className="w-4 h-4" /> Register Corporate Entity
-        </button>
+        <div className="flex items-center gap-2">
+          <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-50 border border-blue-200 text-blue-700 text-xs font-mono font-semibold">
+            <Sparkles className="w-3.5 h-3.5 text-blue-600" />
+            <span>Next Auto ID: <strong className="font-bold">{nextAutoId}</strong></span>
+          </div>
+          <button
+            onClick={() => setShowAdd(true)}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg shadow-sm transition"
+          >
+            <Plus className="w-4 h-4" /> Register Corporate Entity
+          </button>
+        </div>
       </div>
 
       {/* Search and filters */}
@@ -46,7 +104,7 @@ export default function CompaniesClient({ companies }: Props) {
           />
         </div>
         <div className="text-xs text-slate-500 font-medium">
-          Showing <span className="font-bold text-slate-800">{filtered.length}</span> of {companies.length} entities
+          Showing <span className="font-bold text-slate-800">{filtered.length}</span> of {companiesList.length} entities
         </div>
       </div>
 
@@ -68,7 +126,9 @@ export default function CompaniesClient({ companies }: Props) {
                     <div>
                       <div className="font-bold text-sm leading-tight text-slate-900">{company.company_name}</div>
                       <div className="text-slate-500 text-xs mt-0.5 flex items-center gap-1.5 font-mono">
-                        <span className="font-semibold text-slate-700">{company.company_id}</span>
+                        <span className="font-bold text-blue-700 bg-blue-50 px-1.5 py-0.2 rounded border border-blue-200 text-[11px]">
+                          {company.company_id}
+                        </span>
                         <span>•</span>
                         <span className="text-slate-500 font-sans">{company.country_of_origin}</span>
                       </div>
@@ -114,6 +174,7 @@ export default function CompaniesClient({ companies }: Props) {
                 <a
                   href={company.drive_link}
                   target="_blank"
+                  rel="noreferrer"
                   className="inline-flex items-center gap-1 text-[11px] text-blue-600 hover:text-blue-800 font-medium"
                 >
                   <ExternalLink className="w-3 h-3" /> Electronic Folder
@@ -134,8 +195,22 @@ export default function CompaniesClient({ companies }: Props) {
         )}
       </div>
 
-      {showAdd && <CompanyModal onClose={() => setShowAdd(false)} />}
-      {selected && <CompanyModal company={selected} onClose={() => setSelected(null)} />}
+      {showAdd && (
+        <CompanyModal
+          existingCompanies={companiesList}
+          onClose={() => setShowAdd(false)}
+          onSave={handleSave}
+        />
+      )}
+      {selected && (
+        <CompanyModal
+          company={selected}
+          existingCompanies={companiesList}
+          onClose={() => setSelected(null)}
+          onSave={handleSave}
+          onDelete={handleDelete}
+        />
+      )}
     </div>
   )
 }

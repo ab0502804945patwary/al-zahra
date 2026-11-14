@@ -1,6 +1,6 @@
 'use client'
 import { useState } from 'react'
-import { X, Loader2, Globe, Building2, User, FileText, CheckCircle2 } from 'lucide-react'
+import { X, Loader2, Globe, Building2, User, FileText, CheckCircle2, Sparkles } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { calculateDaysTaken, calculateStatus, calculateCompletion } from '@/lib/utils'
@@ -31,9 +31,27 @@ export default function AddEntryModal({ stageId, companies, employees, onClose, 
   const router = useRouter()
   const supabase = createClient()
   const [loading, setLoading] = useState(false)
-  const [form, setForm] = useState<Record<string, string>>({})
+  const [form, setForm] = useState<Record<string, string>>({
+    submit_date: '2026-11-14',
+    current_stage: 'Application Submitted',
+    priority: 'Normal Priority',
+  })
 
   const set = (k: string, v: string) => setForm(prev => ({ ...prev, [k]: v }))
+
+  function handleCompanySelect(selectedCompanyId: string) {
+    const comp = companies.find(c => c.company_id === selectedCompanyId)
+    setForm(prev => ({
+      ...prev,
+      company_id: selectedCompanyId,
+      client_name: prev.client_name || comp?.ceo_gm_name || comp?.client_name || '',
+      client_phone: prev.client_phone || comp?.whatsapp_number || comp?.client_phone || '',
+      category: prev.category || comp?.entity_type || 'Trading License',
+      drive_link: prev.drive_link || comp?.drive_link || '',
+      company_name_english: prev.company_name_english || comp?.company_name || '',
+      entity_type: prev.entity_type || comp?.entity_type || 'Trading License',
+    }))
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -50,7 +68,7 @@ export default function AddEntryModal({ stageId, companies, employees, onClose, 
     }
 
     if (isNameClearance && form.expire_date) {
-      const days = Math.floor((new Date(form.expire_date).getTime() - Date.now()) / 86400000)
+      const days = Math.floor((new Date(form.expire_date).getTime() - new Date('2026-11-14').getTime()) / 86400000)
       payload.remaining_days = days
     }
 
@@ -80,7 +98,19 @@ export default function AddEntryModal({ stageId, companies, employees, onClose, 
     </div>
   )
 
-  const Select = ({ label, name, options, required = false }: { label: string; name: string; options: { value: string; label: string }[]; required?: boolean }) => (
+  const Select = ({
+    label,
+    name,
+    options,
+    required = false,
+    onChange
+  }: {
+    label: string
+    name: string
+    options: { value: string; label: string }[]
+    required?: boolean
+    onChange?: (val: string) => void
+  }) => (
     <div>
       <label className="text-xs font-medium text-slate-700 mb-1 block">
         {label}{required && <span className="text-rose-500 ml-0.5">*</span>}
@@ -88,7 +118,10 @@ export default function AddEntryModal({ stageId, companies, employees, onClose, 
       <select
         required={required}
         value={form[name] || ''}
-        onChange={e => set(name, e.target.value)}
+        onChange={e => {
+          set(name, e.target.value)
+          if (onChange) onChange(e.target.value)
+        }}
         className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-slate-700"
       >
         <option value="">Select option...</option>
@@ -112,9 +145,10 @@ export default function AddEntryModal({ stageId, companies, employees, onClose, 
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <Select
-            label="Corporate Entity"
+            label="Corporate Entity (Auto-fills client profile)"
             name="company_id"
             required
+            onChange={handleCompanySelect}
             options={companies.map(c => ({ value: c.company_id, label: `${c.company_id} — ${c.company_name}` }))}
           />
 
@@ -225,14 +259,6 @@ export default function AddEntryModal({ stageId, companies, employees, onClose, 
               <Field label="Electronic Dossier Link (Google Drive)" name="drive_link" />
               <Field label="Operational Remarks" name="remarks" />
             </>
-          )}
-
-          {!isUSACanada && !isNameClearance && (
-            <Select
-              label="Assigned Lead Specialist"
-              name="employee_id"
-              options={employees.map(emp => ({ value: emp.id, label: emp.name }))}
-            />
           )}
 
           <div className="flex gap-3 pt-3 border-t border-slate-100">
