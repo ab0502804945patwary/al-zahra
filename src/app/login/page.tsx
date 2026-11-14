@@ -44,20 +44,21 @@ export default function LoginPage() {
       </div>
 
       <div className="relative w-full max-w-md">
-        {/* Brand Header */}
-        <div className="text-center mb-6 flex flex-col items-center">
-          <div className="w-16 h-16 bg-white rounded-2xl p-2.5 shadow-md border border-slate-200/90 flex items-center justify-center mb-3">
-            <img src="/al_zahra_icon.svg" alt="AL ZAHRA Emblem" className="w-full h-full object-contain" />
-          </div>
-          <img src="/al_zahra_logo.svg" alt="AL ZAHRA CONSULTANCY" className="h-9 object-contain mb-1.5" />
-          <p className="text-slate-500 text-xs font-medium">Investor License Management ERP</p>
-        </div>
-
         {/* Auth Card */}
-        <div className="bg-white rounded-2xl p-7 border border-slate-200/90 shadow-xl shadow-slate-200/50">
-          <div className="mb-5">
-            <h2 className="text-base font-bold text-slate-900">Sign in to your portal</h2>
-            <p className="text-xs text-slate-500 mt-0.5">Enter authorized credentials to access investor workflows</p>
+        <div className="bg-white rounded-2xl p-8 border border-slate-200/90 shadow-xl shadow-slate-200/50">
+          {/* Brand & Title inside Box */}
+          <div className="flex flex-col items-center text-center mb-6">
+            <img
+              src="/al_zahra_icon.svg"
+              alt="AL ZAHRA"
+              className="w-16 h-16 object-contain mb-3"
+            />
+            <img
+              src="/al_zahra_logo.svg"
+              alt="AL ZAHRA CONSULTANCY"
+              className="h-8 object-contain mb-4"
+            />
+            <h2 className="text-base font-bold text-slate-900">Sign In</h2>
           </div>
 
           {error && (
@@ -105,9 +106,9 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading || demoLoading}
-              className="w-full py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white font-semibold rounded-lg transition-all duration-150 flex items-center justify-center gap-2 shadow-sm text-xs"
+              className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white font-semibold rounded-lg transition-all duration-150 flex items-center justify-center gap-2 shadow-sm text-xs"
             >
-              {loading ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Authorizing...</> : 'Authenticate Access'}
+              {loading ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Signing In...</> : 'Sign In'}
             </button>
           </form>
 
