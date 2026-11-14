@@ -7,6 +7,11 @@ const inter = Inter({ subsets: ['latin'] })
 export const metadata: Metadata = {
   title: 'AL ZAHRA ERP — Investor License Management',
   description: 'Professional ERP for AL ZAHRA Investor License Processing',
+  icons: {
+    icon: '/al_zahra_icon.svg',
+    shortcut: '/al_zahra_icon.svg',
+    apple: '/al_zahra_icon.svg',
+  },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

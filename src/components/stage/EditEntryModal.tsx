@@ -198,11 +198,6 @@ export default function EditEntryModal({ stageId, entry, companies, employees, o
                   options={[{ value: 'Paid', label: 'Paid' }, { value: 'Pending', label: 'Pending' }, { value: 'Unpaid', label: 'Unpaid' }]}
                 />
               </div>
-              <Sel
-                label="Assigned Lead Specialist"
-                name="employee_id"
-                options={employees.map(emp => ({ value: emp.id, label: emp.name }))}
-              />
               <Field label="Electronic Dossier Link (Google Drive)" name="drive_link" />
               <Field label="Operational Remarks" name="remarks" />
             </>

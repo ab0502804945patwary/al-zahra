@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { Building2, Eye, EyeOff, Loader2, Lock, Mail, Sparkles } from 'lucide-react'
+import { Eye, EyeOff, Loader2, Lock, Mail, Sparkles } from 'lucide-react'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -45,12 +45,12 @@ export default function LoginPage() {
 
       <div className="relative w-full max-w-md">
         {/* Brand Header */}
-        <div className="text-center mb-6">
-          <div className="inline-flex items-center justify-center w-14 h-14 bg-white rounded-2xl mb-3 shadow-md border border-slate-200/80">
-            <Building2 className="w-7 h-7 text-blue-600" />
+        <div className="text-center mb-6 flex flex-col items-center">
+          <div className="w-16 h-16 bg-white rounded-2xl p-2.5 shadow-md border border-slate-200/90 flex items-center justify-center mb-3">
+            <img src="/al_zahra_icon.svg" alt="AL ZAHRA Emblem" className="w-full h-full object-contain" />
           </div>
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">AL ZAHRA</h1>
-          <p className="text-slate-500 mt-1 text-xs font-medium">Investor License Management ERP</p>
+          <img src="/al_zahra_logo.svg" alt="AL ZAHRA CONSULTANCY" className="h-9 object-contain mb-1.5" />
+          <p className="text-slate-500 text-xs font-medium">Investor License Management ERP</p>
         </div>
 
         {/* Auth Card */}

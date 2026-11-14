@@ -197,7 +197,6 @@ export default function StageTable({ stageId, entries, companies, employees, isU
                 <th className="py-3 px-4 bg-red-50/40">CAN Issued</th>
                 <th className="py-3 px-4 bg-red-50/40">CAN SLA</th>
                 <th className="py-3 px-4 bg-red-50/40">Payment</th>
-                <th className="py-3 px-4">Assigned Specialist</th>
                 <th className="py-3 px-4 text-right">Actions</th>
               </tr>
             </thead>

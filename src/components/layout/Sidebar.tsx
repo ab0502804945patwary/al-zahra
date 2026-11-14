@@ -70,10 +70,10 @@ export default function Sidebar({ employee }: SidebarProps) {
   return (
     <aside className="w-72 bg-white border-r border-slate-200 flex flex-col text-slate-600 select-none shadow-[1px_0_4px_rgba(0,0,0,0.02)]">
       {/* Brand Header */}
-      <div className="h-16 px-6 border-b border-slate-100 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center shadow-sm shadow-blue-500/20 text-white">
-            <Building2 className="w-5 h-5" />
+      <div className="h-16 px-5 border-b border-slate-100 flex items-center justify-between">
+        <Link href="/dashboard" className="flex items-center gap-3 group">
+          <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-200/90 p-1 flex items-center justify-center shadow-xs transition group-hover:border-blue-300">
+            <img src="/al_zahra_icon.svg" alt="AL ZAHRA" className="w-full h-full object-contain" />
           </div>
           <div>
             <div className="font-bold text-slate-900 tracking-tight text-sm flex items-center gap-1.5">
@@ -84,7 +84,7 @@ export default function Sidebar({ employee }: SidebarProps) {
             </div>
             <div className="text-[11px] text-slate-400 font-medium">Investor License Lifecycle</div>
           </div>
-        </div>
+        </Link>
       </div>
 
       {/* Navigation */}
