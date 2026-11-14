@@ -10,9 +10,6 @@ import {
   ChevronRight,
   ExternalLink,
   ShieldCheck,
-  UserCheck,
-  ArrowRight,
-  Sparkles,
   Layers
 } from 'lucide-react'
 import { Company } from '@/lib/types'
@@ -33,17 +30,6 @@ interface CompanyMatrixRow {
   stages: Record<number, StageSummary>
 }
 
-interface ModuleStat {
-  code: string
-  name: string
-  shortName: string
-  officer: string
-  total: number
-  green: number
-  yellow: number
-  red: number
-}
-
 interface DashboardProps {
   initialCompanies: Company[]
   kpiStats: {
@@ -53,28 +39,6 @@ interface DashboardProps {
     expiring: number
   }
 }
-
-const DEFAULT_OFFICERS: Record<number, string> = {
-  1: 'Shahariar Hossain Rakib',
-  2: 'Abdul Kaium',
-  3: 'Arju Hossain',
-  4: 'Md Miraj',
-  5: 'Md Ishak',
-  6: 'Md Azad',
-  7: 'Md Azad',
-  8: 'System Administrator',
-}
-
-const MODULE_DEFINITIONS: { code: string; stage: number; name: string; officer: string; href: string }[] = [
-  { code: '01', stage: 1, name: 'Parent Entity Verification', officer: 'Shahariar Rakib', href: '/dashboard/stage/1' },
-  { code: '02', stage: 2, name: 'Commercial Activity Classification', officer: 'Abdul Kaium', href: '/dashboard/stage/2' },
-  { code: '03', stage: 3, name: 'Foreign Entity Licensing', officer: 'Arju Hossain', href: '/dashboard/stage/3' },
-  { code: '04', stage: 4, name: 'MISA Investment License', officer: 'Md Miraj', href: '/dashboard/stage/4' },
-  { code: '05', stage: 5, name: 'Commercial Registration (CR)', officer: 'Md Ishak', href: '/dashboard/stage/5' },
-  { code: '06', stage: 6, name: 'Government Portals Compliance', officer: 'Md Azad', href: '/dashboard/stage/6' },
-  { code: '07', stage: 7, name: 'Final Legal Dossier & Issuance', officer: 'Md Azad', href: '/dashboard/stage/7' },
-  { code: '08', stage: 8, name: 'Trade Name Clearance', officer: 'System Administrator', href: '/dashboard/stage/8' },
-]
 
 export default function MasterMatrixDashboard({ initialCompanies, kpiStats }: DashboardProps) {
   const [companiesList, setCompaniesList] = useState<Company[]>(initialCompanies)
@@ -389,51 +353,6 @@ export default function MasterMatrixDashboard({ initialCompanies, kpiStats }: Da
           <span className="text-slate-400 text-[10px]">
             *Click any stage badge to open that department immediately
           </span>
-        </div>
-      </div>
-
-      {/* 4. Eight Operational Stage Summaries (Clean 4x2 grid) */}
-      <div>
-        <div className="mb-3">
-          <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-            Operational Department Workloads
-          </h3>
-          <p className="text-[11px] text-slate-400">Current file distribution and leads across all 8 processing phases</p>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          {MODULE_DEFINITIONS.map(mod => {
-            return (
-              <Link
-                key={mod.stage}
-                href={mod.href}
-                className="bg-white rounded-xl p-3.5 border border-slate-200/90 shadow-sm hover:shadow-md hover:border-blue-300 transition-all group flex flex-col justify-between"
-              >
-                <div>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200">
-                      Phase {mod.code}
-                    </span>
-                    <ChevronRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-blue-600 group-hover:translate-x-0.5 transition" />
-                  </div>
-                  <h4 className="font-bold text-xs text-slate-800 group-hover:text-blue-600 transition leading-tight line-clamp-1">
-                    {mod.name}
-                  </h4>
-                  <div className="text-[11px] text-slate-400 mt-1 flex items-center gap-1">
-                    <UserCheck className="w-3 h-3 text-slate-400" />
-                    <span className="truncate">{mod.officer}</span>
-                  </div>
-                </div>
-
-                <div className="mt-3 pt-2 border-t border-slate-100 flex items-center justify-between text-[11px]">
-                  <span className="text-slate-500 font-medium">Department Portal</span>
-                  <span className="font-semibold text-blue-600 group-hover:underline flex items-center gap-1">
-                    View Files ➔
-                  </span>
-                </div>
-              </Link>
-            )
-          })}
         </div>
       </div>
     </div>

@@ -230,8 +230,7 @@ export default function StageTable({ stageId, entries, companies, employees, isU
                       {e.canada_payment_status || '—'}
                     </span>
                   </td>
-                  <td className="py-3 px-4 text-slate-600">{e.employees?.name || '—'}</td>
-                  <td className="py-3 px-4 text-right">
+                                    <td className="py-3 px-4 text-right">
                     <button onClick={() => setEditEntry(e)} className="p-1.5 hover:bg-slate-100 rounded-md transition text-slate-400 hover:text-slate-600">
                       <Edit2 className="w-3.5 h-3.5" />
                     </button>
@@ -283,15 +282,14 @@ export default function StageTable({ stageId, entries, companies, employees, isU
               <th className="py-3 px-4">SLA Compliance</th>
               <th className="py-3 px-4">Fulfillment %</th>
               <th className="py-3 px-4">Payment</th>
-              <th className="py-3 px-4">Lead Officer</th>
-              <th className="py-3 px-4">Notes</th>
+                            <th className="py-3 px-4">Notes</th>
               <th className="py-3 px-4">Dossier</th>
               <th className="py-3 px-4 text-right">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 text-slate-700">
             {filtered.length === 0 ? (
-              <tr><td colSpan={18} className="text-center py-12 text-slate-400">No active files found in this workflow module.</td></tr>
+              <tr><td colSpan={17} className="text-center py-12 text-slate-400">No active files found in this workflow module.</td></tr>
             ) : filtered.map((e, idx) => (
               <tr key={e.id} className="hover:bg-slate-50/60 transition-colors">
                 <td className="py-3 px-4 text-slate-400 font-mono text-[11px]">{idx + 1}</td>
@@ -345,8 +343,7 @@ export default function StageTable({ stageId, entries, companies, employees, isU
                     {e.payment_status || '—'}
                   </span>
                 </td>
-                <td className="py-3 px-4 text-slate-600">{e.employees?.name || '—'}</td>
-                <td className="py-3 px-4 text-slate-400 max-w-28 truncate">{e.remarks || '—'}</td>
+                                <td className="py-3 px-4 text-slate-400 max-w-28 truncate">{e.remarks || '—'}</td>
                 <td className="py-3 px-4">
                   {e.drive_link ? (
                     <a href={e.drive_link} target="_blank" className="p-1 hover:bg-blue-50 rounded transition inline-flex text-blue-600">

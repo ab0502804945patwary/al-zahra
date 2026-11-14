@@ -66,7 +66,6 @@ interface SidebarProps { employee: Employee | null }
 export default function Sidebar({ employee }: SidebarProps) {
   const pathname = usePathname()
   const isAdmin = employee?.role === 'admin'
-  const userStage = employee?.assigned_stage
 
   return (
     <aside className="w-72 bg-white border-r border-slate-200 flex flex-col text-slate-600 select-none shadow-[1px_0_4px_rgba(0,0,0,0.02)]">
@@ -93,7 +92,6 @@ export default function Sidebar({ employee }: SidebarProps) {
         {navGroups.map((group, groupIdx) => {
           const visibleItems = group.items.filter(item => {
             if (item.adminOnly && !isAdmin) return false
-            if (item.stage && !isAdmin && userStage !== item.stage) return false
             return true
           })
 
@@ -151,7 +149,7 @@ export default function Sidebar({ employee }: SidebarProps) {
             <div className="text-xs font-semibold text-slate-800 truncate">{employee?.name || 'Administrator'}</div>
             <div className="text-[11px] text-slate-500 flex items-center gap-1 mt-0.5">
               <Shield className="w-3 h-3 text-blue-600" />
-              <span>{isAdmin ? 'System Administrator' : 'Process Specialist'}</span>
+              <span>{isAdmin ? 'System Administrator' : 'Operations Staff'}</span>
             </div>
           </div>
         </div>
@@ -159,4 +157,3 @@ export default function Sidebar({ employee }: SidebarProps) {
     </aside>
   )
 }
-

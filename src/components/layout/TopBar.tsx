@@ -2,7 +2,7 @@
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { Employee } from '@/lib/types'
-import { Bell, LogOut, Search, ShieldCheck, UserCheck, RefreshCw } from 'lucide-react'
+import { Bell, LogOut, Search, ShieldCheck } from 'lucide-react'
 import { useState } from 'react'
 
 interface TopBarProps { employee: Employee | null }
@@ -19,13 +19,6 @@ export default function TopBar({ employee }: TopBarProps) {
       await supabase.auth.signOut()
     } catch {}
     router.push('/login')
-    router.refresh()
-  }
-
-  function handleSwitchDemoRole(target: string) {
-    document.cookie = `demo_session=${target}; path=/; max-age=86400`
-    setShowMenu(false)
-    router.push('/dashboard')
     router.refresh()
   }
 
@@ -47,12 +40,6 @@ export default function TopBar({ employee }: TopBarProps) {
       </div>
 
       <div className="flex items-center gap-3 ml-auto">
-        {/* Quick Role Badge */}
-        <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold border bg-slate-50 text-slate-600 border-slate-200">
-          <span className={`w-2 h-2 rounded-full ${isAdmin ? 'bg-blue-600' : 'bg-emerald-600'}`} />
-          <span>{isAdmin ? 'Admin Portal' : `Staff Portal (Stage ${employee?.assigned_stage || 1})`}</span>
-        </div>
-
         {/* System Notifications */}
         <button className="relative p-2 rounded-lg text-slate-500 hover:text-slate-700 hover:bg-slate-100 transition">
           <Bell className="w-4 h-4" />
@@ -81,47 +68,16 @@ export default function TopBar({ employee }: TopBarProps) {
             <div className="text-left hidden md:block">
               <div className="text-xs font-semibold text-slate-800 leading-tight">{employee?.name || 'Administrator'}</div>
               <div className="text-[10px] text-slate-400 font-medium capitalize mt-0.5">
-                {isAdmin ? 'System Administrator' : `Stage ${employee?.assigned_stage || 1} Specialist`}
+                {isAdmin ? 'System Administrator' : 'Operations Staff'}
               </div>
             </div>
           </button>
 
           {showMenu && (
-            <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-xl shadow-xl border border-slate-200/80 overflow-hidden z-50 py-1">
+            <div className="absolute right-0 top-full mt-2 w-52 bg-white rounded-xl shadow-xl border border-slate-200/80 overflow-hidden z-50 py-1">
               <div className="px-4 py-3 border-b border-slate-100 bg-slate-50/50">
                 <div className="text-xs font-bold text-slate-800">{employee?.name || 'Administrator'}</div>
                 <div className="text-[11px] text-slate-400 font-mono truncate">{employee?.email || 'admin@alzahra.com'}</div>
-                <div className="mt-1">
-                  <span className={`inline-block text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                    isAdmin ? 'bg-blue-50 text-blue-700 border border-blue-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                  }`}>
-                    {isAdmin ? 'Role: Administrator' : `Role: Stage ${employee?.assigned_stage} Officer`}
-                  </span>
-                </div>
-              </div>
-
-              {/* Quick Demo Role Switcher */}
-              <div className="p-2 border-b border-slate-100 bg-slate-50/30">
-                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-2 py-1">
-                  Switch Demo Role:
-                </div>
-                {isAdmin ? (
-                  <button
-                    onClick={() => handleSwitchDemoRole('emp-1')}
-                    className="w-full text-left px-2 py-1.5 rounded text-xs text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 flex items-center gap-2 transition"
-                  >
-                    <UserCheck className="w-3.5 h-3.5 text-emerald-600" />
-                    <span>View as Shahariar (Stage 1)</span>
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => handleSwitchDemoRole('admin')}
-                    className="w-full text-left px-2 py-1.5 rounded text-xs text-slate-700 hover:bg-blue-50 hover:text-blue-700 flex items-center gap-2 transition"
-                  >
-                    <ShieldCheck className="w-3.5 h-3.5 text-blue-600" />
-                    <span>View as Administrator</span>
-                  </button>
-                )}
               </div>
 
               {isAdmin && (

@@ -1,6 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { Plus, CheckCircle2, Clock, AlertCircle, AlertTriangle, Layers, UserCheck } from 'lucide-react'
+import { Plus, CheckCircle2, Clock, AlertCircle, AlertTriangle, Layers } from 'lucide-react'
 import AddEntryModal from './AddEntryModal'
 
 interface Props {
@@ -9,7 +9,7 @@ interface Props {
     step?: string
     label: string
     category?: string
-    employee: string
+    employee?: string
     hasUSACanada?: boolean
     isNameClearance?: boolean
   }
@@ -66,13 +66,6 @@ export default function StageHeader({ stageId, config, stats, companies, employe
             </span>
           </div>
           <h1 className="text-2xl font-bold text-slate-900 tracking-tight mt-1">{config.label}</h1>
-          <div className="flex items-center gap-2 text-xs text-slate-500 mt-1">
-            <UserCheck className="w-3.5 h-3.5 text-slate-400" />
-            <span>Operational Lead:</span>
-            <span className="font-semibold text-slate-700 bg-slate-100 px-2 py-0.5 rounded">
-              {config.employee}
-            </span>
-          </div>
         </div>
 
         <button

@@ -2,14 +2,14 @@
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { Building2, Eye, EyeOff, Loader2, Lock, Mail, Sparkles, Shield, UserCheck, ChevronRight } from 'lucide-react'
+import { Building2, Eye, EyeOff, Loader2, Lock, Mail, Sparkles } from 'lucide-react'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPass, setShowPass] = useState(false)
   const [loading, setLoading] = useState(false)
-  const [demoLoading, setDemoLoading] = useState<string | null>(null)
+  const [demoLoading, setDemoLoading] = useState(false)
   const [error, setError] = useState('')
   const router = useRouter()
   const supabase = createClient()
@@ -28,9 +28,9 @@ export default function LoginPage() {
     }
   }
 
-  function handleQuickLogin(roleOrId: string) {
-    setDemoLoading(roleOrId)
-    document.cookie = `demo_session=${roleOrId}; path=/; max-age=86400`
+  function handleDemoLogin() {
+    setDemoLoading(true)
+    document.cookie = "demo_session=admin; path=/; max-age=86400"
     router.push('/dashboard')
     router.refresh()
   }
@@ -57,7 +57,7 @@ export default function LoginPage() {
         <div className="bg-white rounded-2xl p-7 border border-slate-200/90 shadow-xl shadow-slate-200/50">
           <div className="mb-5">
             <h2 className="text-base font-bold text-slate-900">Sign in to your portal</h2>
-            <p className="text-xs text-slate-500 mt-0.5">Enter authorized credentials or choose a quick role</p>
+            <p className="text-xs text-slate-500 mt-0.5">Enter authorized credentials to access investor workflows</p>
           </div>
 
           {error && (
@@ -104,74 +104,23 @@ export default function LoginPage() {
 
             <button
               type="submit"
-              disabled={loading || !!demoLoading}
+              disabled={loading || demoLoading}
               className="w-full py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white font-semibold rounded-lg transition-all duration-150 flex items-center justify-center gap-2 shadow-sm text-xs"
             >
               {loading ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Authorizing...</> : 'Authenticate Access'}
             </button>
           </form>
 
-          {/* Quick Access Switcher for Demo / Testing */}
-          <div className="mt-5 pt-4 border-t border-slate-100 space-y-2">
-            <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">
-              Instant Access (Select Role to Test)
-            </div>
-
-            {/* Admin Option */}
+          {/* Instant Demo Preview */}
+          <div className="mt-5 pt-4 border-t border-slate-100">
             <button
               type="button"
-              onClick={() => handleQuickLogin('admin')}
-              disabled={!!demoLoading}
-              className="w-full p-2.5 bg-slate-50 hover:bg-blue-50 hover:border-blue-200 border border-slate-200 rounded-xl transition text-left flex items-center justify-between group"
+              onClick={handleDemoLogin}
+              disabled={demoLoading || loading}
+              className="w-full py-2 px-3 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 rounded-lg font-medium text-xs transition flex items-center justify-center gap-2"
             >
-              <div className="flex items-center gap-2.5">
-                <div className="w-7 h-7 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold text-xs">
-                  <Shield className="w-3.5 h-3.5" />
-                </div>
-                <div>
-                  <div className="text-xs font-bold text-slate-800 group-hover:text-blue-700">System Administrator</div>
-                  <div className="text-[10px] text-slate-400">Full Access (All 8 Stages + Team Control)</div>
-                </div>
-              </div>
-              <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-blue-600 transition-transform group-hover:translate-x-0.5" />
-            </button>
-
-            {/* Staff Option: Stage 1 Lead */}
-            <button
-              type="button"
-              onClick={() => handleQuickLogin('emp-1')}
-              disabled={!!demoLoading}
-              className="w-full p-2.5 bg-slate-50 hover:bg-emerald-50 hover:border-emerald-200 border border-slate-200 rounded-xl transition text-left flex items-center justify-between group"
-            >
-              <div className="flex items-center gap-2.5">
-                <div className="w-7 h-7 rounded-lg bg-emerald-600 text-white flex items-center justify-center font-bold text-xs">
-                  <UserCheck className="w-3.5 h-3.5" />
-                </div>
-                <div>
-                  <div className="text-xs font-bold text-slate-800 group-hover:text-emerald-700">Shahariar Rakib (Staff)</div>
-                  <div className="text-[10px] text-slate-400">Stage 1 Lead: Parent Entity Specialist</div>
-                </div>
-              </div>
-              <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-emerald-600 transition-transform group-hover:translate-x-0.5" />
-            </button>
-
-            {/* Staff Option: Stage 4 Lead */}
-            <button
-              type="button"
-              onClick={() => handleQuickLogin('emp-4')}
-              disabled={!!demoLoading}
-              className="w-full p-2.5 bg-slate-50 hover:bg-amber-50 hover:border-amber-200 border border-slate-200 rounded-xl transition text-left flex items-center justify-between group"
-            >
-              <div className="flex items-center gap-2.5">
-                <div className="w-7 h-7 rounded-lg bg-amber-600 text-white flex items-center justify-center font-bold text-xs">
-                  <UserCheck className="w-3.5 h-3.5" />
-                </div>
-                <div>
-                  <div className="text-xs font-bold text-slate-800 group-hover:text-amber-700">Md Miraj (Staff)</div>
-                  <div className="text-[10px] text-slate-400">Stage 4 Lead: MISA License Specialist</div>
-                </div>
-              </div>
-              <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-amber-600 transition-transform group-hover:translate-x-0.5" />
+              {demoLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5 text-blue-600" />}
+              Instant Demo Access (Explore Full ERP)
             </button>
           </div>
         </div>
