@@ -93,7 +93,7 @@ export default function TopBar({ employee }: TopBarProps) {
             )}
             <div className="text-left hidden md:block">
               <div className="text-xs font-semibold text-slate-800 leading-tight">
-                {employee?.name === 'Admin (Manager)' ? 'Admin' : (employee?.name || 'Admin')}
+                {isAdmin ? 'Al Zahra' : (employee?.name || 'Al Zahra')}
               </div>
               <div className="text-[10px] text-slate-400 font-medium capitalize mt-0.5">
                 {isAdmin ? 'System Administrator' : 'Operations Staff'}
@@ -108,7 +108,7 @@ export default function TopBar({ employee }: TopBarProps) {
             >
               <div className="px-4 py-3 border-b border-slate-100 bg-slate-50/50">
                 <div className="text-xs font-bold text-slate-800">
-                  {employee?.name === 'Admin (Manager)' ? 'Admin' : (employee?.name || 'Admin')}
+                  {isAdmin ? 'Al Zahra' : (employee?.name || 'Al Zahra')}
                 </div>
                 <div className="text-[11px] text-slate-400 font-mono truncate">{employee?.email || 'admin@alzahra.com'}</div>
               </div>
