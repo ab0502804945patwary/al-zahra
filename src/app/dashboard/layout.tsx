@@ -1,8 +1,7 @@
 import { createClient, isSupabaseConfigured } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { cookies } from 'next/headers'
-import Sidebar from '@/components/layout/Sidebar'
-import TopBar from '@/components/layout/TopBar'
+import DashboardShell from '@/components/layout/DashboardShell'
 import { INITIAL_EMPLOYEES } from '@/lib/employeeData'
 import { Employee } from '@/lib/types'
 
@@ -55,14 +54,8 @@ export default async function DashboardLayout({ children }: { children: React.Re
   }
 
   return (
-    <div className="flex h-screen bg-slate-50 overflow-hidden font-sans">
-      <Sidebar employee={employee} />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <TopBar employee={employee} />
-        <main className="flex-1 overflow-y-auto p-6">
-          {children}
-        </main>
-      </div>
-    </div>
+    <DashboardShell employee={employee}>
+      {children}
+    </DashboardShell>
   )
 }

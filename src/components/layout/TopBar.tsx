@@ -2,13 +2,15 @@
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { Employee } from '@/lib/types'
-import { Bell, LogOut, Search, ShieldCheck } from 'lucide-react'
+import { Bell, LogOut, Search, ShieldCheck, PanelLeft, PanelLeftOpen } from 'lucide-react'
 import { useState } from 'react'
+import { useSidebar } from './DashboardShell'
 
 interface TopBarProps { employee: Employee | null }
 
 export default function TopBar({ employee }: TopBarProps) {
   const router = useRouter()
+  const { collapsed, toggle } = useSidebar()
   const supabase = createClient()
   const [showMenu, setShowMenu] = useState(false)
   const isAdmin = employee?.role === 'admin'
@@ -22,7 +24,16 @@ export default function TopBar({ employee }: TopBarProps) {
   }
 
   return (
-    <header className="h-16 bg-white border-b border-slate-200/80 flex items-center px-6 gap-6 shadow-sm z-20">
+    <header className="h-16 bg-white border-b border-slate-200/80 flex items-center px-4 sm:px-6 gap-3 sm:gap-4 shadow-xs z-20">
+      {/* Sidebar Drawer Toggle */}
+      <button
+        onClick={toggle}
+        className="p-2 -ml-1 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition shrink-0"
+        title={collapsed ? 'Expand category drawer' : 'Collapse category drawer'}
+      >
+        {collapsed ? <PanelLeftOpen className="w-4 h-4" /> : <PanelLeft className="w-4 h-4" />}
+      </button>
+
       {/* Global Search Bar */}
       <div className="flex-1 max-w-md">
         <div className="relative">

@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { Employee } from '@/lib/types'
+import { useSidebar } from './DashboardShell'
 import {
   LayoutDashboard,
   Building2,
@@ -15,8 +16,9 @@ import {
   FolderCheck,
   Tag,
   ChevronRight,
-  Shield,
-  Briefcase
+  Briefcase,
+  PanelLeftClose,
+  PanelLeftOpen
 } from 'lucide-react'
 
 interface NavItem {
@@ -65,30 +67,64 @@ interface SidebarProps { employee: Employee | null }
 
 export default function Sidebar({ employee }: SidebarProps) {
   const pathname = usePathname()
+  const { collapsed, toggle } = useSidebar()
   const isAdmin = employee?.role === 'admin'
 
   return (
-    <aside className="w-72 bg-white border-r border-slate-200 flex flex-col text-slate-600 select-none shadow-[1px_0_4px_rgba(0,0,0,0.02)]">
+    <aside
+      className={cn(
+        'bg-white border-r border-slate-200 flex flex-col text-slate-600 select-none shadow-[1px_0_4px_rgba(0,0,0,0.02)] transition-all duration-300 ease-in-out shrink-0 z-30',
+        collapsed ? 'w-20' : 'w-72'
+      )}
+    >
       {/* Brand Header */}
-      <div className="h-16 px-5 border-b border-slate-100 flex items-center justify-between">
-        <Link href="/dashboard" className="flex items-center gap-3 group">
-          <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-200/90 p-1 flex items-center justify-center shadow-xs transition group-hover:border-blue-300">
+      <div
+        className={cn(
+          'h-16 border-b border-slate-100 flex items-center transition-all duration-300',
+          collapsed ? 'justify-center px-2' : 'justify-between px-4'
+        )}
+      >
+        {!collapsed ? (
+          <>
+            <Link href="/dashboard" className="flex items-center gap-2.5 group min-w-0" title="Al Zahra ERP">
+              <img
+                src="/al_zahra_icon.svg"
+                alt="AL ZAHRA Icon"
+                className="h-10 w-auto object-contain shrink-0"
+              />
+              <img
+                src="/al_zahra_logo.svg"
+                alt="AL ZAHRA Logo"
+                className="h-7 w-auto object-contain"
+              />
+            </Link>
+
+            <button
+              onClick={toggle}
+              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition shrink-0 ml-1"
+              title="Collapse sidebar"
+            >
+              <PanelLeftClose className="w-4 h-4" />
+            </button>
+          </>
+        ) : (
+          <button
+            onClick={toggle}
+            className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-200/90 p-1 flex items-center justify-center shadow-xs transition hover:border-blue-400 hover:bg-blue-50/50 group"
+            title="Click to expand sidebar"
+          >
             <img src="/al_zahra_icon.svg" alt="AL ZAHRA" className="w-full h-full object-contain" />
-          </div>
-          <div>
-            <div className="font-bold text-slate-900 tracking-tight text-sm flex items-center gap-1.5">
-              AL ZAHRA
-              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200">
-                ERP
-              </span>
-            </div>
-            <div className="text-[11px] text-slate-400 font-medium">Investor License Lifecycle</div>
-          </div>
-        </Link>
+          </button>
+        )}
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-3.5 py-4 overflow-y-auto space-y-6">
+      <nav
+        className={cn(
+          'flex-1 overflow-y-auto space-y-4 py-4 transition-all duration-300',
+          collapsed ? 'px-2' : 'px-3.5 space-y-6'
+        )}
+      >
         {navGroups.map((group, groupIdx) => {
           const visibleItems = group.items.filter(item => {
             if (item.adminOnly && !isAdmin) return false
@@ -99,12 +135,43 @@ export default function Sidebar({ employee }: SidebarProps) {
 
           return (
             <div key={groupIdx} className="space-y-1">
-              <div className="px-3 pb-1.5 text-[10px] font-bold tracking-wider text-slate-400 uppercase">
-                {group.title}
-              </div>
+              {!collapsed ? (
+                <div className="px-3 pb-1.5 text-[10px] font-bold tracking-wider text-slate-400 uppercase">
+                  {group.title}
+                </div>
+              ) : groupIdx > 0 ? (
+                <div className="my-2 border-t border-slate-100" />
+              ) : null}
+
               {visibleItems.map(item => {
                 const Icon = item.icon
                 const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href))
+
+                if (collapsed) {
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      title={item.label}
+                      className={cn(
+                        'group flex items-center justify-center w-full h-10 rounded-xl transition-all duration-150 relative',
+                        isActive
+                          ? 'bg-blue-50 text-blue-700 font-semibold border border-blue-200/80 shadow-xs'
+                          : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'
+                      )}
+                    >
+                      <Icon
+                        className={cn(
+                          'w-4 h-4 shrink-0 transition-colors',
+                          isActive ? 'text-blue-600' : 'text-slate-400 group-hover:text-slate-700'
+                        )}
+                      />
+                      {isActive && (
+                        <span className="absolute left-1 top-2.5 bottom-2.5 w-1 bg-blue-600 rounded-full" />
+                      )}
+                    </Link>
+                  )
+                }
 
                 return (
                   <Link
@@ -118,7 +185,12 @@ export default function Sidebar({ employee }: SidebarProps) {
                     )}
                   >
                     <div className="flex items-center gap-3 min-w-0">
-                      <Icon className={cn('w-4 h-4 shrink-0 transition-colors', isActive ? 'text-blue-600' : 'text-slate-400 group-hover:text-slate-600')} />
+                      <Icon
+                        className={cn(
+                          'w-4 h-4 shrink-0 transition-colors',
+                          isActive ? 'text-blue-600' : 'text-slate-400 group-hover:text-slate-600'
+                        )}
+                      />
                       <span className="truncate">{item.label}</span>
                     </div>
 
@@ -131,28 +203,30 @@ export default function Sidebar({ employee }: SidebarProps) {
         })}
       </nav>
 
-      {/* User Info Footer */}
-      <div className="p-3 border-t border-slate-100 bg-slate-50/50">
-        <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-white border border-slate-200/80 shadow-sm">
-          {employee?.avatar_url ? (
-            <img
-              src={employee.avatar_url}
-              alt={employee.name || 'User'}
-              className="w-8 h-8 rounded-lg object-cover ring-1 ring-slate-200 shadow-sm shrink-0"
-            />
-          ) : (
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white text-xs font-bold shadow-sm shrink-0">
-              {employee?.name?.charAt(0) || 'A'}
-            </div>
+      {/* Footer Toggle Button */}
+      <div
+        className={cn(
+          'p-2 border-t border-slate-100 bg-slate-50/50 flex items-center transition-all duration-300',
+          collapsed ? 'justify-center' : 'justify-between px-3'
+        )}
+      >
+        <button
+          onClick={toggle}
+          className={cn(
+            'flex items-center gap-2 p-2 rounded-lg text-xs text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition w-full',
+            collapsed ? 'justify-center' : ''
           )}
-          <div className="flex-1 min-w-0">
-            <div className="text-xs font-semibold text-slate-800 truncate">{employee?.name || 'Administrator'}</div>
-            <div className="text-[11px] text-slate-500 flex items-center gap-1 mt-0.5">
-              <Shield className="w-3 h-3 text-blue-600" />
-              <span>{isAdmin ? 'System Administrator' : 'Operations Staff'}</span>
-            </div>
-          </div>
-        </div>
+          title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        >
+          {collapsed ? (
+            <PanelLeftOpen className="w-4 h-4 text-slate-500" />
+          ) : (
+            <>
+              <PanelLeftClose className="w-4 h-4 text-slate-400" />
+              <span className="text-xs font-medium text-slate-500">Collapse category list</span>
+            </>
+          )}
+        </button>
       </div>
     </aside>
   )
