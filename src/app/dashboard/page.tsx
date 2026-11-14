@@ -1,4 +1,5 @@
 import { createClient, isSupabaseConfigured } from '@/lib/supabase/server'
+import { cookies } from 'next/headers'
 import MasterMatrixDashboard from '@/components/dashboard/MasterMatrixDashboard'
 import { Company } from '@/lib/types'
 
@@ -37,7 +38,10 @@ export default async function DashboardPage() {
     expiring: 1,
   }
 
-  if (isSupabaseConfigured) {
+  const cookieStore = await cookies()
+  const isDemo = Boolean(cookieStore.get('demo_session')?.value)
+
+  if (!isDemo && isSupabaseConfigured) {
     const supabase = await createClient()
     try {
       const { data } = await supabase.from('companies').select('*').order('company_id')

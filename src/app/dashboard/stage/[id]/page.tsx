@@ -1,4 +1,5 @@
 import { createClient, isSupabaseConfigured } from '@/lib/supabase/server'
+import { cookies } from 'next/headers'
 import { notFound } from 'next/navigation'
 import StageTable from '@/components/stage/StageTable'
 import StageHeader from '@/components/stage/StageHeader'
@@ -267,34 +268,38 @@ export default async function StagePage({ params }: { params: Promise<{ id: stri
   const config = STAGE_CONFIG[id]
   if (!config) notFound()
 
-  const supabase = await createClient()
+  const cookieStore = await cookies()
+  const isDemo = Boolean(cookieStore.get('demo_session')?.value)
 
   let entries: any[] = []
   let companies: any[] = []
   let employees: any[] = []
 
-  try {
-    if (config.isNameClearance) {
-      const { data } = await supabase
-        .from(config.table)
-        .select('*, companies(company_name, country_of_origin)')
-        .order('created_at', { ascending: false })
-      if (data && data.length > 0) entries = data
-    } else {
-      const { data } = await supabase
-        .from(config.table)
-        .select('*, companies(company_name, country_of_origin), employees(name)')
-        .order('created_at', { ascending: false })
-      if (data && data.length > 0) entries = data
+  if (!isDemo && isSupabaseConfigured) {
+    const supabase = await createClient()
+    try {
+      if (config.isNameClearance) {
+        const { data } = await supabase
+          .from(config.table)
+          .select('*, companies(company_name, country_of_origin)')
+          .order('created_at', { ascending: false })
+        if (data && data.length > 0) entries = data
+      } else {
+        const { data } = await supabase
+          .from(config.table)
+          .select('*, companies(company_name, country_of_origin), employees(name)')
+          .order('created_at', { ascending: false })
+        if (data && data.length > 0) entries = data
+      }
+
+      const { data: cData } = await supabase.from('companies').select('company_id, company_name, country_of_origin').order('company_id')
+      if (cData && cData.length > 0) companies = cData
+
+      const { data: eData } = await supabase.from('employees').select('id, name, assigned_stage')
+      if (eData && eData.length > 0) employees = eData
+    } catch (e) {
+      console.error('Error fetching stage data:', e)
     }
-
-    const { data: cData } = await supabase.from('companies').select('company_id, company_name, country_of_origin').order('company_id')
-    if (cData && cData.length > 0) companies = cData
-
-    const { data: eData } = await supabase.from('employees').select('id, name, assigned_stage')
-    if (eData && eData.length > 0) employees = eData
-  } catch (e) {
-    console.error('Error fetching stage data:', e)
   }
 
   // Use fallback if empty

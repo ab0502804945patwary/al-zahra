@@ -13,7 +13,7 @@ import {
   Sparkles,
   RefreshCw
 } from 'lucide-react'
-import { createClient } from '@/lib/supabase/client'
+import { createClient, isSupabaseConfigured } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { Company } from '@/lib/types'
 
@@ -78,14 +78,16 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
       created_at: company?.created_at || '2026-01-01T00:00:00.000Z',
     } as unknown as Company
 
-    try {
-      if (company) {
-        await supabase.from('companies').update(form).eq('id', company.id)
-      } else {
-        await supabase.from('companies').insert([form])
+    if (isSupabaseConfigured) {
+      try {
+        if (company) {
+          await supabase.from('companies').update(form).eq('id', company.id)
+        } else {
+          await supabase.from('companies').insert([form])
+        }
+      } catch (err) {
+        console.log('Saved company locally:', err)
       }
-    } catch (err) {
-      console.log('Saved company locally:', err)
     }
 
     if (onSave) {
@@ -99,10 +101,12 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
   async function handleDelete() {
     if (!company) return
     if (!confirm('Are you sure you want to delete this company entity and all associated records?')) return
-    try {
-      await supabase.from('companies').delete().eq('id', company.id)
-    } catch (err) {
-      console.log('Deleted locally:', err)
+    if (isSupabaseConfigured) {
+      try {
+        await supabase.from('companies').delete().eq('id', company.id)
+      } catch (err) {
+        console.log('Deleted locally:', err)
+      }
     }
 
     if (onDelete) {

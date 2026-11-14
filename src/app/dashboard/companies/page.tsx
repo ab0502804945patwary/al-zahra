@@ -1,4 +1,5 @@
 import { createClient, isSupabaseConfigured } from '@/lib/supabase/server'
+import { cookies } from 'next/headers'
 import CompaniesClient from '@/components/companies/CompaniesClient'
 import { Company } from '@/lib/types'
 
@@ -32,14 +33,19 @@ const FALLBACK_COMPANIES: Company[] = [
 ]
 
 export default async function CompaniesPage() {
-  const supabase = await createClient()
-  try {
-    const { data: companies } = await supabase.from('companies').select('*').order('company_id')
-    if (companies && companies.length > 0) {
-      return <CompaniesClient companies={companies} />
+  const cookieStore = await cookies()
+  const isDemo = Boolean(cookieStore.get('demo_session')?.value)
+
+  if (!isDemo && isSupabaseConfigured) {
+    const supabase = await createClient()
+    try {
+      const { data: companies } = await supabase.from('companies').select('*').order('company_id')
+      if (companies && companies.length > 0) {
+        return <CompaniesClient companies={companies} />
+      }
+    } catch (e) {
+      console.error('Error fetching companies:', e)
     }
-  } catch (e) {
-    console.error('Error fetching companies:', e)
   }
 
   return <CompaniesClient companies={FALLBACK_COMPANIES} />

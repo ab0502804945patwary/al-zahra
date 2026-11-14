@@ -1,7 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { X, Loader2, Trash2 } from 'lucide-react'
-import { createClient } from '@/lib/supabase/client'
+import { createClient, isSupabaseConfigured } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { calculateDaysTaken, calculateStatus, calculateCompletion } from '@/lib/utils'
 
@@ -40,10 +40,12 @@ export default function EditEntryModal({ stageId, entry, companies, employees, o
       payload.remaining_days = days
     }
 
-    try {
-      await supabase.from(STAGE_TABLES[stageId]).update(payload).eq('id', entry.id)
-    } catch (err) {
-      console.log('Updated entry locally:', err)
+    if (isSupabaseConfigured) {
+      try {
+        await supabase.from(STAGE_TABLES[stageId]).update(payload).eq('id', entry.id)
+      } catch (err) {
+        console.log('Updated entry locally:', err)
+      }
     }
 
     router.refresh()
@@ -54,10 +56,12 @@ export default function EditEntryModal({ stageId, entry, companies, employees, o
   async function handleDelete() {
     if (!confirm('Are you sure you want to delete this record?')) return
     setDeleting(true)
-    try {
-      await supabase.from(STAGE_TABLES[stageId]).delete().eq('id', entry.id)
-    } catch (err) {
-      console.log('Deleted locally:', err)
+    if (isSupabaseConfigured) {
+      try {
+        await supabase.from(STAGE_TABLES[stageId]).delete().eq('id', entry.id)
+      } catch (err) {
+        console.log('Deleted locally:', err)
+      }
     }
     router.refresh()
     onClose()

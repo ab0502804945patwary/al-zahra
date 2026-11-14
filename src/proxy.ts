@@ -3,6 +3,16 @@ import { NextResponse, type NextRequest } from 'next/server'
 export async function proxy(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
 
+  const demoCookie = request.cookies.get('demo_session')?.value
+  if (demoCookie) {
+    if (request.nextUrl.pathname === '/login') {
+      const url = request.nextUrl.clone()
+      url.pathname = '/dashboard'
+      return NextResponse.redirect(url)
+    }
+    return supabaseResponse
+  }
+
   const rawUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const rawKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
@@ -10,10 +20,11 @@ export async function proxy(request: NextRequest) {
     Boolean(rawUrl) &&
     (rawUrl!.startsWith('http://') || rawUrl!.startsWith('https://')) &&
     !rawUrl!.includes('your_supabase_project_url') &&
-    !rawUrl!.includes('your-project.supabase.co') &&
+    !rawUrl!.includes('your-project') &&
     !rawUrl!.includes('placeholder') &&
     Boolean(rawKey) &&
     rawKey !== 'your_supabase_anon_key' &&
+    rawKey !== 'your-supabase-anon-key' &&
     !rawKey!.includes('placeholder')
 
   // If Supabase is not configured yet with real live credentials, allow direct access
@@ -39,16 +50,6 @@ export async function proxy(request: NextRequest) {
         },
       }
     )
-
-    const demoCookie = request.cookies.get('demo_session')?.value
-    if (demoCookie) {
-      if (request.nextUrl.pathname === '/login') {
-        const url = request.nextUrl.clone()
-        url.pathname = '/dashboard'
-        return NextResponse.redirect(url)
-      }
-      return supabaseResponse
-    }
 
     const { data: { user } } = await supabase.auth.getUser()
 

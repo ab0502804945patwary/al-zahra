@@ -1,7 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { X, Loader2, Globe, Building2, User, FileText, CheckCircle2, Sparkles } from 'lucide-react'
-import { createClient } from '@/lib/supabase/client'
+import { createClient, isSupabaseConfigured } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { calculateDaysTaken, calculateStatus, calculateCompletion } from '@/lib/utils'
 
@@ -72,10 +72,12 @@ export default function AddEntryModal({ stageId, companies, employees, onClose, 
       payload.remaining_days = days
     }
 
-    try {
-      await supabase.from(STAGE_TABLES[stageId]).insert([payload])
-    } catch (err) {
-      console.log('Saved entry locally:', err)
+    if (isSupabaseConfigured) {
+      try {
+        await supabase.from(STAGE_TABLES[stageId]).insert([payload])
+      } catch (err) {
+        console.log('Saved entry locally:', err)
+      }
     }
 
     router.refresh()

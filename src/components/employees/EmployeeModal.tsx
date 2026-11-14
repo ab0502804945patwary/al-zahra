@@ -10,7 +10,7 @@ import {
   Check,
   Image as ImageIcon
 } from 'lucide-react'
-import { createClient } from '@/lib/supabase/client'
+import { createClient, isSupabaseConfigured } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { Employee, SalaryType } from '@/lib/types'
 
@@ -236,32 +236,34 @@ export default function EmployeeModal({ employee, onClose, onSave, onDelete }: P
       created_at: employee?.created_at || new Date().toISOString(),
     }
 
-    try {
-      if (employee) {
-        const payload: any = {
-          name: form.name,
-          phone: form.phone,
-          role: form.role,
-          assigned_stage: assignedStageNum,
-          is_active: form.is_active,
-          avatar_url: avatarUrl || null,
+    if (isSupabaseConfigured) {
+      try {
+        if (employee) {
+          const payload: any = {
+            name: form.name,
+            phone: form.phone,
+            role: form.role,
+            assigned_stage: assignedStageNum,
+            is_active: form.is_active,
+            avatar_url: avatarUrl || null,
+          }
+          await supabase.from('employees').update(payload).eq('id', employee.id)
+        } else {
+          const payload: any = {
+            name: form.name,
+            email: form.email,
+            phone: form.phone,
+            role: form.role,
+            assigned_stage: assignedStageNum,
+            is_active: form.is_active,
+            avatar_url: avatarUrl || null,
+            user_id: '00000000-0000-0000-0000-000000000000',
+          }
+          await supabase.from('employees').insert([payload])
         }
-        await supabase.from('employees').update(payload).eq('id', employee.id)
-      } else {
-        const payload: any = {
-          name: form.name,
-          email: form.email,
-          phone: form.phone,
-          role: form.role,
-          assigned_stage: assignedStageNum,
-          is_active: form.is_active,
-          avatar_url: avatarUrl || null,
-          user_id: '00000000-0000-0000-0000-000000000000',
-        }
-        await supabase.from('employees').insert([payload])
+      } catch (err) {
+        console.log('Saved employee locally/fallback:', err)
       }
-    } catch (err) {
-      console.log('Saved employee locally/fallback:', err)
     }
 
     onSave?.(savedData)
@@ -272,10 +274,12 @@ export default function EmployeeModal({ employee, onClose, onSave, onDelete }: P
 
   async function handleDelete() {
     if (!confirm('Are you sure you want to remove this staff member?')) return
-    try {
-      await supabase.from('employees').delete().eq('id', employee!.id)
-    } catch (err) {
-      console.log('Deleted employee locally/fallback:', err)
+    if (isSupabaseConfigured) {
+      try {
+        await supabase.from('employees').delete().eq('id', employee!.id)
+      } catch (err) {
+        console.log('Deleted employee locally/fallback:', err)
+      }
     }
     onDelete?.(employee!.id)
     router.refresh()
