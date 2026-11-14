@@ -48,16 +48,18 @@ export default function LoginPage() {
         <div className="bg-white rounded-2xl p-8 border border-slate-200/90 shadow-xl shadow-slate-200/50">
           {/* Brand & Title inside Box */}
           <div className="flex flex-col items-center text-center mb-6">
-            <img
-              src="/al_zahra_icon.svg"
-              alt="AL ZAHRA"
-              className="w-16 h-16 object-contain mb-3"
-            />
-            <img
-              src="/al_zahra_logo.svg"
-              alt="AL ZAHRA CONSULTANCY"
-              className="h-8 object-contain mb-4"
-            />
+            <div className="flex items-center justify-center gap-3.5 mb-4">
+              <img
+                src="/al_zahra_icon.svg"
+                alt="AL ZAHRA Icon"
+                className="h-14 w-auto object-contain shrink-0"
+              />
+              <img
+                src="/al_zahra_logo.svg"
+                alt="AL ZAHRA Logo"
+                className="h-10 w-auto object-contain"
+              />
+            </div>
             <h2 className="text-base font-bold text-slate-900">Sign In</h2>
           </div>
 
