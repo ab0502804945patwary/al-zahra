@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { X, Loader2, Trash2 } from 'lucide-react'
 import { createClient, isSupabaseConfigured } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { COUNTRIES, CATEGORIES, PAYMENT_STATUSES, PRIORITIES, PHASE_OPTIONS, FOREIGN_FILING_OPTIONS, CANADA_OPTIONS, CR_STATUSES, toOptions, pickColumns } from '@/lib/stageRules'
+import { COUNTRIES, CATEGORIES, PAYMENT_STATUSES, PRIORITIES, PHASE_OPTIONS, FOREIGN_FILING_OPTIONS, CANADA_OPTIONS, CR_STATUSES, toOptions, pickColumns, validateDates } from '@/lib/stageRules'
 import { calculateNameClearance, calculateOverdue, calculateDaysTaken, calculateStatus, calculateCompletion } from '@/lib/utils'
 
 const STAGE_TABLES: Record<string, string> = {
@@ -27,6 +27,8 @@ export default function EditEntryModal({ stageId, entry, companies, employees, o
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    const dateError = validateDates(form)
+    if (dateError) { alert(dateError); return }
     setLoading(true)
     let payload: Record<string, any> = { ...form }
     if (!isUSACanada && !isNameClearance) {

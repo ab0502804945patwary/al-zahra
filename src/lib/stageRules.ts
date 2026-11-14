@@ -21,7 +21,7 @@ export const FOREIGN_FILING_OPTIONS = [
   'MEXICO License Submit',
   'MEXICO License Complete',
 ]
-export const CANADA_OPTIONS = ['Canada License']
+export const CANADA_OPTIONS = ['Canada License', 'SUBMIT', 'Pending', 'Not Submitted']
 
 const DEFAULT_PHASES = ['Document Collection', 'Govt Collection', 'Payment Pending', 'Approved']
 
@@ -117,4 +117,18 @@ export function pickColumns(stageId: string, payload: Record<string, any>) {
     out[k] = v === '' ? null : v
   }
   return out
+}
+
+/** Returns an error message when a complete date is earlier than its submit date. */
+export function validateDates(form: Record<string, any>): string | null {
+  const pairs: [string, string, string][] = [
+    ['submit_date', 'complete_date', 'Completion date'],
+    ['usa_submit_date', 'usa_complete_date', 'USA completion date'],
+    ['canada_submit_date', 'canada_complete_date', 'Canada completion date'],
+    ['submit_date', 'approval_date', 'Approval date'],
+  ]
+  for (const [a, b, label] of pairs) {
+    if (form[a] && form[b] && new Date(form[b]) < new Date(form[a])) return `${label} cannot be earlier than the submission date.`
+  }
+  return null
 }
