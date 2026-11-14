@@ -23,7 +23,6 @@ interface NavItem {
   href: string
   label: string
   icon: any
-  step?: string
   stage?: number
   adminOnly?: boolean
 }
@@ -44,14 +43,14 @@ const navGroups: NavGroup[] = [
   {
     title: 'INVESTOR WORKFLOW',
     items: [
-      { href: '/dashboard/stage/1', label: 'Parent Entity Verification', step: '01', icon: Briefcase, stage: 1 },
-      { href: '/dashboard/stage/2', label: 'Activity Classification', step: '02', icon: Layers, stage: 2 },
-      { href: '/dashboard/stage/3', label: 'Foreign Entity Licensing', step: '03', icon: Globe2, stage: 3 },
-      { href: '/dashboard/stage/4', label: 'MISA Investment License', step: '04', icon: Award, stage: 4 },
-      { href: '/dashboard/stage/5', label: 'Commercial Registration', step: '05', icon: Store, stage: 5 },
-      { href: '/dashboard/stage/6', label: 'Portals & Compliance', step: '06', icon: FileCheck2, stage: 6 },
-      { href: '/dashboard/stage/7', label: 'Final Dossier & Filing', step: '07', icon: FolderCheck, stage: 7 },
-      { href: '/dashboard/stage/8', label: 'Trade Name Clearance', step: '08', icon: Tag, stage: 8 },
+      { href: '/dashboard/stage/1', label: 'Parent Entity Verification', icon: Briefcase, stage: 1 },
+      { href: '/dashboard/stage/2', label: 'Activity Classification', icon: Layers, stage: 2 },
+      { href: '/dashboard/stage/3', label: 'Foreign Entity Licensing', icon: Globe2, stage: 3 },
+      { href: '/dashboard/stage/4', label: 'MISA Investment License', icon: Award, stage: 4 },
+      { href: '/dashboard/stage/5', label: 'Commercial Registration', icon: Store, stage: 5 },
+      { href: '/dashboard/stage/6', label: 'Portals & Compliance', icon: FileCheck2, stage: 6 },
+      { href: '/dashboard/stage/7', label: 'Final Dossier & Filing', icon: FolderCheck, stage: 7 },
+      { href: '/dashboard/stage/8', label: 'Trade Name Clearance', icon: Tag, stage: 8 },
     ]
   },
   {
@@ -125,13 +124,7 @@ export default function Sidebar({ employee }: SidebarProps) {
                       <span className="truncate">{item.label}</span>
                     </div>
 
-                    {item.step ? (
-                      <span className={cn('text-[10px] font-mono font-medium px-1.5 py-0.5 rounded', isActive ? 'bg-blue-200/60 text-blue-800' : 'text-slate-400 bg-slate-100')}>
-                        {item.step}
-                      </span>
-                    ) : (
-                      isActive && <ChevronRight className="w-3.5 h-3.5 text-blue-500" />
-                    )}
+                    {isActive && <ChevronRight className="w-3.5 h-3.5 text-blue-500 shrink-0" />}
                   </Link>
                 )
               })}
@@ -143,9 +136,17 @@ export default function Sidebar({ employee }: SidebarProps) {
       {/* User Info Footer */}
       <div className="p-3 border-t border-slate-100 bg-slate-50/50">
         <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-white border border-slate-200/80 shadow-sm">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white text-xs font-bold shadow-sm">
-            {employee?.name?.charAt(0) || 'A'}
-          </div>
+          {employee?.avatar_url ? (
+            <img
+              src={employee.avatar_url}
+              alt={employee.name || 'User'}
+              className="w-8 h-8 rounded-lg object-cover ring-1 ring-slate-200 shadow-sm shrink-0"
+            />
+          ) : (
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white text-xs font-bold shadow-sm shrink-0">
+              {employee?.name?.charAt(0) || 'A'}
+            </div>
+          )}
           <div className="flex-1 min-w-0">
             <div className="text-xs font-semibold text-slate-800 truncate">{employee?.name || 'Administrator'}</div>
             <div className="text-[11px] text-slate-500 flex items-center gap-1 mt-0.5">
