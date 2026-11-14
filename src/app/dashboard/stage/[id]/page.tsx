@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient, isSupabaseConfigured } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import StageTable from '@/components/stage/StageTable'
 import StageHeader from '@/components/stage/StageHeader'

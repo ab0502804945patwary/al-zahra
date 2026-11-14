@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient, isSupabaseConfigured } from '@/lib/supabase/server'
 import CompaniesClient from '@/components/companies/CompaniesClient'
 import { Company } from '@/lib/types'
 
