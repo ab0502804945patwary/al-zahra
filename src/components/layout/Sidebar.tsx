@@ -36,7 +36,7 @@ const navGroups: NavGroup[] = [
   {
     title: 'OVERVIEW',
     items: [
-      { href: '/dashboard', label: 'Executive Dashboard', icon: LayoutDashboard },
+      { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
       { href: '/dashboard/companies', label: 'Company Directory', icon: Building2 },
     ]
   },
@@ -159,3 +159,4 @@ export default function Sidebar({ employee }: SidebarProps) {
     </aside>
   )
 }
+

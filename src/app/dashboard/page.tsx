@@ -177,7 +177,7 @@ export default async function DashboardPage() {
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-200">
         <div>
-          <h1 className="text-xl font-bold text-slate-900 tracking-tight">Executive Licensing Dashboard</h1>
+          <h1 className="text-xl font-bold text-slate-900 tracking-tight">Dashboard</h1>
           <p className="text-xs text-slate-500 mt-0.5">Enterprise tracking of corporate investor license workflows and statutory compliance</p>
         </div>
         <div className="flex items-center gap-2">
@@ -300,3 +300,4 @@ export default async function DashboardPage() {
     </div>
   )
 }
+
