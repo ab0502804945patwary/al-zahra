@@ -234,7 +234,7 @@ export default function EmployeesClient({ employees: initialEmployees }: Props) 
                 {/* Salary & Task Mini Highlights */}
                 <div className="grid grid-cols-2 gap-2 my-3 p-2.5 bg-slate-50 rounded-lg border border-slate-200/70 text-[11px]">
                   <div>
-                    <span className="text-slate-400 block text-[10px] uppercase font-bold">বেতন ধরন</span>
+                    <span className="text-slate-400 block text-[10px] uppercase font-bold">COMPENSATION</span>
                     <span className="font-semibold text-slate-800 truncate block">
                       {SALARY_TYPE_BADGES[salaryType] || salaryType}
                     </span>
@@ -244,12 +244,12 @@ export default function EmployeesClient({ employees: initialEmployees }: Props) 
                   </div>
 
                   <div>
-                    <span className="text-slate-400 block text-[10px] uppercase font-bold">কাজের হিসেব</span>
+                    <span className="text-slate-400 block text-[10px] uppercase font-bold">TASKS & DOSSIERS</span>
                     <span className="font-semibold text-slate-800 block">
-                      {tasksCount > 0 ? `${completedCount}/${tasksCount} সম্পন্ন` : 'কোনো কাজ যুক্ত নেই'}
+                      {tasksCount > 0 ? `${completedCount}/${tasksCount} Completed` : 'No tasks assigned'}
                     </span>
                     <span className="text-[10px] text-blue-600 font-medium">
-                      {tasksCount > 0 ? `${Math.round((completedCount / tasksCount) * 100)}% সম্পন্ন` : 'Assign task'}
+                      {tasksCount > 0 ? `${Math.round((completedCount / tasksCount) * 100)}% Complete` : 'Assign task'}
                     </span>
                   </div>
                 </div>
@@ -283,7 +283,7 @@ export default function EmployeesClient({ employees: initialEmployees }: Props) 
                   href={`/dashboard/employees/${emp.id}`}
                   className="flex-1 py-1.5 px-3 bg-white hover:bg-blue-600 text-slate-700 hover:text-white font-semibold rounded-lg text-xs transition border border-slate-200 hover:border-blue-600 text-center flex items-center justify-center gap-1.5 shadow-xs"
                 >
-                  <span>সম্পূর্ণ প্রোফাইল ও কাজের রেকর্ড</span>
+                  <span>View Dossier & Work History</span>
                   <ArrowRight className="w-3 h-3" />
                 </Link>
               </div>

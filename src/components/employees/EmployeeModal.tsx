@@ -567,10 +567,10 @@ export default function EmployeeModal({ employee, onClose, onSave, onDelete }: P
             </div>
           </div>
 
-          {/* Salary Structure Section ("salary type sob kichu") */}
+          {/* Salary Structure Section */}
           <div className="p-3.5 bg-emerald-50/60 rounded-xl border border-emerald-200/80 space-y-3">
             <span className="text-[11px] font-bold text-emerald-800 flex items-center gap-1.5 uppercase tracking-wider">
-              💰 Salary & Compensation Setup (বেতন কাঠামো)
+              Salary & Compensation Structure
             </span>
             <div className="grid grid-cols-2 gap-3">
               <div>
@@ -580,11 +580,11 @@ export default function EmployeeModal({ employee, onClose, onSave, onDelete }: P
                   onChange={(e) => setForm((p) => ({ ...p, salary_type: e.target.value as any }))}
                   className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
                 >
-                  <option value="monthly_fixed">Monthly Fixed (মাসিক ফিক্সড)</option>
-                  <option value="commission_based">Commission Based (কমিশন)</option>
+                  <option value="monthly_fixed">Monthly Fixed</option>
+                  <option value="commission_based">Commission Based</option>
                   <option value="hybrid">Hybrid: Base + Commission</option>
-                  <option value="hourly">Hourly Rate (ঘণ্টা ভিত্তিক)</option>
-                  <option value="per_task">Per File / Case (ফাইল ভিত্তিক)</option>
+                  <option value="hourly">Hourly Rate</option>
+                  <option value="per_task">Per File / Dossier</option>
                 </select>
               </div>
 
