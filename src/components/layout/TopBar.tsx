@@ -2,7 +2,7 @@
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { Employee } from '@/lib/types'
-import { Bell, LogOut, Settings, Search, ShieldCheck, Building } from 'lucide-react'
+import { Bell, LogOut, Search, ShieldCheck } from 'lucide-react'
 import { useState } from 'react'
 
 interface TopBarProps { employee: Employee | null }
@@ -23,14 +23,6 @@ export default function TopBar({ employee }: TopBarProps) {
 
   return (
     <header className="h-16 bg-white border-b border-slate-200/80 flex items-center px-6 gap-6 shadow-sm z-20">
-      {/* Workspace Indicator */}
-      <div className="hidden lg:flex items-center gap-2 text-xs text-slate-500 font-medium">
-        <Building className="w-3.5 h-3.5 text-slate-400" />
-        <span>Riyadh Regional Office</span>
-        <span className="text-slate-300">/</span>
-        <span className="text-slate-700 font-semibold">Investor Operations</span>
-      </div>
-
       {/* Global Search Bar */}
       <div className="flex-1 max-w-md">
         <div className="relative">
