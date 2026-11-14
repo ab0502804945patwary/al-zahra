@@ -249,17 +249,26 @@ export default function EmployeeModal({ employee, onClose, onSave, onDelete }: P
           }
           await supabase.from('employees').update(payload).eq('id', employee.id)
         } else {
-          const payload: any = {
-            name: form.name,
-            email: form.email,
-            phone: form.phone,
-            role: form.role,
-            assigned_stage: assignedStageNum,
-            is_active: form.is_active,
-            avatar_url: avatarUrl || null,
-            user_id: '00000000-0000-0000-0000-000000000000',
+          const res = await fetch('/api/staff', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              name: form.name,
+              email: form.email,
+              password: form.password,
+              phone: form.phone,
+              role: form.role,
+              assigned_stage: assignedStageNum,
+              is_active: form.is_active,
+              avatar_url: avatarUrl || null,
+            }),
+          })
+          if (!res.ok) {
+            const { error } = await res.json().catch(() => ({ error: 'Could not create staff login.' }))
+            alert(error)
+            setLoading(false)
+            return
           }
-          await supabase.from('employees').insert([payload])
         }
       } catch (err) {
         console.log('Saved employee locally/fallback:', err)

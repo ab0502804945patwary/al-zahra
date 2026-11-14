@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { createClient, isSupabaseConfigured } from '@/lib/supabase/client'
+import { INITIAL_EMPLOYEES } from '@/lib/employeeData'
 import { useRouter } from 'next/navigation'
 import { Eye, EyeOff, Loader2, Lock, Mail, Sparkles } from 'lucide-react'
 
@@ -18,13 +19,25 @@ export default function LoginPage() {
     e.preventDefault()
     setLoading(true)
     setError('')
+    if (!isSupabaseConfigured) {
+      setError('Live login is not connected yet. Use Instant Demo Access or Demo Staff Login below.')
+      setLoading(false)
+      return
+    }
     const { error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) {
-      setError(error.message)
+      setError(error.message === 'Failed to fetch' ? 'Cannot reach the server. Check your internet connection.' : error.message)
       setLoading(false)
     } else {
       window.location.href = '/dashboard'
     }
+  }
+
+  function handleStaffDemo(id: string) {
+    if (!id) return
+    setDemoLoading(true)
+    document.cookie = `demo_session=${id}; path=/; max-age=86400; SameSite=Lax`
+    window.location.href = '/dashboard'
   }
 
   function handleDemoLogin() {
@@ -123,6 +136,17 @@ export default function LoginPage() {
               {demoLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5 text-blue-600" />}
               Instant Demo Access (Explore Full ERP)
             </button>
+            <select
+              defaultValue=""
+              onChange={e => handleStaffDemo(e.target.value)}
+              disabled={demoLoading || loading}
+              className="mt-2 w-full py-2 px-3 bg-white border border-slate-200 text-slate-700 rounded-lg text-xs"
+            >
+              <option value="">Demo Staff Login — choose employee...</option>
+              {INITIAL_EMPLOYEES.filter(e => e.role === 'employee').map(e => (
+                <option key={e.id} value={e.id}>{e.name} (Stage {e.assigned_stage})</option>
+              ))}
+            </select>
           </div>
         </div>
 
