@@ -12,7 +12,7 @@ import {
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { Employee } from '@/lib/types'
+import { Employee, SalaryType } from '@/lib/types'
 
 interface Props {
   employee?: Employee
@@ -52,6 +52,11 @@ export default function EmployeeModal({ employee, onClose, onSave, onDelete }: P
     phone: employee?.phone || '',
     role: employee?.role || 'employee',
     assigned_stage: employee?.assigned_stage?.toString() || '',
+    designation: employee?.designation || '',
+    department: employee?.department || '',
+    office_location: employee?.office_location || 'Riyadh HQ - Al Olaya',
+    salary_type: (employee?.salary?.salary_type || 'monthly_fixed') as SalaryType,
+    base_salary: (employee?.salary?.base_salary || 6500).toString(),
     is_active: employee?.is_active ?? true,
     password: '',
   })
@@ -110,10 +115,8 @@ export default function EmployeeModal({ employee, onClose, onSave, onDelete }: P
     setUploadingImage(true)
 
     try {
-      // 1. Generate optimized client-side preview
       const compressedDataUrl = await compressImage(file)
 
-      // 2. Attempt Supabase Storage upload if bucket is accessible
       try {
         const fileExt = file.name.split('.').pop() || 'jpg'
         const fileName = `emp_${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${fileExt}`
@@ -137,7 +140,6 @@ export default function EmployeeModal({ employee, onClose, onSave, onDelete }: P
         console.log('Storage upload skipped or not configured, using direct image data:', storageErr)
       }
 
-      // Fallback: Use high-quality compressed data URL
       setAvatarUrl(compressedDataUrl)
       setUrlInput(compressedDataUrl)
     } catch (err: any) {
@@ -199,6 +201,8 @@ export default function EmployeeModal({ employee, onClose, onSave, onDelete }: P
       ? null
       : (form.assigned_stage ? parseInt(form.assigned_stage) : null)
 
+    const baseAmount = parseFloat(form.base_salary) || 6000
+
     const savedData: Employee = {
       id: employee ? employee.id : `emp-${Date.now()}`,
       user_id: employee?.user_id || `u-${Date.now()}`,
@@ -209,6 +213,26 @@ export default function EmployeeModal({ employee, onClose, onSave, onDelete }: P
       assigned_stage: assignedStageNum || undefined,
       is_active: form.is_active,
       avatar_url: avatarUrl.trim() || undefined,
+      designation: form.designation.trim() || undefined,
+      department: form.department.trim() || undefined,
+      office_location: form.office_location || 'Riyadh HQ - Al Olaya',
+      joining_date: employee?.joining_date || new Date().toISOString().split('T')[0],
+      salary: {
+        salary_type: form.salary_type,
+        base_salary: baseAmount,
+        currency: 'SAR',
+        housing_allowance: employee?.salary?.housing_allowance || Math.round(baseAmount * 0.25),
+        transport_allowance: employee?.salary?.transport_allowance || 500,
+        food_allowance: employee?.salary?.food_allowance || 300,
+        commission_rate: employee?.salary?.commission_rate || '',
+        bank_name: employee?.salary?.bank_name || 'Al Rajhi Bank',
+        account_number: employee?.salary?.account_number || '',
+        iban: employee?.salary?.iban || '',
+        payment_cycle: 'monthly',
+        payment_status: employee?.salary?.payment_status || 'Paid',
+      },
+      tasks: employee?.tasks || [],
+      reviews: employee?.reviews || [],
       created_at: employee?.created_at || new Date().toISOString(),
     }
 
@@ -240,7 +264,6 @@ export default function EmployeeModal({ employee, onClose, onSave, onDelete }: P
       console.log('Saved employee locally/fallback:', err)
     }
 
-    // Call onSave callback to immediately update local client state
     onSave?.(savedData)
 
     router.refresh()
@@ -268,7 +291,7 @@ export default function EmployeeModal({ employee, onClose, onSave, onDelete }: P
             <h2 className="text-base font-bold text-slate-900">
               {employee ? 'Edit Team Member Profile' : 'Add Team Member'}
             </h2>
-            <p className="text-xs text-slate-400">Operational staff, role & profile photo</p>
+            <p className="text-xs text-slate-400">Operational staff, role, profile photo & compensation</p>
           </div>
           <button
             onClick={onClose}
@@ -520,6 +543,62 @@ export default function EmployeeModal({ employee, onClose, onSave, onDelete }: P
                 </select>
               </div>
             )}
+          </div>
+
+          {/* Job Title & Department */}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-medium text-slate-700 mb-1 block">Job Title / Designation</label>
+              <input
+                value={form.designation}
+                onChange={(e) => setForm((p) => ({ ...p, designation: e.target.value }))}
+                placeholder="e.g. Licensing Officer"
+                className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-slate-700 mb-1 block">Department</label>
+              <input
+                value={form.department}
+                onChange={(e) => setForm((p) => ({ ...p, department: e.target.value }))}
+                placeholder="e.g. Legal Operations"
+                className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+              />
+            </div>
+          </div>
+
+          {/* Salary Structure Section ("salary type sob kichu") */}
+          <div className="p-3.5 bg-emerald-50/60 rounded-xl border border-emerald-200/80 space-y-3">
+            <span className="text-[11px] font-bold text-emerald-800 flex items-center gap-1.5 uppercase tracking-wider">
+              💰 Salary & Compensation Setup (বেতন কাঠামো)
+            </span>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs font-medium text-slate-700 mb-1 block">Salary Type</label>
+                <select
+                  value={form.salary_type}
+                  onChange={(e) => setForm((p) => ({ ...p, salary_type: e.target.value as any }))}
+                  className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                >
+                  <option value="monthly_fixed">Monthly Fixed (মাসিক ফিক্সড)</option>
+                  <option value="commission_based">Commission Based (কমিশন)</option>
+                  <option value="hybrid">Hybrid: Base + Commission</option>
+                  <option value="hourly">Hourly Rate (ঘণ্টা ভিত্তিক)</option>
+                  <option value="per_task">Per File / Case (ফাইল ভিত্তিক)</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="text-xs font-medium text-slate-700 mb-1 block">Base Salary (SAR)</label>
+                <input
+                  type="number"
+                  value={form.base_salary}
+                  onChange={(e) => setForm((p) => ({ ...p, base_salary: e.target.value }))}
+                  placeholder="6500"
+                  className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                />
+              </div>
+            </div>
           </div>
 
           {/* Active Status */}

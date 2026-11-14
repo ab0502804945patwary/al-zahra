@@ -1,5 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import {
   Plus,
   Edit2,
@@ -12,11 +13,15 @@ import {
   XCircle,
   Layers,
   ShieldCheck,
-  Briefcase
+  Briefcase,
+  DollarSign,
+  FileText,
+  ArrowRight
 } from 'lucide-react'
-import { Employee } from '@/lib/types'
+import { Employee, SalaryType } from '@/lib/types'
 import EmployeeModal from './EmployeeModal'
 import { cn } from '@/lib/utils'
+import { INITIAL_EMPLOYEES } from '@/lib/employeeData'
 
 interface Props { employees: Employee[] }
 
@@ -29,6 +34,14 @@ const MODULE_NAMES: Record<number, string> = {
   6: 'Government Portals & Compliance',
   7: 'Final Legal Dossier & Issuance',
   8: 'Trade Name Clearance',
+}
+
+const SALARY_TYPE_BADGES: Record<SalaryType, string> = {
+  monthly_fixed: 'Monthly Fixed',
+  commission_based: 'Commission Based',
+  hybrid: 'Base + Commission',
+  hourly: 'Hourly Rate',
+  per_task: 'Per File/Case',
 }
 
 export default function EmployeesClient({ employees: initialEmployees }: Props) {
@@ -46,7 +59,10 @@ export default function EmployeesClient({ employees: initialEmployees }: Props) 
           // Merge with initial, prioritizing stored custom items
           setEmployeesList(prev => {
             const map = new Map<string, Employee>(prev.map(e => [e.id, e]))
-            parsed.forEach(item => map.set(item.id, item))
+            parsed.forEach(item => {
+              const prevItem = map.get(item.id)
+              map.set(item.id, { ...prevItem, ...item })
+            })
             return Array.from(map.values())
           })
         }
@@ -62,9 +78,11 @@ export default function EmployeesClient({ employees: initialEmployees }: Props) 
       let updated: Employee[]
       if (index >= 0) {
         updated = [...prev]
-        updated[index] = savedEmp
+        updated[index] = { ...prev[index], ...savedEmp }
       } else {
-        updated = [savedEmp, ...prev]
+        // Find default template if matched
+        const template = INITIAL_EMPLOYEES.find(i => i.id === savedEmp.id)
+        updated = [{ ...template, ...savedEmp }, ...prev]
       }
       try {
         localStorage.setItem('alzahra_employees_data', JSON.stringify(updated))
@@ -89,7 +107,7 @@ export default function EmployeesClient({ employees: initialEmployees }: Props) 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3 border-b border-slate-200">
         <div>
           <h1 className="text-xl font-bold text-slate-900 tracking-tight">Team & Access Control</h1>
-          <p className="text-xs text-slate-500 mt-0.5">Manage operational staff, module leadership, and administrative permissions</p>
+          <p className="text-xs text-slate-500 mt-0.5">Manage operational staff, module leadership, work performance, and compensation</p>
         </div>
         <button
           onClick={() => setShowAdd(true)}
@@ -123,117 +141,155 @@ export default function EmployeesClient({ employees: initialEmployees }: Props) 
 
       {/* Employee cards */}
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {employeesList.map(emp => (
-          <div
-            key={emp.id}
-            className={cn(
-              'bg-white rounded-xl border shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden',
-              emp.is_active ? 'border-slate-200' : 'border-slate-200 opacity-60'
-            )}
-          >
-            <div className="p-5">
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  {/* Avatar rendering: photo if uploaded, otherwise gradient initial */}
-                  {emp.avatar_url ? (
-                    <div className="w-11 h-11 rounded-xl overflow-hidden ring-1 ring-slate-200/80 shadow-sm shrink-0 bg-slate-100">
-                      <img
-                        src={emp.avatar_url}
-                        alt={emp.name}
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          const target = e.currentTarget as HTMLImageElement
-                          target.style.display = 'none'
-                          if (target.parentElement) {
-                            target.parentElement.classList.add(
-                              'flex',
-                              'items-center',
-                              'justify-center',
-                              'text-white',
-                              'font-bold',
-                              emp.role === 'admin' ? 'bg-indigo-600' : 'bg-blue-600'
-                            )
-                            target.parentElement.innerText = emp.name.charAt(0)
-                          }
-                        }}
-                      />
+        {employeesList.map(emp => {
+          const tasksCount = emp.tasks?.length || 0
+          const completedCount = emp.tasks?.filter(t => t.status === 'Completed').length || 0
+          const salaryType = emp.salary?.salary_type || 'monthly_fixed'
+          const baseSalary = emp.salary?.base_salary || 6500
+
+          return (
+            <div
+              key={emp.id}
+              className={cn(
+                'bg-white rounded-xl border shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden flex flex-col justify-between',
+                emp.is_active ? 'border-slate-200' : 'border-slate-200 opacity-60'
+              )}
+            >
+              <div className="p-5">
+                <div className="flex items-start justify-between mb-3">
+                  <Link href={`/dashboard/employees/${emp.id}`} className="flex items-center gap-3 group">
+                    {/* Avatar rendering: photo if uploaded, otherwise gradient initial */}
+                    {emp.avatar_url ? (
+                      <div className="w-12 h-12 rounded-xl overflow-hidden ring-1 ring-slate-200/80 shadow-sm shrink-0 bg-slate-100 group-hover:ring-blue-500 transition">
+                        <img
+                          src={emp.avatar_url}
+                          alt={emp.name}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            const target = e.currentTarget as HTMLImageElement
+                            target.style.display = 'none'
+                            if (target.parentElement) {
+                              target.parentElement.classList.add(
+                                'flex',
+                                'items-center',
+                                'justify-center',
+                                'text-white',
+                                'font-bold',
+                                emp.role === 'admin' ? 'bg-indigo-600' : 'bg-blue-600'
+                              )
+                              target.parentElement.innerText = emp.name.charAt(0)
+                            }
+                          }}
+                        />
+                      </div>
+                    ) : (
+                      <div
+                        className={cn(
+                          'w-12 h-12 rounded-xl flex items-center justify-center text-white text-base font-bold shadow-sm shrink-0 group-hover:opacity-90 transition',
+                          emp.role === 'admin'
+                            ? 'bg-gradient-to-br from-indigo-600 to-purple-600'
+                            : 'bg-gradient-to-br from-blue-600 to-cyan-600'
+                        )}
+                      >
+                        {emp.name.charAt(0)}
+                      </div>
+                    )}
+
+                    <div>
+                      <div className="font-bold text-slate-900 text-sm group-hover:text-blue-600 transition flex items-center gap-1.5">
+                        {emp.name}
+                      </div>
+                      <div className="flex items-center gap-1.5 mt-0.5">
+                        {emp.role === 'admin' ? (
+                          <span className="inline-flex items-center gap-1 text-[10px] font-semibold bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-full border border-indigo-200">
+                            <Shield className="w-2.5 h-2.5" /> Administrator
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 text-[10px] font-semibold bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full border border-blue-200">
+                            <Briefcase className="w-2.5 h-2.5" /> Specialist
+                          </span>
+                        )}
+                        {emp.is_active ? (
+                          <span className="inline-flex items-center gap-1 text-[10px] font-semibold bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full border border-emerald-200">
+                            Active
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 text-[10px] font-semibold bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full border border-slate-200">
+                            Inactive
+                          </span>
+                        )}
+                      </div>
                     </div>
-                  ) : (
-                    <div
-                      className={cn(
-                        'w-11 h-11 rounded-xl flex items-center justify-center text-white text-base font-bold shadow-sm shrink-0',
-                        emp.role === 'admin'
-                          ? 'bg-gradient-to-br from-indigo-600 to-purple-600'
-                          : 'bg-gradient-to-br from-blue-600 to-cyan-600'
-                      )}
-                    >
-                      {emp.name.charAt(0)}
-                    </div>
-                  )}
+                  </Link>
+
+                  <button
+                    onClick={() => setSelected(emp)}
+                    title="Quick Edit"
+                    className="p-1.5 hover:bg-slate-100 rounded-md transition text-slate-400 hover:text-slate-600"
+                  >
+                    <Edit2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+
+                {/* Salary & Task Mini Highlights */}
+                <div className="grid grid-cols-2 gap-2 my-3 p-2.5 bg-slate-50 rounded-lg border border-slate-200/70 text-[11px]">
+                  <div>
+                    <span className="text-slate-400 block text-[10px] uppercase font-bold">বেতন ধরন</span>
+                    <span className="font-semibold text-slate-800 truncate block">
+                      {SALARY_TYPE_BADGES[salaryType] || salaryType}
+                    </span>
+                    <span className="text-[10px] text-emerald-600 font-mono font-medium">
+                      {baseSalary.toLocaleString()} SAR
+                    </span>
+                  </div>
 
                   <div>
-                    <div className="font-semibold text-slate-900 text-sm">{emp.name}</div>
-                    <div className="flex items-center gap-1.5 mt-1">
-                      {emp.role === 'admin' ? (
-                        <span className="inline-flex items-center gap-1 text-[10px] font-semibold bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-full border border-indigo-200">
-                          <Shield className="w-2.5 h-2.5" /> Administrator
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1 text-[10px] font-semibold bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full border border-blue-200">
-                          <Briefcase className="w-2.5 h-2.5" /> Specialist
-                        </span>
-                      )}
-                      {emp.is_active ? (
-                        <span className="inline-flex items-center gap-1 text-[10px] font-semibold bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full border border-emerald-200">
-                          <CheckCircle2 className="w-2.5 h-2.5" /> Active
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1 text-[10px] font-semibold bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full border border-slate-200">
-                          <XCircle className="w-2.5 h-2.5" /> Inactive
-                        </span>
-                      )}
-                    </div>
+                    <span className="text-slate-400 block text-[10px] uppercase font-bold">কাজের হিসেব</span>
+                    <span className="font-semibold text-slate-800 block">
+                      {tasksCount > 0 ? `${completedCount}/${tasksCount} সম্পন্ন` : 'কোনো কাজ যুক্ত নেই'}
+                    </span>
+                    <span className="text-[10px] text-blue-600 font-medium">
+                      {tasksCount > 0 ? `${Math.round((completedCount / tasksCount) * 100)}% সম্পন্ন` : 'Assign task'}
+                    </span>
                   </div>
                 </div>
-                <button
-                  onClick={() => setSelected(emp)}
-                  className="p-1.5 hover:bg-slate-100 rounded-md transition text-slate-400 hover:text-slate-600"
-                >
-                  <Edit2 className="w-3.5 h-3.5" />
-                </button>
+
+                {/* Contact info */}
+                <div className="space-y-1.5 text-xs text-slate-600 pt-1">
+                  <div className="flex items-center gap-2">
+                    <Mail className="w-3.5 h-3.5 text-slate-400" />
+                    <span className="truncate">{emp.email}</span>
+                  </div>
+                  {emp.phone && (
+                    <div className="flex items-center gap-2">
+                      <Phone className="w-3.5 h-3.5 text-slate-400" />
+                      <span>{emp.phone}</span>
+                    </div>
+                  )}
+                  {emp.assigned_stage ? (
+                    <div className="mt-2">
+                      <span className="inline-flex items-center gap-1.5 bg-slate-50 text-slate-700 border border-slate-200 px-2 py-0.5 rounded-md text-[10px] font-medium truncate max-w-full">
+                        <Layers className="w-3 h-3 text-blue-600 shrink-0" />
+                        {MODULE_NAMES[emp.assigned_stage]}
+                      </span>
+                    </div>
+                  ) : null}
+                </div>
               </div>
 
-              <div className="space-y-2 text-xs text-slate-600 pt-2 border-t border-slate-100">
-                <div className="flex items-center gap-2">
-                  <Mail className="w-3.5 h-3.5 text-slate-400" />
-                  <span className="truncate">{emp.email}</span>
-                </div>
-                {emp.phone && (
-                  <div className="flex items-center gap-2">
-                    <Phone className="w-3.5 h-3.5 text-slate-400" />
-                    <span>{emp.phone}</span>
-                  </div>
-                )}
-                {emp.assigned_stage ? (
-                  <div className="mt-3">
-                    <span className="inline-flex items-center gap-1.5 bg-slate-50 text-slate-700 border border-slate-200 px-2.5 py-1 rounded-md text-[11px] font-medium">
-                      <Layers className="w-3.5 h-3.5 text-blue-600" />
-                      Module: {MODULE_NAMES[emp.assigned_stage]}
-                    </span>
-                  </div>
-                ) : null}
-                {emp.role === 'admin' && (
-                  <div className="mt-3">
-                    <span className="inline-flex items-center gap-1.5 bg-indigo-50/60 text-indigo-700 border border-indigo-200 px-2.5 py-1 rounded-md text-[11px] font-medium">
-                      <ShieldCheck className="w-3.5 h-3.5 text-indigo-600" />
-                      Cross-Module Full Authorization
-                    </span>
-                  </div>
-                )}
+              {/* Bottom Card Footer Actions */}
+              <div className="p-3 bg-slate-50 border-t border-slate-100 flex items-center gap-2">
+                <Link
+                  href={`/dashboard/employees/${emp.id}`}
+                  className="flex-1 py-1.5 px-3 bg-white hover:bg-blue-600 text-slate-700 hover:text-white font-semibold rounded-lg text-xs transition border border-slate-200 hover:border-blue-600 text-center flex items-center justify-center gap-1.5 shadow-xs"
+                >
+                  <span>সম্পূর্ণ প্রোফাইল ও কাজের রেকর্ড</span>
+                  <ArrowRight className="w-3 h-3" />
+                </Link>
               </div>
             </div>
-          </div>
-        ))}
+          )
+        })}
       </div>
 
       {showAdd && (

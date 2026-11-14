@@ -1,5 +1,60 @@
 export type UserRole = 'admin' | 'employee'
 
+export type SalaryType =
+  | 'monthly_fixed'
+  | 'commission_based'
+  | 'hourly'
+  | 'hybrid'
+  | 'per_task'
+
+export interface SalaryDetails {
+  salary_type: SalaryType
+  base_salary: number
+  currency: string
+  housing_allowance?: number
+  transport_allowance?: number
+  food_allowance?: number
+  commission_rate?: string
+  bank_name?: string
+  account_number?: string
+  iban?: string
+  payment_cycle?: 'monthly' | 'biweekly' | 'weekly'
+  last_paid_date?: string
+  next_pay_date?: string
+  payment_status?: 'Paid' | 'Processing' | 'Pending'
+}
+
+export interface EmployeeTask {
+  id: string
+  company_id: string
+  company_name: string
+  country_of_origin?: string
+  stage_id: number
+  stage_name: string
+  task_title: string
+  status: 'Completed' | 'In Progress' | 'Delayed' | 'Under Review'
+  health: 'Green' | 'Yellow' | 'Red'
+  submit_date: string
+  target_date?: string
+  complete_date?: string
+  days_taken?: number
+  completion_percent: number
+  quality_score?: number // 1 to 5
+  execution_notes?: string
+}
+
+export interface PerformanceReview {
+  id: string
+  reviewer_name: string
+  date: string
+  overall_rating: number // 1 to 5
+  speed_score: number
+  accuracy_score: number
+  compliance_score: number
+  communication_score: number
+  feedback: string
+}
+
 export interface Employee {
   id: string
   user_id: string
@@ -10,6 +65,14 @@ export interface Employee {
   assigned_stage?: number
   is_active: boolean
   avatar_url?: string
+  department?: string
+  designation?: string
+  joining_date?: string
+  national_id?: string
+  office_location?: string
+  salary?: SalaryDetails
+  tasks?: EmployeeTask[]
+  reviews?: PerformanceReview[]
   created_at: string
 }
 
@@ -59,76 +122,41 @@ export interface StageEntry {
   submit_date?: string
   target_date?: string
   complete_date?: string
-  payment_status?: string
-  remarks?: string
-  employee_id?: string
-  drive_link?: string
-  overdue_status?: string
   days_taken?: number
-  status?: 'Green' | 'Yellow' | 'Red'
+  status?: string
   completion_percent?: number
-  created_at: string
+  overdue_status?: string
+  assigned_to?: string
+  remarks?: string
+  
+  // Specific stage fields
+  usa_type?: string
+  usa_submit_date?: string
+  usa_complete_date?: string
+  usa_status?: string
+  usa_payment_status?: string
+  canada_type?: string
+  canada_submit_date?: string
+  canada_complete_date?: string
+  canada_status?: string
+  canada_payment_status?: string
+  
+  name_clearance_number?: string
+  approval_date?: string
+  expire_date?: string
+  remaining_days?: number
+  cr_status?: string
+  entity_type?: string
+
+  created_at?: string
   companies?: Company
   employees?: Employee
 }
 
-export interface Stage3Entry extends StageEntry {
-  usa_type?: string
-  usa_submit_date?: string
-  usa_target_date?: string
-  usa_complete_date?: string
-  usa_overdue_status?: string
-  usa_days_taken?: number
-  usa_status?: string
-  usa_completion_percent?: number
-  usa_payment_status?: string
-  canada_type?: string
-  canada_submit_date?: string
-  canada_target_date?: string
-  canada_complete_date?: string
-  canada_overdue_status?: string
-  canada_days_taken?: number
-  canada_status?: string
-  canada_completion_percent?: number
-  canada_payment_status?: string
-}
-
-export interface NameClearance {
-  id: string
-  company_id: string
-  entity_type?: string
-  company_name_english?: string
-  arabic_name?: string
-  name_clearance_number?: string
-  submit_date?: string
-  approval_date?: string
-  expire_date?: string
-  remaining_days?: number
-  status?: string
-  cr_status?: string
-  notes?: string
-  created_at: string
-  companies?: Company
-}
-
-export interface DashboardStats {
-  totalCompanies: number
-  totalStageEntries: number
-  greenCount: number
-  yellowCount: number
-  redCount: number
-  pendingCount: number
-  completedCount: number
-  avgCompletion: number
-  expiringLicenses: number
-  stageStats: {
-    stage: number
-    name: string
-    employee: string
-    total: number
-    green: number
-    yellow: number
-    red: number
-    avgCompletion: number
-  }[]
+export interface StageConfig {
+  id: number
+  title: string
+  step: string
+  description: string
+  color: string
 }
