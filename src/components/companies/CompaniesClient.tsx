@@ -98,6 +98,14 @@ export default function CompaniesClient({ companies: initialCompanies }: Props) 
   )
   const renewalCount = companiesList.filter(isRenewal).length
 
+  // Form opens inside the page area (sidebar stays visible)
+  if (showAdd) {
+    return <CompanyModal existingCompanies={companiesList} onClose={() => setShowAdd(false)} onSave={handleSave} />
+  }
+  if (selected) {
+    return <CompanyModal company={selected} existingCompanies={companiesList} onClose={() => setSelected(null)} onSave={handleSave} onDelete={handleDelete} />
+  }
+
   return (
     <div className="space-y-6 w-full max-w-[2000px] mx-auto">
       {/* Header */}

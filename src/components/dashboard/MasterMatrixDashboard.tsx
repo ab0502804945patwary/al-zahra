@@ -146,14 +146,6 @@ export default function MasterMatrixDashboard({ initialCompanies, kpiStats }: Da
             Master lifecycle tracking matrix for active corporate investor licenses & statutory clearances
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <Link
-            href="/dashboard/companies"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg shadow-sm transition"
-          >
-            <Building2 className="w-3.5 h-3.5" /> Company Directory
-          </Link>
-        </div>
       </div>
 
       {/* 2. Top 4 Simple Clean Counter Cards */}
