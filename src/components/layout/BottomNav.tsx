@@ -1,18 +1,18 @@
 'use client'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Building2, Briefcase, Globe2, Award, Store, Menu } from 'lucide-react'
+import { LayoutDashboard, Building2, Briefcase, Layers, Globe2, Award, Menu } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useSidebar } from './DashboardShell'
 
-// 6 most-used shortcuts; everything else lives in the burger drawer.
+// Short names match the sidebar categories; the rest (CR, Portals, Final, Name Clearance) are under More.
 const ITEMS = [
   { href: '/dashboard', label: 'Home', icon: LayoutDashboard },
   { href: '/dashboard/companies', label: 'Companies', icon: Building2 },
-  { href: '/dashboard/stage/1', label: 'Stage 1', icon: Briefcase },
-  { href: '/dashboard/stage/3', label: 'Stage 3', icon: Globe2 },
+  { href: '/dashboard/stage/1', label: 'Parent', icon: Briefcase },
+  { href: '/dashboard/stage/2', label: 'Activity', icon: Layers },
+  { href: '/dashboard/stage/3', label: 'Foreign', icon: Globe2 },
   { href: '/dashboard/stage/4', label: 'MISA', icon: Award },
-  { href: '/dashboard/stage/5', label: 'CR', icon: Store },
 ]
 
 export default function BottomNav() {
