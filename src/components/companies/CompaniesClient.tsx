@@ -185,7 +185,7 @@ export default function CompaniesClient({ companies: initialCompanies }: Props) 
                   <td className="px-3 py-2.5 font-mono text-slate-600">{c.cr_number || '—'}</td>
                   <td className="px-3 py-2.5 font-mono text-slate-600">{c.misa_license_no || '—'}</td>
                   <td className="px-3 py-2.5 font-mono text-slate-600">{c.cr_expire_date || '—'}</td>
-                  <td className="px-3 py-2.5 text-emerald-700 font-semibold">{c.account_status || 'Active'}</td>
+                  <td className={`px-3 py-2.5 font-semibold ${c.account_status === 'Inactive' ? 'text-slate-400' : 'text-emerald-700'}`}>{c.account_status || 'Active'}</td>
                   <td className="px-3 py-2.5">
                     {c.drive_link ? <a href={c.drive_link} target="_blank" rel="noreferrer" className="text-blue-600 hover:text-blue-800 inline-flex items-center gap-1"><ExternalLink className="w-3 h-3" />Open</a> : <span className="text-slate-300">—</span>}
                   </td>
@@ -260,8 +260,8 @@ export default function CompaniesClient({ companies: initialCompanies }: Props) 
             {/* Card Footer */}
             <div className="p-3 bg-slate-50/50 border-t border-slate-100 flex items-center justify-between text-xs">
               <div className="flex items-center gap-1.5">
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-semibold border ${company.account_status === 'Inactive' ? 'bg-slate-100 text-slate-500 border-slate-300' : 'bg-emerald-50 text-emerald-700 border-emerald-200'}`}>
+                  <span className={`w-1.5 h-1.5 rounded-full ${company.account_status === 'Inactive' ? 'bg-slate-400' : 'bg-emerald-500'}`} />
                   {company.account_status || 'Active Entity'}
                 </span>
                 <TypeBadge company={company} />

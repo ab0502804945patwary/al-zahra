@@ -379,3 +379,6 @@ ALTER TABLE employees ADD COLUMN IF NOT EXISTS avatar_url TEXT;
 -- 'renewal' = existing company, renewal only (no handoff chain)
 -- ============================================
 ALTER TABLE companies ADD COLUMN IF NOT EXISTS service_type TEXT DEFAULT 'a2z';
+
+-- MIGRATION: Account handler name on companies
+ALTER TABLE companies ADD COLUMN IF NOT EXISTS employee TEXT;

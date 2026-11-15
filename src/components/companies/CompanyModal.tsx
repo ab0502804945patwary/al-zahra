@@ -168,15 +168,21 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
   const inputCls = 'w-full px-3 py-2.5 text-sm text-slate-900 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white placeholder:text-slate-400'
 
   // plain function (not a component) so inputs keep focus while typing
-  const field = (f: { label: string; name: string; type?: string; span: number }) => (
+  const field = (f: { label: string; name: string; type?: string; span: number; options?: string[] }) => (
     <div key={f.name} className={`${WIDE.has(f.name) ? 'col-span-2 ' : ''}${SPAN[f.span]}`}>
       <label className="block"><Lbl name={f.name}>{f.label}</Lbl></label>
-      <input
-        type={f.type || 'text'}
-        value={form[f.name] || ''}
-        onChange={e => set(f.name, e.target.value)}
-        className={inputCls}
-      />
+      {f.options ? (
+        <select value={form[f.name] || f.options[0]} onChange={e => set(f.name, e.target.value)} className={inputCls}>
+          {f.options.map(o => <option key={o} value={o}>{o}</option>)}
+        </select>
+      ) : (
+        <input
+          type={f.type || 'text'}
+          value={form[f.name] || ''}
+          onChange={e => set(f.name, e.target.value)}
+          className={inputCls}
+        />
+      )}
     </div>
   )
 
@@ -259,7 +265,7 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
     </>
   )
 
-  type FieldSpec = { label: string; name: string; type?: string; span: number }
+  type FieldSpec = { label: string; name: string; type?: string; span: number; options?: string[] }
   const sections: { title: string; icon: any; custom?: React.ReactNode; fields?: FieldSpec[] }[] = [
     { title: 'Company Profile & Identification', icon: Building2, custom: profileFields },
     {
@@ -312,7 +318,7 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
       icon: Sliders,
       fields: [
         { label: 'Portal Login Ref', name: 'file_portal_login', span: 4 },
-        { label: 'Operational Status', name: 'account_status', span: 4 },
+        { label: 'Operational Status', name: 'account_status', span: 4, options: ['Active', 'Inactive'] },
         { label: 'Regional Office', name: 'assigned_office', span: 4 },
         { label: 'Google Drive Folder', name: 'drive_link', span: 6 },
         { label: 'Account Handler', name: 'employee', span: 6 },
