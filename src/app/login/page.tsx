@@ -144,7 +144,7 @@ export default function LoginPage() {
             >
               <option value="">Demo Staff Login — choose employee...</option>
               {INITIAL_EMPLOYEES.filter(e => e.role === 'employee').map(e => (
-                <option key={e.id} value={e.id}>{e.name} (Stage {e.assigned_stage})</option>
+                <option key={e.id} value={e.id}>{e.name} ({(e.assigned_stages?.length ? e.assigned_stages : [e.assigned_stage]).map(n => `Stage ${n}`).join(', ')})</option>
               ))}
             </select>
           </div>

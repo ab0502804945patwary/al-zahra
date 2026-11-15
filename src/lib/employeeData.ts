@@ -493,6 +493,7 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     phone: '+966 50 678 9012',
     role: 'employee',
     assigned_stage: 6,
+    assigned_stages: [6, 7, 8],
     designation: 'Government Compliance Officer',
     department: 'Qiwa, Muqeem, GOSI & ZATCA Portals',
     office_location: 'Riyadh HQ - Government Relations',
