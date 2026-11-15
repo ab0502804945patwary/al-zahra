@@ -36,14 +36,36 @@ export async function isMasterPasswordSet() {
   return { set: Boolean(s.value), error: s.error }
 }
 
-export async function verifyMasterPassword(password: string): Promise<{ ok: boolean; error?: string }> {
+const MAX_FAILS = 5
+const LOCK_MS = 15 * 60 * 1000
+
+/** Wrong guesses are counted per user; after 5 misses the user is locked out for 15 minutes. */
+export async function verifyMasterPassword(password: string, userId?: string): Promise<{ ok: boolean; error?: string }> {
   const s = await stored()
   if (s.error) return { ok: false, error: s.error }
   if (!s.value) return { ok: false, error: 'Master password is not set yet. An admin must set it in Settings.' }
+
+  const lockKey = userId ? `mp_fail:${userId}` : null
+  let state: { count: number; until: number } = { count: 0, until: 0 }
+  if (lockKey && s.db) {
+    const { data } = await s.db.from('app_settings').select('value').eq('key', lockKey).maybeSingle()
+    try { if (data?.value) state = JSON.parse(data.value as string) } catch {}
+    if (state.until > Date.now()) {
+      const mins = Math.ceil((state.until - Date.now()) / 60000)
+      return { ok: false, error: `Too many wrong attempts. Try again in ${mins} minute${mins === 1 ? '' : 's'}.` }
+    }
+  }
+
   if (!password || !matches(password, s.value)) {
     await new Promise(r => setTimeout(r, 600)) // slow down guessing
+    if (lockKey && s.db) {
+      const count = state.count + 1
+      const next = count >= MAX_FAILS ? { count: 0, until: Date.now() + LOCK_MS } : { count, until: 0 }
+      await s.db.from('app_settings').upsert({ key: lockKey, value: JSON.stringify(next), updated_at: new Date().toISOString() })
+    }
     return { ok: false, error: 'Wrong master password.' }
   }
+  if (lockKey && s.db && state.count > 0) await s.db.from('app_settings').delete().eq('key', lockKey)
   return { ok: true }
 }
 

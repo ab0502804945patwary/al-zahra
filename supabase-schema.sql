@@ -480,3 +480,7 @@ DROP TRIGGER IF EXISTS guard_stage7 ON stage7_file_ready;
 CREATE TRIGGER guard_stage7 BEFORE INSERT OR UPDATE ON stage7_file_ready FOR EACH ROW EXECUTE FUNCTION guard_staff_entry();
 DROP TRIGGER IF EXISTS guard_stage9 ON stage9_bd_company;
 CREATE TRIGGER guard_stage9 BEFORE INSERT OR UPDATE ON stage9_bd_company FOR EACH ROW EXECUTE FUNCTION guard_staff_entry();
+
+-- NOTE: later migrations live in db/ (run in this order after the file above):
+--   db/rls-lockdown.sql      removes open policies, staff/admin/delete rules, indexes
+--   db/stage3-8-guard.sql    staff lock + auto submission date for Stage 3 and Stage 8

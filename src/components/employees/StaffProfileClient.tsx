@@ -99,9 +99,9 @@ export default function StaffProfileClient({ initialEmployee }: Props) {
 
   // New Task Form State
   const [newTaskForm, setNewTaskForm] = useState({
-    company_id: 'AZC806',
-    company_name: 'Red Sea Medical Supplies',
-    country_of_origin: 'Egypt',
+    company_id: '',
+    company_name: '',
+    country_of_origin: '',
     stage_id: employee.assigned_stage || 1,
     task_title: '',
     status: 'In Progress' as EmployeeTask['status'],
@@ -198,9 +198,9 @@ export default function StaffProfileClient({ initialEmployee }: Props) {
     persistEmployeeUpdate({ ...employee, tasks: updatedTasks })
     setShowAddTask(false)
     setNewTaskForm({
-      company_id: 'AZC806',
-      company_name: 'Red Sea Medical Supplies',
-      country_of_origin: 'Egypt',
+      company_id: '',
+      company_name: '',
+      country_of_origin: '',
       stage_id: employee.assigned_stage || 1,
       task_title: '',
       status: 'In Progress',

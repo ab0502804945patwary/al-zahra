@@ -30,7 +30,7 @@ export async function POST(request: Request) {
     if (!stageEntry || !canAccessStage(me, Number(stageEntry[0]))) return NextResponse.json({ error: 'You cannot delete this.' }, { status: 403 })
   }
 
-  const v = await verifyMasterPassword(String(password || ''))
+  const v = await verifyMasterPassword(String(password || ''), user.id)
   if (!v.ok) return NextResponse.json({ error: v.error }, { status: 403 })
 
   const db = adminDb()
