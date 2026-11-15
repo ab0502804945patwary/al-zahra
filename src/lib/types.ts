@@ -82,6 +82,7 @@ export interface Company {
   id: string
   company_id: string
   country_of_origin?: string
+  province?: string
   company_name: string
   entity_type?: string
   client_name?: string

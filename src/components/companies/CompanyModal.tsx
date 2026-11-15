@@ -38,6 +38,7 @@ import { createClient, isSupabaseConfigured } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { Company } from '@/lib/types'
 import CountrySelect from '@/components/ui/CountrySelect'
+import { regionsFor } from '@/lib/regions'
 
 interface Props {
   company?: Company
@@ -147,7 +148,7 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
     3: 'lg:col-span-3',
   }
   const ICONS: Record<string, any> = {
-    company_id: Hash, country_of_origin: Globe2, entity_type: Layers, company_name: Building2, service_type: Briefcase,
+    company_id: Hash, country_of_origin: Globe2, province: MapPin, entity_type: Layers, company_name: Building2, service_type: Briefcase,
     cr_number: FileText, cr_issue_date: CalendarDays, cr_expire_date: CalendarX2,
     misa_license_no: BadgeCheck, misa_issue_date: CalendarDays, misa_expire_date: CalendarX2,
     tin_number: Receipt, vat_number: Receipt, chamber_registration_no: Building2, gosi_qiwa_status: BadgeCheck,
@@ -187,7 +188,7 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
 
   const profileFields = (
     <>
-      <div className={SPAN[4]}>
+      <div className={SPAN[3]}>
         <div className="flex items-center justify-between mb-1">
           <span className="text-xs font-medium text-slate-700 flex items-center gap-1.5 whitespace-nowrap"><Hash className="w-3.5 h-3.5 text-blue-500" />Company ID *</span>
           {!company && (
@@ -213,12 +214,24 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
         </div>
       </div>
 
-      <div className={SPAN[4]}>
+      <div className={SPAN[3]}>
         <Lbl name="country_of_origin">Country</Lbl>
-        <CountrySelect value={form.country_of_origin} onChange={v => set('country_of_origin', v)} />
+        <CountrySelect value={form.country_of_origin} onChange={v => setForm(p => ({ ...p, country_of_origin: v, province: '' }))} />
       </div>
 
-      <div className={`col-span-2 ${SPAN[4]}`}>
+      <div className={SPAN[3]}>
+        <Lbl name="province">Province / State</Lbl>
+        {regionsFor(form.country_of_origin) ? (
+          <select value={form.province || ''} onChange={e => set('province', e.target.value)} className={inputCls}>
+            <option value="">Select province</option>
+            {regionsFor(form.country_of_origin)!.map(r => <option key={r} value={r}>{r}</option>)}
+          </select>
+        ) : (
+          <input value={form.province || ''} onChange={e => set('province', e.target.value)} placeholder="Type province / state" className={inputCls} />
+        )}
+      </div>
+
+      <div className={`col-span-2 ${SPAN[3]}`}>
         <Lbl name="entity_type">License Type</Lbl>
         <select value={form.entity_type || ''} onChange={e => set('entity_type', e.target.value)} className={inputCls}>
           <option value="">Select license type</option>

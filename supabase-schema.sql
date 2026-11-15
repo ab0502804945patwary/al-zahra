@@ -403,3 +403,6 @@ CREATE TABLE IF NOT EXISTS app_settings (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 ALTER TABLE app_settings ENABLE ROW LEVEL SECURITY;
+
+-- MIGRATION: province / state of the company
+ALTER TABLE companies ADD COLUMN IF NOT EXISTS province TEXT;
