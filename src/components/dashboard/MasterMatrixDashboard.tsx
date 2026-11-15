@@ -167,7 +167,7 @@ export default function MasterMatrixDashboard({ initialCompanies, kpiStats, stag
             <div className="flex items-center gap-2">
               <h2 className="font-bold text-slate-900 text-sm">Master Investor Lifecycle Matrix</h2>
               <span className="text-[10px] font-bold px-2 py-0.5 bg-blue-50 text-blue-700 border border-blue-200 rounded-full">
-                Live 8-Stage Tracker
+                Live 9-Stage Tracker
               </span>
             </div>
             <p className="text-xs text-slate-500 mt-0.5">
