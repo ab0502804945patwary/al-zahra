@@ -24,7 +24,7 @@ const FALLBACK_COMPANIES = [
  * A company is "waiting" for a stage when it is eligible for that stage but has no entry there yet.
  * Staff see only their own stage; admin sees every stage.
  */
-export async function getNotifications(): Promise<AppNotification[]> {
+export async function getNotifications(localCompanies: any[] = []): Promise<AppNotification[]> {
   const cookieStore = await cookies()
   const demo = cookieStore.get('demo_session')?.value
 
@@ -39,6 +39,9 @@ export async function getNotifications(): Promise<AppNotification[]> {
       myStages = stagesOf(emp)
     }
     for (const sid of ids) all[sid] = FALLBACK_STAGE_ENTRIES[sid] || []
+    // demo mode: companies created in the browser (localStorage) are unknown to the server
+    const known = new Set(companies.map(c => c.company_id))
+    companies = [...companies, ...localCompanies.filter(c => c && typeof c.company_id === 'string' && !known.has(c.company_id))]
   } else if (isSupabaseConfigured) {
     const supabase = await createClient()
     const lookup = await createServiceClient()

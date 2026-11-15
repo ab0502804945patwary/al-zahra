@@ -46,7 +46,15 @@ export default function NotificationBell() {
 
   const load = useCallback(async () => {
     try {
-      const res = await fetch('/api/notifications', { cache: 'no-store' })
+      let local = ''
+      try {
+        const stored = JSON.parse(localStorage.getItem('alzahra_companies_data') || '[]')
+        if (Array.isArray(stored) && stored.length) {
+          const slim = stored.filter((c: any) => c?.company_id).map((c: any) => ({ company_id: c.company_id, company_name: c.company_name, entity_type: c.entity_type, service_type: c.service_type }))
+          local = `?local=${encodeURIComponent(JSON.stringify(slim))}`
+        }
+      } catch {}
+      const res = await fetch('/api/notifications' + local, { cache: 'no-store' })
       if (!res.ok) return
       const { items: next } = (await res.json()) as { items: AppNotification[] }
       const prev = known.current
@@ -63,7 +71,9 @@ export default function NotificationBell() {
     const t = setInterval(load, POLL_MS)
     const onFocus = () => load()
     window.addEventListener('focus', onFocus)
+    window.addEventListener('alzahra:companies', onFocus)
     return () => {
+      window.removeEventListener('alzahra:companies', onFocus)
       clearInterval(t)
       window.removeEventListener('focus', onFocus)
     }

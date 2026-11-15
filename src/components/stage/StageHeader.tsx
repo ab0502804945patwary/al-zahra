@@ -106,7 +106,7 @@ export default function StageHeader({ stageId, config, stats, companies, employe
           stageId={stageId}
           isUSACanada={config.hasUSACanada}
           isNameClearance={config.isNameClearance}
-          companies={eligibleIds ? enrichedCompanies.filter(c => eligibleIds.includes(c.company_id)) : enrichedCompanies}
+          companies={eligibleIds ? enrichedCompanies.filter(c => eligibleIds.includes(c.company_id) || (stageId === '1' && !companies.some(s => s.company_id === c.company_id))) : enrichedCompanies}
           eligibilityHint={eligibilityHint}
           employees={employees}
           onClose={() => setShowModal(false)}

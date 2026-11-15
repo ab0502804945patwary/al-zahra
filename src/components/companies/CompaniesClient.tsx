@@ -73,6 +73,7 @@ export default function CompaniesClient({ companies: initialCompanies }: Props) 
       }
       try {
         localStorage.setItem('alzahra_companies_data', JSON.stringify(updated))
+        setTimeout(() => window.dispatchEvent(new Event('alzahra:companies')), 0)
       } catch {}
       return updated
     })
