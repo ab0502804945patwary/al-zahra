@@ -49,7 +49,8 @@ export default function AddEntryModal({ stageId, companies, employees, onClose, 
       company_id: selectedCompanyId,
       client_name: comp?.client_name || comp?.ceo_gm_name || '',
       client_phone: comp?.client_phone || comp?.whatsapp_number || '',
-      category: prev.category || comp?.entity_type || 'Trading License',
+      category: comp?.entity_type || comp?.stage1_category || 'Trading License',
+      priority: stageId === '1' ? prev.priority : (comp?.stage1_priority || prev.priority || ''),
       drive_link: prev.drive_link || comp?.drive_link || '',
       company_name_english: prev.company_name_english || comp?.company_name || '',
       entity_type: prev.entity_type || comp?.entity_type || 'Trading License',
@@ -185,8 +186,18 @@ export default function AddEntryModal({ stageId, companies, employees, onClose, 
                 <p className="sm:col-span-2 text-[10px] text-slate-400 -mt-1">Taken from the company profile. Edit it once in Company Directory.</p>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <Select label="Licensing Category" name="category" options={toOptions(CATEGORIES)} />
-                <Select label="Priority Tier" name="priority" options={toOptions(PRIORITIES)} />
+                <div>
+                  <label className="text-xs font-medium text-slate-700 mb-1 block">Licensing Category</label>
+                  <div className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg bg-slate-50 text-slate-700 min-h-[34px]">{form.category || '—'}</div>
+                </div>
+                {stageId === '1' ? (
+                  <Select label="Priority Tier" name="priority" options={toOptions(PRIORITIES)} />
+                ) : (
+                  <div>
+                  <label className="text-xs font-medium text-slate-700 mb-1 block">Priority Tier</label>
+                  <div className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg bg-slate-50 text-slate-700 min-h-[34px]">{form.priority || '—'}</div>
+                </div>
+                )}
               </div>
               <Select label="Workflow Phase Status" name="current_stage" options={toOptions(PHASE_OPTIONS[stageId] || [])} />
             </>

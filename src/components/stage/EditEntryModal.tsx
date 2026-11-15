@@ -35,7 +35,7 @@ export default function EditEntryModal({ stageId, entry, companies, employees, o
     const dateError = validateDates(form)
     if (dateError) { alert(dateError); return }
     setLoading(true)
-    let payload: Record<string, any> = { ...form, client_name: clientInfo.name || form.client_name, client_phone: clientInfo.phone || form.client_phone }
+    let payload: Record<string, any> = { ...form, client_name: clientInfo.name || form.client_name, client_phone: clientInfo.phone || form.client_phone, category: comp?.entity_type || form.category, ...(stageId !== '1' ? { priority: comp?.stage1_priority || form.priority } : {}) }
     if (!isUSACanada && !isNameClearance) {
       const days = calculateDaysTaken(form.submit_date, form.complete_date)
       const status = calculateStatus(days)
@@ -142,8 +142,18 @@ export default function EditEntryModal({ stageId, entry, companies, employees, o
                 <p className="sm:col-span-2 text-[10px] text-slate-400 -mt-1">Taken from the company profile. Edit it once in Company Directory.</p>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <Sel label="Licensing Category" name="category" options={toOptions(CATEGORIES)} />
-                <Sel label="Priority Tier" name="priority" options={toOptions(PRIORITIES)} />
+                <div>
+                  <label className="text-xs font-medium text-slate-700 mb-1 block">Licensing Category</label>
+                  <div className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg bg-slate-50 text-slate-700 min-h-[34px]">{(comp?.entity_type || form.category) || '—'}</div>
+                </div>
+                {stageId === '1' ? (
+                  <Sel label="Priority Tier" name="priority" options={toOptions(PRIORITIES)} />
+                ) : (
+                  <div>
+                  <label className="text-xs font-medium text-slate-700 mb-1 block">Priority Tier</label>
+                  <div className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg bg-slate-50 text-slate-700 min-h-[34px]">{(comp?.stage1_priority || form.priority) || '—'}</div>
+                </div>
+                )}
               </div>
               <Sel label="Workflow Phase Status" name="current_stage" options={toOptions(PHASE_OPTIONS[stageId] || [])} />
             </>

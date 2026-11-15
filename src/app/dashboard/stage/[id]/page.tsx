@@ -52,7 +52,7 @@ export default async function StagePage({ params }: { params: Promise<{ id: stri
         entriesQuery,
         supabase.from('companies').select('company_id, company_name, country_of_origin, entity_type, service_type, client_name, client_phone').order('company_id'),
         supabase.from('employees').select('id, name, assigned_stage'),
-        ...upstream.map(sid => supabase.from(STAGE_CONFIG[sid].table).select('company_id, submit_date, complete_date, usa_complete_date')),
+        ...upstream.map(sid => supabase.from(STAGE_CONFIG[sid].table).select('company_id, submit_date, complete_date, usa_complete_date, priority, category')),
       ])
       if (eRes.data && eRes.data.length > 0) entries = eRes.data
       if (cRes.data && cRes.data.length > 0) companies = cRes.data
@@ -74,6 +74,14 @@ export default async function StagePage({ params }: { params: Promise<{ id: stri
   const allEntries: StageEntriesMap = {}
   for (const sid of upstream) {
     allEntries[sid] = dbEntries[sid] || FALLBACK_STAGE_ENTRIES[sid] || []
+  }
+  // Details entered in Stage 1 (priority, category) carry over to the later stages
+  if (id !== '1') {
+    const s1 = (dbEntries['1'] || FALLBACK_STAGE_ENTRIES['1'] || []) as any[]
+    companies = companies.map(c => {
+      const e = s1.find(x => x.company_id === c.company_id)
+      return e ? { ...c, stage1_priority: e.priority, stage1_category: e.category } : c
+    })
   }
   const eligibleCompanies = gated
     ? companies.filter(c => isEligibleForStage(id, c, allEntries))
