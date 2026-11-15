@@ -1,12 +1,38 @@
 @import "tailwindcss";
 
+/* Brand palette from the Al Zahra logo: blue #3d5fab, navy #26394f */
+@theme {
+  --color-blue-50: #eef2fa;
+  --color-blue-100: #dde5f4;
+  --color-blue-200: #bccae9;
+  --color-blue-300: #94a9d9;
+  --color-blue-400: #6a85c4;
+  --color-blue-500: #4e6fb5;
+  --color-blue-600: #3d5fab;
+  --color-blue-700: #314c8a;
+  --color-blue-800: #2b4272;
+  --color-blue-900: #26394f;
+  --color-blue-950: #1a2738;
+  --color-slate-900: #26394f;
+  --color-indigo-50: var(--color-blue-50);
+  --color-indigo-100: var(--color-blue-100);
+  --color-indigo-200: var(--color-blue-200);
+  --color-indigo-300: var(--color-blue-300);
+  --color-indigo-400: var(--color-blue-400);
+  --color-indigo-500: var(--color-blue-500);
+  --color-indigo-600: var(--color-blue-600);
+  --color-indigo-700: var(--color-blue-700);
+  --color-indigo-800: var(--color-blue-800);
+  --color-indigo-900: var(--color-blue-900);
+}
+
 @layer base {
   * {
     border-color: #e2e8f0;
   }
   body {
     background-color: #f8fafc;
-    color: #0f172a;
+    color: #26394f;
   }
 }
 
@@ -33,9 +59,9 @@
   border: 1px solid #fecaca;
 }
 .status-pending {
-  background-color: #dbeafe;
-  color: #1d4ed8;
-  border: 1px solid #bfdbfe;
+  background-color: #dde5f4;
+  color: #314c8a;
+  border: 1px solid #bccae9;
 }
 
 /* Gradient backgrounds */
