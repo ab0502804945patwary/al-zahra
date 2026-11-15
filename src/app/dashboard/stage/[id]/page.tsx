@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation'
 import StageTable from '@/components/stage/StageTable'
 import StageHeader from '@/components/stage/StageHeader'
 import { STAGE_CONFIG, FALLBACK_STAGE_ENTRIES } from '@/lib/stageData'
+import { INITIAL_EMPLOYEES } from '@/lib/employeeData'
 import { isEligibleForStage, eligibilityColumns, ELIGIBILITY_HINT, type StageEntriesMap } from '@/lib/stageRules'
 
 export const dynamic = 'force-dynamic'
@@ -33,6 +34,20 @@ export default async function StagePage({ params }: { params: Promise<{ id: stri
   let entries: any[] = []
   let companies: any[] = []
   let employees: any[] = []
+
+  let canEdit = true // admin, or the staff member assigned to this stage
+  const demoId = cookieStore.get('demo_session')?.value
+  if (demoId && demoId !== 'admin') {
+    const emp = INITIAL_EMPLOYEES.find(e => e.id === demoId || e.email === demoId)
+    canEdit = emp?.role === 'admin' || emp?.assigned_stage === Number(id)
+  } else if (!demoId && isSupabaseConfigured) {
+    try {
+      const sb = await createClient()
+      const { data: { user } } = await sb.auth.getUser()
+      const { data: me } = await sb.from('employees').select('role, assigned_stage').eq('user_id', user?.id ?? '').single()
+      if (me) canEdit = me.role === 'admin' || me.assigned_stage === Number(id)
+    } catch {}
+  }
 
   const gated = ['2', '3', '4', '5', '6', '7'].includes(id)
   const upstream = gated ? ['1', '2', '3', '4', '5', '6'].filter(sid => Number(sid) < Number(id)) : []
@@ -108,6 +123,7 @@ export default async function StagePage({ params }: { params: Promise<{ id: stri
         employees={employees}
         eligibleIds={eligibleCompanies.filter(c => !entries.some(e => e.company_id === c.company_id)).map(c => c.company_id)}
         eligibilityHint={eligibilityHint}
+        canEdit={canEdit}
       />
       <StageTable
         stageId={id}
@@ -116,6 +132,7 @@ export default async function StagePage({ params }: { params: Promise<{ id: stri
         employees={employees}
         isUSACanada={config.hasUSACanada}
         isNameClearance={config.isNameClearance}
+        canEdit={canEdit}
       />
     </div>
   )

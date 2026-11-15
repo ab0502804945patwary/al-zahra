@@ -82,9 +82,10 @@ interface Props {
   employees: any[]
   isUSACanada?: boolean
   isNameClearance?: boolean
+  canEdit?: boolean
 }
 
-export default function StageTable({ stageId, entries, companies, employees, isUSACanada, isNameClearance }: Props) {
+export default function StageTable({ stageId, entries, companies, employees, isUSACanada, isNameClearance, canEdit = true }: Props) {
   const [editEntry, setEditEntry] = useState<any>(null)
   const [search, setSearch] = useState('')
 
@@ -156,9 +157,9 @@ export default function StageTable({ stageId, entries, companies, employees, isU
                   <td className="py-3 px-4"><MilestoneBadge status={e.cr_status} /></td>
                   <td className="py-3 px-4 text-slate-400 max-w-32 truncate">{e.notes || '—'}</td>
                   <td className="py-3 px-4 text-right">
-                    <button onClick={() => setEditEntry(e)} className="p-1.5 hover:bg-slate-100 rounded-md transition text-slate-400 hover:text-slate-600">
+                    {canEdit && (<button onClick={() => setEditEntry(e)} className="p-1.5 hover:bg-slate-100 rounded-md transition text-slate-400 hover:text-slate-600">
                       <Edit2 className="w-3.5 h-3.5" />
-                    </button>
+                    </button>)}
                   </td>
                 </tr>
               ))}
@@ -263,9 +264,9 @@ export default function StageTable({ stageId, entries, companies, employees, isU
                   </td>
                   <td className="py-3 px-4 whitespace-nowrap">{e.employees?.name || '—'}</td>
                   <td className="py-3 px-4 text-right">
-                    <button onClick={() => setEditEntry(e)} className="p-1.5 hover:bg-slate-100 rounded-md transition text-slate-400 hover:text-slate-600">
+                    {canEdit && (<button onClick={() => setEditEntry(e)} className="p-1.5 hover:bg-slate-100 rounded-md transition text-slate-400 hover:text-slate-600">
                       <Edit2 className="w-3.5 h-3.5" />
-                    </button>
+                    </button>)}
                   </td>
                 </tr>
               ))}
@@ -386,9 +387,9 @@ export default function StageTable({ stageId, entries, companies, employees, isU
                   ) : '—'}
                 </td>
                 <td className="py-3 px-4 text-right">
-                  <button onClick={() => setEditEntry(e)} className="p-1.5 hover:bg-slate-100 rounded-md transition text-slate-400 hover:text-slate-600">
+                  {canEdit && (<button onClick={() => setEditEntry(e)} className="p-1.5 hover:bg-slate-100 rounded-md transition text-slate-400 hover:text-slate-600">
                     <Edit2 className="w-3.5 h-3.5" />
-                  </button>
+                  </button>)}
                 </td>
               </tr>
             ))}

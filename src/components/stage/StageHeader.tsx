@@ -17,10 +17,11 @@ interface Props {
   companies: any[]
   employees: any[]
   eligibleIds?: string[]
+  canEdit?: boolean
   eligibilityHint?: string
 }
 
-export default function StageHeader({ stageId, config, stats, companies, employees, eligibleIds, eligibilityHint }: Props) {
+export default function StageHeader({ stageId, config, stats, companies, employees, eligibleIds, eligibilityHint, canEdit = true }: Props) {
   const [showModal, setShowModal] = useState(false)
   const [enrichedCompanies, setEnrichedCompanies] = useState<any[]>(companies)
 
@@ -70,12 +71,16 @@ export default function StageHeader({ stageId, config, stats, companies, employe
           <h1 className="text-2xl font-bold text-slate-900 tracking-tight mt-1">{config.label}</h1>
         </div>
 
+        {canEdit ? (
         <button
           onClick={() => setShowModal(true)}
           className="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg shadow-sm transition-all"
         >
           <Plus className="w-4 h-4" /> Add Record
         </button>
+        ) : (
+          <span className="text-[11px] font-medium text-slate-500 bg-slate-100 border border-slate-200 rounded-lg px-3 py-2">View only — this stage is handled by another team member</span>
+        )}
       </div>
 
       {/* KPI metrics row */}
