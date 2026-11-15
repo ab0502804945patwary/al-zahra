@@ -34,7 +34,7 @@ export default function CompaniesClient({ companies: initialCompanies }: Props) 
     </span>
   ) : (
     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200">
-      A2Z Setup
+      New Company
     </span>
   )
 
@@ -138,7 +138,7 @@ export default function CompaniesClient({ companies: initialCompanies }: Props) 
           <div className="inline-flex rounded-lg border border-slate-200 bg-white p-0.5 text-xs font-semibold">
             {([
               ['all', `All (${companiesList.length})`],
-              ['a2z', `A2Z Setup (${companiesList.length - renewalCount})`],
+              ['a2z', `New Company (${companiesList.length - renewalCount})`],
               ['renewal', `Renewal / Other (${renewalCount})`],
             ] as const).map(([k, label]) => (
               <button
