@@ -28,6 +28,7 @@ export default async function StagePage({ params }: { params: Promise<{ id: stri
   // Staff may only open the stages they are assigned to (admins: all stages)
   if (!canAccessStage(me, Number(id))) redirect('/dashboard')
   const canEdit = true
+  const isAdmin = me?.role === 'admin'
 
   const gated = ['2', '3', '4', '5', '6', '7'].includes(id)
   const upstream = gated ? ['1', '2', '3', '4', '5', '6'].filter(sid => Number(sid) < Number(id)) : []
@@ -91,6 +92,7 @@ export default async function StagePage({ params }: { params: Promise<{ id: stri
         eligibleIds={eligibleCompanies.filter(c => !entries.some(e => e.company_id === c.company_id)).map(c => c.company_id)}
         eligibilityHint={eligibilityHint}
         canEdit={canEdit}
+        isAdmin={isAdmin}
       />
       <StageTable
         stageId={id}
@@ -100,6 +102,7 @@ export default async function StagePage({ params }: { params: Promise<{ id: stri
         isUSACanada={config.hasUSACanada}
         isNameClearance={config.isNameClearance}
         canEdit={canEdit}
+        isAdmin={isAdmin}
       />
       {!config.isNameClearance && <StatusGuide />}
     </div>

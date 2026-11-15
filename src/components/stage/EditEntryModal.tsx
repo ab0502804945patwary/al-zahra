@@ -16,11 +16,11 @@ const STAGE_TABLES: Record<string, string> = {
 
 interface Props {
   stageId: string; entry: any; companies: any[]; employees: any[]; onClose: () => void
-  isUSACanada?: boolean; isNameClearance?: boolean
+  isUSACanada?: boolean; isNameClearance?: boolean; isAdmin?: boolean
 }
 
 import { useSecureDelete } from '@/components/ui/useSecureDelete'
-export default function EditEntryModal({ stageId, entry, companies, employees, onClose, isUSACanada, isNameClearance }: Props) {
+export default function EditEntryModal({ stageId, entry, companies, employees, onClose, isUSACanada, isNameClearance, isAdmin = false }: Props) {
   const router = useRouter()
   const supabase = createClient()
   const { askDelete, dialog } = useSecureDelete()
@@ -170,7 +170,7 @@ export default function EditEntryModal({ stageId, entry, companies, employees, o
                 <Field label="Clearance Reference Number" name="name_clearance_number" />
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <Field label="Submission Date" name="submit_date" type="date" />
+                <Field label="Submission Date" name="submit_date" type="date" disabled={!isAdmin} hint={!isAdmin ? "Fixed — only an admin can change it" : undefined} />
                 <Field label="Approval Date" name="approval_date" type="date" />
                 
               </div>
@@ -186,7 +186,7 @@ export default function EditEntryModal({ stageId, entry, companies, employees, o
           ) : (
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <Field label="Submission Date" name="submit_date" type="date" />
+                <Field label="Submission Date" name="submit_date" type="date" disabled={!isAdmin} hint={!isAdmin ? "Fixed — only an admin can change it" : undefined} />
                 <Field label="Target SLA Date" name="target_date" type="date" />
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

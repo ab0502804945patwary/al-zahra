@@ -1,7 +1,7 @@
 'use client'
 import { matchesQuery } from '@/lib/search'
 import { useState } from 'react'
-import { ExternalLink, Edit2, Search, CheckCircle2, Clock, AlertTriangle, AlertCircle, FileText } from 'lucide-react'
+import { ExternalLink, Lock, Edit2, Search, CheckCircle2, Clock, AlertTriangle, AlertCircle, FileText } from 'lucide-react'
 import { cn, formatDate } from '@/lib/utils'
 import { Flag } from '@/components/ui/CountrySelect'
 import EditEntryModal from './EditEntryModal'
@@ -84,10 +84,13 @@ interface Props {
   isUSACanada?: boolean
   isNameClearance?: boolean
   canEdit?: boolean
+  isAdmin?: boolean
 }
 
-export default function StageTable({ stageId, entries: serverEntries, companies, employees, isUSACanada, isNameClearance, canEdit = true }: Props) {
+export default function StageTable({ stageId, entries: serverEntries, companies, employees, isUSACanada, isNameClearance, canEdit = true, isAdmin = false }: Props) {
   const [editEntry, setEditEntry] = useState<any>(null)
+  // Staff cannot change a record once it is completed/submitted; admins always can
+  const isLocked = (e: any) => !isAdmin && Boolean(e.complete_date || e.usa_complete_date || e.approval_date)
   const [search, setSearch] = useState('')
   const entries = serverEntries
 
@@ -160,7 +163,7 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
                   <td className="py-3 px-4"><MilestoneBadge status={e.cr_status} /></td>
                   <td className="py-3 px-4 text-slate-400 max-w-32 truncate">{e.notes || '—'}</td>
                   <td className="py-3 px-4 text-right">
-                    {canEdit && (<button onClick={() => setEditEntry(e)} className="p-1.5 hover:bg-slate-100 rounded-md transition text-slate-400 hover:text-slate-600">
+                    {canEdit && isLocked(e) ? (<span title="Submitted — locked. Only an admin can edit." className="p-1.5 text-slate-300 inline-block"><Lock className="w-3.5 h-3.5" /></span>) : canEdit && (<button onClick={() => setEditEntry(e)} className="p-1.5 hover:bg-slate-100 rounded-md transition text-slate-400 hover:text-slate-600">
                       <Edit2 className="w-3.5 h-3.5" />
                     </button>)}
                   </td>
@@ -169,7 +172,7 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
             </tbody>
           </table>
         </div>
-        {editEntry && <EditEntryModal stageId={stageId} entry={editEntry} companies={companies} employees={employees} isNameClearance onClose={() => setEditEntry(null)} />}
+        {editEntry && <EditEntryModal isAdmin={isAdmin} stageId={stageId} entry={editEntry} companies={companies} employees={employees} isNameClearance onClose={() => setEditEntry(null)} />}
       </div>
     )
   }
@@ -267,7 +270,7 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
                   </td>
                   <td className="py-3 px-4 whitespace-nowrap">{e.employees?.name || '—'}</td>
                   <td className="py-3 px-4 text-right">
-                    {canEdit && (<button onClick={() => setEditEntry(e)} className="p-1.5 hover:bg-slate-100 rounded-md transition text-slate-400 hover:text-slate-600">
+                    {canEdit && isLocked(e) ? (<span title="Submitted — locked. Only an admin can edit." className="p-1.5 text-slate-300 inline-block"><Lock className="w-3.5 h-3.5" /></span>) : canEdit && (<button onClick={() => setEditEntry(e)} className="p-1.5 hover:bg-slate-100 rounded-md transition text-slate-400 hover:text-slate-600">
                       <Edit2 className="w-3.5 h-3.5" />
                     </button>)}
                   </td>
@@ -276,7 +279,7 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
             </tbody>
           </table>
         </div>
-        {editEntry && <EditEntryModal stageId={stageId} entry={editEntry} companies={companies} employees={employees} isUSACanada onClose={() => setEditEntry(null)} />}
+        {editEntry && <EditEntryModal isAdmin={isAdmin} stageId={stageId} entry={editEntry} companies={companies} employees={employees} isUSACanada onClose={() => setEditEntry(null)} />}
       </div>
     )
   }
@@ -408,7 +411,7 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
                   ) : '—'}
                 </td>
                 <td className="py-3 px-4 text-right">
-                  {canEdit && (<button onClick={() => setEditEntry(e)} className="p-1.5 hover:bg-slate-100 rounded-md transition text-slate-400 hover:text-slate-600">
+                  {canEdit && isLocked(e) ? (<span title="Submitted — locked. Only an admin can edit." className="p-1.5 text-slate-300 inline-block"><Lock className="w-3.5 h-3.5" /></span>) : canEdit && (<button onClick={() => setEditEntry(e)} className="p-1.5 hover:bg-slate-100 rounded-md transition text-slate-400 hover:text-slate-600">
                     <Edit2 className="w-3.5 h-3.5" />
                   </button>)}
                 </td>
@@ -417,7 +420,7 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
           </tbody>
         </table>
       </div>
-      {editEntry && <EditEntryModal stageId={stageId} entry={editEntry} companies={companies} employees={employees} onClose={() => setEditEntry(null)} />}
+      {editEntry && <EditEntryModal isAdmin={isAdmin} stageId={stageId} entry={editEntry} companies={companies} employees={employees} onClose={() => setEditEntry(null)} />}
     </div>
   )
 }

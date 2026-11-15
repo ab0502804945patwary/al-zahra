@@ -30,15 +30,16 @@ interface Props {
   eligibilityHint?: string
   stageId: string; companies: any[]; employees: any[]; onClose: () => void
   initialCompanyId?: string
+  isAdmin?: boolean
   isUSACanada?: boolean; isNameClearance?: boolean
 }
 
-export default function AddEntryModal({ stageId, companies, employees, onClose, isUSACanada, isNameClearance, eligibilityHint, initialCompanyId }: Props) {
+export default function AddEntryModal({ stageId, companies, employees, onClose, isUSACanada, isNameClearance, eligibilityHint, initialCompanyId, isAdmin = false }: Props) {
   const router = useRouter()
   const supabase = createClient()
   const [loading, setLoading] = useState(false)
   const [form, setForm] = useState<Record<string, string>>({
-    submit_date: new Date().toISOString().slice(0, 10),
+    submit_date: new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10), // today (local)
     current_stage: (PHASE_OPTIONS[stageId] || [])[0] || '',
     ...(stageId === '9' ? { country: 'Bangladesh' } : {}),
     employee_id: employees.find(e => String(e.assigned_stage) === stageId)?.id || '',
@@ -210,7 +211,7 @@ export default function AddEntryModal({ stageId, companies, employees, onClose, 
                 <Field label="Official Arabic Name" name="arabic_name" />
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <Field label="Submission Date" name="submit_date" type="date" />
+                <Field label="Submission Date" name="submit_date" type="date" disabled={!isAdmin} hint={!isAdmin ? "Set automatically to today" : undefined} />
                 <Field label="Approval Date" name="approval_date" type="date" />
                 
               </div>
@@ -226,7 +227,7 @@ export default function AddEntryModal({ stageId, companies, employees, onClose, 
           ) : (
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <Field label="Submission Date" name="submit_date" type="date" />
+                <Field label="Submission Date" name="submit_date" type="date" disabled={!isAdmin} hint={!isAdmin ? "Set automatically to today" : undefined} />
                 <Field label="Target SLA Date" name="target_date" type="date" />
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

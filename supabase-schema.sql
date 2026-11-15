@@ -444,3 +444,39 @@ DROP POLICY IF EXISTS "emp_stage9" ON stage9_bd_company;
 CREATE POLICY "admin_stage9" ON stage9_bd_company FOR ALL USING (get_user_role() = 'admin');
 CREATE POLICY "emp_stage9" ON stage9_bd_company FOR ALL USING (user_has_stage(9));
 NOTIFY pgrst, 'reload schema';
+-- ============================================
+-- MIGRATION: staff cannot edit a submitted (completed) record; submission date is automatic for staff.
+-- Admins and server tools (service role) are not restricted.
+-- ============================================
+CREATE OR REPLACE FUNCTION guard_staff_entry() RETURNS trigger AS $$
+DECLARE r text;
+BEGIN
+  IF auth.uid() IS NULL THEN RETURN NEW; END IF;
+  r := get_user_role();
+  IF r = 'admin' THEN RETURN NEW; END IF;
+  IF TG_OP = 'INSERT' THEN
+    NEW.submit_date := (now() AT TIME ZONE 'Asia/Riyadh')::date;
+    RETURN NEW;
+  END IF;
+  IF OLD.complete_date IS NOT NULL THEN
+    RAISE EXCEPTION 'This record is submitted and locked. Only an admin can change it.';
+  END IF;
+  NEW.submit_date := OLD.submit_date;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+DROP TRIGGER IF EXISTS guard_stage1 ON stage1_mother_company;
+CREATE TRIGGER guard_stage1 BEFORE INSERT OR UPDATE ON stage1_mother_company FOR EACH ROW EXECUTE FUNCTION guard_staff_entry();
+DROP TRIGGER IF EXISTS guard_stage2 ON stage2_activity_list;
+CREATE TRIGGER guard_stage2 BEFORE INSERT OR UPDATE ON stage2_activity_list FOR EACH ROW EXECUTE FUNCTION guard_staff_entry();
+DROP TRIGGER IF EXISTS guard_stage4 ON stage4_misa_license;
+CREATE TRIGGER guard_stage4 BEFORE INSERT OR UPDATE ON stage4_misa_license FOR EACH ROW EXECUTE FUNCTION guard_staff_entry();
+DROP TRIGGER IF EXISTS guard_stage5 ON stage5_commercial_registration;
+CREATE TRIGGER guard_stage5 BEFORE INSERT OR UPDATE ON stage5_commercial_registration FOR EACH ROW EXECUTE FUNCTION guard_staff_entry();
+DROP TRIGGER IF EXISTS guard_stage6 ON stage6_other_websites;
+CREATE TRIGGER guard_stage6 BEFORE INSERT OR UPDATE ON stage6_other_websites FOR EACH ROW EXECUTE FUNCTION guard_staff_entry();
+DROP TRIGGER IF EXISTS guard_stage7 ON stage7_file_ready;
+CREATE TRIGGER guard_stage7 BEFORE INSERT OR UPDATE ON stage7_file_ready FOR EACH ROW EXECUTE FUNCTION guard_staff_entry();
+DROP TRIGGER IF EXISTS guard_stage9 ON stage9_bd_company;
+CREATE TRIGGER guard_stage9 BEFORE INSERT OR UPDATE ON stage9_bd_company FOR EACH ROW EXECUTE FUNCTION guard_staff_entry();

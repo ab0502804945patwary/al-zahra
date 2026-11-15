@@ -18,10 +18,11 @@ interface Props {
   employees: any[]
   eligibleIds?: string[]
   canEdit?: boolean
+  isAdmin?: boolean
   eligibilityHint?: string
 }
 
-export default function StageHeader({ stageId, config, stats, companies, employees, eligibleIds, eligibilityHint, canEdit = true }: Props) {
+export default function StageHeader({ stageId, config, stats, companies, employees, eligibleIds, eligibilityHint, canEdit = true, isAdmin = false }: Props) {
   const [showModal, setShowModal] = useState(false)
   const [startFor, setStartFor] = useState<string | undefined>()
   // Companies that reached this stage and are waiting for the assigned staff to start
@@ -111,6 +112,7 @@ export default function StageHeader({ stageId, config, stats, companies, employe
         <AddEntryModal
           stageId={stageId}
           initialCompanyId={startFor}
+          isAdmin={isAdmin}
           isUSACanada={config.hasUSACanada}
           isNameClearance={config.isNameClearance}
           companies={eligibleIds ? companies.filter(c => eligibleIds.includes(c.company_id)) : companies}

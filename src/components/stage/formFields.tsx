@@ -7,7 +7,7 @@ export const FormCtx = createContext<Ctx>({ form: {}, set: () => {} })
 
 const inputCls = 'w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white'
 
-export function Field({ label, name, type = 'text', required = false }: { label: string; name: string; type?: string; required?: boolean }) {
+export function Field({ label, name, type = 'text', required = false, disabled = false, hint }: { label: string; name: string; type?: string; required?: boolean; disabled?: boolean; hint?: string }) {
   const { form, set } = useContext(FormCtx)
   return (
     <div>
@@ -19,8 +19,10 @@ export function Field({ label, name, type = 'text', required = false }: { label:
         required={required}
         value={form[name] || ''}
         onChange={e => set(name, e.target.value)}
-        className={inputCls}
+        disabled={disabled}
+        className={inputCls + (disabled ? ' bg-slate-50 text-slate-500 cursor-not-allowed' : '')}
       />
+      {hint && <p className="text-[10px] text-slate-400 mt-0.5">{hint}</p>}
     </div>
   )
 }
