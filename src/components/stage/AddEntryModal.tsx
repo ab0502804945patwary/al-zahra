@@ -4,6 +4,7 @@ import { X, Loader2, Globe, Building2, User, FileText, CheckCircle2, Sparkles } 
 import { createClient, isSupabaseConfigured } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import BdFields from './BdFields'
+import { FormCtx, Field, Select } from './formFields'
 import { COUNTRIES, CATEGORIES, PAYMENT_STATUSES, PRIORITIES, PHASE_OPTIONS, FOREIGN_FILING_OPTIONS, CANADA_OPTIONS, CR_STATUSES, toOptions, pickColumns, validateDates } from '@/lib/stageRules'
 import { calculateNameClearance, calculateOverdue, calculateDaysTaken, calculateStatus, calculateCompletion } from '@/lib/utils'
 
@@ -101,54 +102,8 @@ export default function AddEntryModal({ stageId, companies, employees, onClose, 
     setLoading(false)
   }
 
-  const Field = ({ label, name, type = 'text', required = false }: { label: string; name: string; type?: string; required?: boolean }) => (
-    <div>
-      <label className="text-xs font-medium text-slate-700 mb-1 block">
-        {label}{required && <span className="text-rose-500 ml-0.5">*</span>}
-      </label>
-      <input
-        type={type}
-        required={required}
-        value={form[name] || ''}
-        onChange={e => set(name, e.target.value)}
-        className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
-      />
-    </div>
-  )
-
-  const Select = ({
-    label,
-    name,
-    options,
-    required = false,
-    onChange
-  }: {
-    label: string
-    name: string
-    options: { value: string; label: string }[]
-    required?: boolean
-    onChange?: (val: string) => void
-  }) => (
-    <div>
-      <label className="text-xs font-medium text-slate-700 mb-1 block">
-        {label}{required && <span className="text-rose-500 ml-0.5">*</span>}
-      </label>
-      <select
-        required={required}
-        value={form[name] || ''}
-        onChange={e => {
-          set(name, e.target.value)
-          if (onChange) onChange(e.target.value)
-        }}
-        className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-slate-700"
-      >
-        <option value="">Select option...</option>
-        {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-      </select>
-    </div>
-  )
-
   return (
+    <FormCtx.Provider value={{ form, set }}>
     <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto border border-slate-100">
         <div className="flex items-center justify-between p-5 border-b border-slate-100 sticky top-0 bg-white z-10">
@@ -312,5 +267,6 @@ export default function AddEntryModal({ stageId, companies, employees, onClose, 
         </form>
       </div>
     </div>
+    </FormCtx.Provider>
   )
 }

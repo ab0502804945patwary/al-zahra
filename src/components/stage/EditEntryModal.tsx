@@ -4,6 +4,7 @@ import { X, Loader2, Trash2 } from 'lucide-react'
 import { createClient, isSupabaseConfigured } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import BdFields from './BdFields'
+import { FormCtx, Field, Select as Sel } from './formFields'
 import { COUNTRIES, CATEGORIES, PAYMENT_STATUSES, PRIORITIES, PHASE_OPTIONS, FOREIGN_FILING_OPTIONS, CANADA_OPTIONS, CR_STATUSES, toOptions, pickColumns, validateDates } from '@/lib/stageRules'
 import { calculateNameClearance, calculateOverdue, calculateDaysTaken, calculateStatus, calculateCompletion } from '@/lib/utils'
 
@@ -75,33 +76,8 @@ export default function EditEntryModal({ stageId, entry, companies, employees, o
     onClose()
   }
 
-  const Field = ({ label, name, type = 'text' }: { label: string; name: string; type?: string }) => (
-    <div>
-      <label className="text-xs font-medium text-slate-700 mb-1 block">{label}</label>
-      <input
-        type={type}
-        value={form[name] || ''}
-        onChange={e => set(name, e.target.value)}
-        className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-      />
-    </div>
-  )
-
-  const Sel = ({ label, name, options }: { label: string; name: string; options: { value: string; label: string }[] }) => (
-    <div>
-      <label className="text-xs font-medium text-slate-700 mb-1 block">{label}</label>
-      <select
-        value={form[name] || ''}
-        onChange={e => set(name, e.target.value)}
-        className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-slate-700"
-      >
-        <option value="">Select option...</option>
-        {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-      </select>
-    </div>
-  )
-
   return (
+    <FormCtx.Provider value={{ form, set }}>
     <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       {dialog}
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto border border-slate-100">
@@ -259,5 +235,6 @@ export default function EditEntryModal({ stageId, entry, companies, employees, o
         </form>
       </div>
     </div>
+    </FormCtx.Provider>
   )
 }
