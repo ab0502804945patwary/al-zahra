@@ -332,8 +332,8 @@ export default function StageTable({ stageId, entries, companies, employees, isU
                   <div className="text-slate-400 text-[10px] flex items-center gap-1"><Flag country={e.companies?.country_of_origin} />{e.companies?.country_of_origin}</div>
                 </td>
                 <td className="py-3 px-4">
-                  <div className="font-medium text-slate-800">{e.client_name || '—'}</div>
-                  <div className="text-slate-400 text-[11px] font-mono">{e.client_phone || ''}</div>
+                  <div className="font-medium text-slate-800">{companies.find(c => c.company_id === e.company_id)?.client_name || e.client_name || '—'}</div>
+                  <div className="text-slate-400 text-[11px] font-mono">{companies.find(c => c.company_id === e.company_id)?.client_phone || e.client_phone || ''}</div>
                 </td>
                 <td className="py-3 px-4">{e.category || '—'}</td>
                 <td className="py-3 px-4 text-slate-500">{e.priority || '—'}</td>

@@ -382,3 +382,7 @@ ALTER TABLE companies ADD COLUMN IF NOT EXISTS service_type TEXT DEFAULT 'a2z';
 
 -- MIGRATION: Account handler name on companies
 ALTER TABLE companies ADD COLUMN IF NOT EXISTS employee TEXT;
+
+-- MIGRATION: Client contact stored once on the company (stages read it from here)
+ALTER TABLE companies ADD COLUMN IF NOT EXISTS client_name TEXT;
+ALTER TABLE companies ADD COLUMN IF NOT EXISTS client_phone TEXT;

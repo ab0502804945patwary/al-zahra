@@ -40,14 +40,15 @@ export default function AddEntryModal({ stageId, companies, employees, onClose, 
   })
 
   const set = (k: string, v: string) => setForm(prev => ({ ...prev, [k]: v }))
+  const clientInfo = { name: form.client_name, phone: form.client_phone }
 
   function handleCompanySelect(selectedCompanyId: string) {
     const comp = companies.find(c => c.company_id === selectedCompanyId)
     setForm(prev => ({
       ...prev,
       company_id: selectedCompanyId,
-      client_name: prev.client_name || comp?.ceo_gm_name || comp?.client_name || '',
-      client_phone: prev.client_phone || comp?.whatsapp_number || comp?.client_phone || '',
+      client_name: comp?.client_name || comp?.ceo_gm_name || '',
+      client_phone: comp?.client_phone || comp?.whatsapp_number || '',
       category: prev.category || comp?.entity_type || 'Trading License',
       drive_link: prev.drive_link || comp?.drive_link || '',
       company_name_english: prev.company_name_english || comp?.company_name || '',
@@ -173,8 +174,15 @@ export default function AddEntryModal({ stageId, companies, employees, onClose, 
           {!isNameClearance && (
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <Field label="Authorized Client Contact" name="client_name" />
-                <Field label="Contact Phone" name="client_phone" />
+                <div>
+                  <label className="text-xs font-medium text-slate-700 mb-1 block">Authorized Client Contact</label>
+                  <div className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg bg-slate-50 text-slate-700 min-h-[34px]">{clientInfo.name || '—'}</div>
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-slate-700 mb-1 block">Contact Phone</label>
+                  <div className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg bg-slate-50 text-slate-700 min-h-[34px] font-mono">{clientInfo.phone || '—'}</div>
+                </div>
+                <p className="sm:col-span-2 text-[10px] text-slate-400 -mt-1">Taken from the company profile. Edit it once in Company Directory.</p>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <Select label="Licensing Category" name="category" options={toOptions(CATEGORIES)} />

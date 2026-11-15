@@ -50,7 +50,7 @@ export default async function StagePage({ params }: { params: Promise<{ id: stri
 
       const [eRes, cRes, empRes, ...upRes] = await Promise.all([
         entriesQuery,
-        supabase.from('companies').select('company_id, company_name, country_of_origin, entity_type, service_type').order('company_id'),
+        supabase.from('companies').select('company_id, company_name, country_of_origin, entity_type, service_type, client_name, client_phone').order('company_id'),
         supabase.from('employees').select('id, name, assigned_stage'),
         ...upstream.map(sid => supabase.from(STAGE_CONFIG[sid].table).select('company_id, submit_date, complete_date, usa_complete_date')),
       ])

@@ -240,6 +240,15 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
         />
       </div>
 
+      <div className={SPAN[6]}>
+        <label className="block"><Lbl name="ceo_gm_name">Client Contact Name</Lbl></label>
+        <input type="text" value={form.client_name || ''} onChange={e => set('client_name', e.target.value)} placeholder="Authorized contact person" className={inputCls} />
+      </div>
+      <div className={SPAN[6]}>
+        <label className="block"><Lbl name="shareholder_phone">Client Phone</Lbl></label>
+        <input type="text" value={form.client_phone || ''} onChange={e => set('client_phone', e.target.value)} placeholder="e.g. 05xxxxxxxx" className={inputCls} />
+      </div>
+
       <div className={SPAN[12]}>
         <Lbl name="service_type">Service Type</Lbl>
         <div className="grid grid-cols-2 gap-2 sm:gap-3">

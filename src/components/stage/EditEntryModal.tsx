@@ -24,13 +24,18 @@ export default function EditEntryModal({ stageId, entry, companies, employees, o
   const [deleting, setDeleting] = useState(false)
   const [form, setForm] = useState<Record<string, string>>(entry)
   const set = (k: string, v: string) => setForm(prev => ({ ...prev, [k]: v }))
+  const comp = companies.find(c => c.company_id === form.company_id)
+  const clientInfo = {
+    name: comp?.client_name || comp?.ceo_gm_name || form.client_name,
+    phone: comp?.client_phone || comp?.whatsapp_number || form.client_phone,
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     const dateError = validateDates(form)
     if (dateError) { alert(dateError); return }
     setLoading(true)
-    let payload: Record<string, any> = { ...form }
+    let payload: Record<string, any> = { ...form, client_name: clientInfo.name || form.client_name, client_phone: clientInfo.phone || form.client_phone }
     if (!isUSACanada && !isNameClearance) {
       const days = calculateDaysTaken(form.submit_date, form.complete_date)
       const status = calculateStatus(days)
@@ -126,8 +131,15 @@ export default function EditEntryModal({ stageId, entry, companies, employees, o
           {!isNameClearance && (
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <Field label="Authorized Client Contact" name="client_name" />
-                <Field label="Contact Phone" name="client_phone" />
+                <div>
+                  <label className="text-xs font-medium text-slate-700 mb-1 block">Authorized Client Contact</label>
+                  <div className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg bg-slate-50 text-slate-700 min-h-[34px]">{clientInfo.name || '—'}</div>
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-slate-700 mb-1 block">Contact Phone</label>
+                  <div className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg bg-slate-50 text-slate-700 min-h-[34px] font-mono">{clientInfo.phone || '—'}</div>
+                </div>
+                <p className="sm:col-span-2 text-[10px] text-slate-400 -mt-1">Taken from the company profile. Edit it once in Company Directory.</p>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <Sel label="Licensing Category" name="category" options={toOptions(CATEGORIES)} />
