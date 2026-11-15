@@ -28,9 +28,9 @@ export default function StageHeader({ stageId, config, stats, companies, employe
   const waiting = canEdit && eligibleIds ? companies.filter(c => eligibleIds.includes(c.company_id) && c.service_type !== 'renewal') : []
   const kpis = [
     { label: 'Total Files', value: stats.total, icon: Layers, color: 'text-blue-600', bg: 'bg-blue-50' },
-    { label: 'On Track (≤10d)', value: stats.green, icon: CheckCircle2, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-    { label: 'Caution (11-13d)', value: stats.yellow, icon: AlertTriangle, color: 'text-amber-600', bg: 'bg-amber-50' },
-    { label: 'Overdue (>13d)', value: stats.red, icon: AlertCircle, color: 'text-rose-600', bg: 'bg-rose-50' },
+    { label: 'On Time', value: stats.green, icon: CheckCircle2, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+    { label: 'Caution (≤3d)', value: stats.yellow, icon: AlertTriangle, color: 'text-amber-600', bg: 'bg-amber-50' },
+    { label: 'Overdue', value: stats.red, icon: AlertCircle, color: 'text-rose-600', bg: 'bg-rose-50' },
     { label: 'Completed', value: stats.completed, icon: CheckCircle2, color: 'text-teal-600', bg: 'bg-teal-50' },
   ]
 

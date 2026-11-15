@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import BdFields from './BdFields'
 import { FormCtx, Field, Select } from './formFields'
 import { COUNTRIES, CATEGORIES, PAYMENT_STATUSES, PRIORITIES, PHASE_OPTIONS, FOREIGN_FILING_OPTIONS, CANADA_OPTIONS, CR_STATUSES, toOptions, pickColumns, validateDates } from '@/lib/stageRules'
-import { calculateNameClearance, calculateOverdue, calculateDaysTaken, calculateStatus, calculateCompletion } from '@/lib/utils'
+import { calculateNameClearance, assessTiming } from '@/lib/utils'
 
 const STAGE_TABLES: Record<string, string> = {
   '1': 'stage1_mother_company', '2': 'stage2_activity_list', '3': 'stage3_foreign_company',
@@ -74,11 +74,8 @@ export default function AddEntryModal({ stageId, companies, employees, onClose, 
     let payload: Record<string, any> = { ...form }
 
     if (!isUSACanada && !isNameClearance) {
-      const days = calculateDaysTaken(form.submit_date, form.complete_date)
-      const status = calculateStatus(days)
-      const completion = calculateCompletion(status)
-      const overdue = calculateOverdue(form.complete_date, form.target_date)
-      payload = { ...payload, days_taken: days, status, completion_percent: completion, overdue_status: overdue }
+      const t = assessTiming(form.submit_date, form.target_date, form.complete_date)
+      payload = { ...payload, days_taken: t.days, status: t.status, completion_percent: t.completion, overdue_status: t.overdue }
     }
 
     if (isNameClearance) {
@@ -87,10 +84,8 @@ export default function AddEntryModal({ stageId, companies, employees, onClose, 
     }
 
     if (isUSACanada) {
-      const usaDays = calculateDaysTaken(form.usa_submit_date, form.usa_complete_date)
-      if (form.usa_submit_date) { payload.usa_status = calculateStatus(usaDays); payload.usa_days_taken = usaDays; payload.usa_completion_percent = calculateCompletion(payload.usa_status); payload.usa_overdue_status = calculateOverdue(form.usa_complete_date, form.usa_target_date) }
-      const canDays = calculateDaysTaken(form.canada_submit_date, form.canada_complete_date)
-      if (form.canada_submit_date) { payload.canada_status = calculateStatus(canDays); payload.canada_days_taken = canDays; payload.canada_completion_percent = calculateCompletion(payload.canada_status); payload.canada_overdue_status = calculateOverdue(form.canada_complete_date, form.canada_target_date) }
+      if (form.usa_submit_date || form.usa_target_date) { const t = assessTiming(form.usa_submit_date, form.usa_target_date, form.usa_complete_date); payload.usa_status = t.status; payload.usa_days_taken = t.days; payload.usa_completion_percent = t.completion; payload.usa_overdue_status = t.overdue }
+      if (form.canada_submit_date || form.canada_target_date) { const t = assessTiming(form.canada_submit_date, form.canada_target_date, form.canada_complete_date); payload.canada_status = t.status; payload.canada_days_taken = t.days; payload.canada_completion_percent = t.completion; payload.canada_overdue_status = t.overdue }
     }
 
     if (!isSupabaseConfigured) { alert('Database is not connected.'); setLoading(false); return }

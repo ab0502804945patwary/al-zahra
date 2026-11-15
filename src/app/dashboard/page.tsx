@@ -7,6 +7,7 @@ import { Company } from '@/lib/types'
 import ExpiryAlerts from '@/components/dashboard/ExpiryAlerts'
 import StageSummaryTable from '@/components/dashboard/StageSummaryTable'
 import { STAGE_CONFIG } from '@/lib/stageData'
+import { enrichTiming } from '@/lib/utils'
 
 export const dynamic = 'force-dynamic'
 
@@ -29,7 +30,7 @@ export default async function DashboardPage() {
       ])
       companies = (cRes.data as Company[]) || []
       kpiStats.totalCompanies = companies.length
-      ids.forEach((sid, k) => { stageRows[sid] = (sRes[k].data as any[]) || [] })
+      ids.forEach((sid, k) => { stageRows[sid] = ((sRes[k].data as any[]) || []).map(r => (STAGE_CONFIG[sid].isNameClearance ? r : enrichTiming(r))) })
     } catch {}
   }
 

@@ -13,6 +13,7 @@ import {
   Layers
 } from 'lucide-react'
 import { Company } from '@/lib/types'
+import StatusGuide from '@/components/ui/StatusGuide'
 
 interface StageSummary {
   status: 'Green' | 'Yellow' | 'Red' | 'Pending' | 'Not Started'
@@ -127,7 +128,7 @@ export default function MasterMatrixDashboard({ initialCompanies, kpiStats, stag
           <div>
             <p className="text-xs font-medium text-slate-500">Compliant & On Track</p>
             <p className="text-2xl font-bold text-emerald-600 mt-1">{kpiStats.compliant}</p>
-            <p className="text-[11px] text-emerald-600/80 mt-0.5">Within SLA timeline (≤10d)</p>
+            <p className="text-[11px] text-emerald-600/80 mt-0.5">On time (by target date)</p>
           </div>
           <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
             <CheckCircle2 className="w-5 h-5" />
@@ -303,27 +304,8 @@ export default function MasterMatrixDashboard({ initialCompanies, kpiStats, stag
           </table>
         </div>
 
-        {/* Legend */}
-        <div className="px-5 py-2.5 bg-slate-50/80 border-t border-slate-100 flex flex-wrap items-center justify-between text-[11px] text-slate-500 gap-2">
-          <div className="flex items-center gap-4">
-            <span className="font-semibold text-slate-700">Status Guide:</span>
-            <span className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-emerald-500" /> 🟢 Compliant (≤10d)
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-amber-500" /> 🟡 Caution (11-13d)
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-rose-500" /> 🔴 Overdue (&gt;13d)
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-slate-300" /> ⚪ Queued
-            </span>
-          </div>
-          <span className="text-slate-400 text-[10px]">
-            *Click any stage badge to open that department immediately
-          </span>
-        </div>
+        <div className="px-5 py-3 border-t border-slate-100"><StatusGuide className="border-0 p-0" /></div>
+        <div className="px-5 pb-2.5 text-[10px] text-slate-400 text-right">*Click any stage badge to open that department immediately</div>
       </div>
     </div>
   )

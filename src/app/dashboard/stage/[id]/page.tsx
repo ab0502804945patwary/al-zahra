@@ -2,6 +2,8 @@ import { createServiceClient, isSupabaseConfigured } from '@/lib/supabase/server
 import { notFound, redirect } from 'next/navigation'
 import StageTable from '@/components/stage/StageTable'
 import StageHeader from '@/components/stage/StageHeader'
+import StatusGuide from '@/components/ui/StatusGuide'
+import { enrichTiming } from '@/lib/utils'
 import { STAGE_CONFIG } from '@/lib/stageData'
 import { getSessionInfo } from '@/lib/session'
 import { canAccessStage } from '@/lib/access'
@@ -45,7 +47,7 @@ export default async function StagePage({ params }: { params: Promise<{ id: stri
       supabase.from('employees').select('id, name, assigned_stage, assigned_stages'),
       ...upstream.map(sid => lookup.from(STAGE_CONFIG[sid].table).select(eligibilityColumns(sid, ['priority', 'category']))),
     ])
-    entries = eRes.data || []
+    entries = (eRes.data || []).map((e: any) => (config.isNameClearance ? e : enrichTiming(e)))
     companies = cRes.data || []
     employees = empRes.data || []
     upstream.forEach((sid, k) => { dbEntries[sid] = (upRes[k]?.data as any[]) || [] })
@@ -99,6 +101,7 @@ export default async function StagePage({ params }: { params: Promise<{ id: stri
         isNameClearance={config.isNameClearance}
         canEdit={canEdit}
       />
+      {!config.isNameClearance && <StatusGuide />}
     </div>
   )
 }
