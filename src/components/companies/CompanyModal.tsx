@@ -140,7 +140,7 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
     onClose()
   }
 
-  const WIDE = new Set(['official_email', 'national_address', 'drive_link', 'remarks'])
+  const WIDE = new Set(['cr_number', 'misa_license_no', 'official_email', 'national_address', 'drive_link', 'remarks'])
   const SPAN: Record<number, string> = {
     12: 'col-span-2 lg:col-span-12',
     6: 'lg:col-span-6',
