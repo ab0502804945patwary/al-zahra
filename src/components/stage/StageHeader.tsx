@@ -25,7 +25,7 @@ export default function StageHeader({ stageId, config, stats, companies, employe
   const [showModal, setShowModal] = useState(false)
   const [startFor, setStartFor] = useState<string | undefined>()
   // Companies that reached this stage and are waiting for the assigned staff to start
-  const waiting = canEdit && eligibleIds ? companies.filter(c => eligibleIds.includes(c.company_id) && c.service_type !== 'renewal') : []
+  const waiting = canEdit && eligibleIds ? companies.filter(c => eligibleIds.includes(c.company_id) && c.service_type !== 'renewal' && (stageId !== '8' || c.entity_type === 'Service License')) : []
   const kpis = [
     { label: 'Total Files', value: stats.total, icon: Layers, color: 'text-blue-600', bg: 'bg-blue-50' },
     { label: 'On Track (≤10d)', value: stats.green, icon: CheckCircle2, color: 'text-emerald-600', bg: 'bg-emerald-50' },
