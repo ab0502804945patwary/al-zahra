@@ -63,7 +63,7 @@ function submittedAndDone(entries: AnyEntry[] | undefined, companyId: string) {
  * Stage 5: Stage4 submit + complete dates present
  * Stage 6: Stage5 submit + complete dates present
  * Stage 7: Stage6 submit + complete dates present
- * Stages 2,3: company must exist in Stage 1.
+ * Stage 2: company must exist in Stage 1. Stage 3: Trading License only, and must exist in Stage 1.
  * Stages 1,8: open to every company.
  */
 export function isEligibleForStage(stageId: string, company: { company_id: string; entity_type?: string; category?: string; service_type?: string }, all: StageEntriesMap): boolean {
@@ -81,8 +81,10 @@ export function isEligibleForStage(stageId: string, company: { company_id: strin
       return false
     }
     case '2':
-    case '3':
       return (all['1'] || []).some(e => e.company_id === id)
+    case '3':
+      // Foreign licensing is only needed for Trading License (Service License skips Stage 3)
+      return category === 'Trading License' && (all['1'] || []).some(e => e.company_id === id)
     case '5': return submittedAndDone(all['4'], id)
     case '6': return submittedAndDone(all['5'], id)
     case '7': return submittedAndDone(all['6'], id)
@@ -92,7 +94,7 @@ export function isEligibleForStage(stageId: string, company: { company_id: strin
 
 export const ELIGIBILITY_HINT: Record<string, string> = {
   '2': 'Company must first be added in Stage 1 (Parent Entity).',
-  '3': 'Company must first be added in Stage 1 (Parent Entity).',
+  '3': 'Trading License only (Service License skips this stage). Company must first be added in Stage 1.',
   '4': 'Service License: Stage 1 + Stage 2 complete. Trading License: Stage 2 + Stage 3 complete.',
   '5': 'Requires Stage 4 (MISA) submit and complete dates.',
   '6': 'Requires Stage 5 (Commercial Registration) submit and complete dates.',
