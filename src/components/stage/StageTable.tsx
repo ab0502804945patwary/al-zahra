@@ -89,7 +89,8 @@ interface Props {
 
 export default function StageTable({ stageId, entries: serverEntries, companies, employees, isUSACanada, isNameClearance, canEdit = true, isAdmin = false }: Props) {
   const [editEntry, setEditEntry] = useState<any>(null)
-  const isLocked = (_e: any) => false // only the submission date is locked for staff (done in the form and the database)
+  // Staff cannot change a record once it is completed; admins always can
+  const isLocked = (e: any) => !isAdmin && Boolean(e.complete_date || e.usa_complete_date || e.approval_date)
   const [search, setSearch] = useState('')
   const entries = serverEntries
 

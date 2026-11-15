@@ -445,7 +445,7 @@ CREATE POLICY "admin_stage9" ON stage9_bd_company FOR ALL USING (get_user_role()
 CREATE POLICY "emp_stage9" ON stage9_bd_company FOR ALL USING (user_has_stage(9));
 NOTIFY pgrst, 'reload schema';
 -- ============================================
--- MIGRATION: submission date is automatic for staff (today) and cannot be changed by staff afterwards.
+-- MIGRATION: submission date is automatic for staff (today) and fixed; once a record is completed, staff cannot edit it.
 -- Admins and server tools (service role) are not restricted.
 -- ============================================
 CREATE OR REPLACE FUNCTION guard_staff_entry() RETURNS trigger AS $$
@@ -457,6 +457,9 @@ BEGIN
   IF TG_OP = 'INSERT' THEN
     NEW.submit_date := (now() AT TIME ZONE 'Asia/Riyadh')::date;
     RETURN NEW;
+  END IF;
+  IF OLD.complete_date IS NOT NULL THEN
+    RAISE EXCEPTION 'This record is completed and locked. Only an admin can change it.';
   END IF;
   NEW.submit_date := OLD.submit_date;
   RETURN NEW;

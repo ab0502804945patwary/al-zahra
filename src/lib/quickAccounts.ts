@@ -12,4 +12,5 @@ export const QUICK_ACCOUNTS: QuickAccount[] = [
   { key: 's6', name: 'Md Azad', email: 'azad@alzahra.com', role: 'employee', stages: [6] },
   { key: 's7', name: 'Tariq Hasan', email: 'tariq@alzahra.com', role: 'employee', stages: [7] },
   { key: 's8', name: 'Nasir Uddin', email: 'nasir@alzahra.com', role: 'employee', stages: [8] },
+  { key: 's9', name: 'Bangladesh Desk', email: 'bd@alzahra.com', role: 'employee', stages: [9] },
 ]
