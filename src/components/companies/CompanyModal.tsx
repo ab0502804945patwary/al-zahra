@@ -283,8 +283,8 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
   ]
 
   return (
-    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto border border-slate-100">
+    <div className="fixed inset-0 bg-slate-50 z-[60] overflow-y-auto">
+      <div className="bg-white min-h-full w-full max-w-[1600px] mx-auto border-x border-slate-100">
         <div className="flex items-center justify-between p-5 border-b border-slate-100 sticky top-0 bg-white z-10">
           <div>
             <h2 className="text-base font-bold text-slate-900">
@@ -297,7 +297,7 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+        <form onSubmit={handleSubmit} className="p-4 sm:p-8 grid grid-cols-1 xl:grid-cols-2 gap-6 items-start">
           {sections.map(section => {
             const SectionIcon = section.icon
             return (
@@ -317,7 +317,7 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
             )
           })}
 
-          <div className="flex gap-3 pt-3 border-t border-slate-100">
+          <div className="xl:col-span-2 flex gap-3 pt-3 border-t border-slate-100 sticky bottom-0 bg-white pb-4">
             {company && (
               <button
                 type="button"

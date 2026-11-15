@@ -76,9 +76,9 @@ export default function Sidebar({ employee }: SidebarProps) {
     <aside
       className={cn(
         'bg-white border-r border-slate-200 flex flex-col text-slate-600 select-none shadow-[1px_0_4px_rgba(0,0,0,0.02)] transition-all duration-300 ease-in-out shrink-0',
-        'fixed inset-y-0 left-0 z-50 w-72 max-w-[85vw] lg:static lg:z-30 lg:translate-x-0',
+        'fixed inset-y-0 left-0 z-50 w-60 max-w-[85vw] lg:static lg:z-30 lg:translate-x-0',
         mobileOpen ? 'translate-x-0' : '-translate-x-full',
-        !mobileOpen && collapsed ? 'lg:w-20' : 'lg:w-72'
+        !mobileOpen && collapsed ? 'lg:w-16' : 'lg:w-56'
       )}
     >
       {/* Brand Header */}
@@ -126,7 +126,7 @@ export default function Sidebar({ employee }: SidebarProps) {
       <nav
         className={cn(
           'flex-1 overflow-y-auto space-y-4 py-4 transition-all duration-300',
-          collapsed ? 'px-2' : 'px-3.5 space-y-6'
+          collapsed ? 'px-2' : 'px-2.5 space-y-5'
         )}
       >
         {navGroups.map((group, groupIdx) => {
@@ -182,13 +182,13 @@ export default function Sidebar({ employee }: SidebarProps) {
                     key={item.href}
                     href={item.href}
                     className={cn(
-                      'group flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium transition-all duration-150',
+                      'group flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all duration-150',
                       isActive
                         ? 'bg-blue-50 text-blue-700 font-semibold border border-blue-200/80 shadow-sm'
                         : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
                     )}
                   >
-                    <div className="flex items-center gap-3 min-w-0">
+                    <div className="flex items-center gap-2.5 min-w-0">
                       <Icon
                         className={cn(
                           'w-4 h-4 shrink-0 transition-colors',
