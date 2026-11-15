@@ -23,7 +23,7 @@ export default async function DashboardPage() {
   if (isSupabaseConfigured) {
     const supabase = await createClient()
     try {
-      const ids = Object.keys(STAGE_CONFIG)
+      const ids = MENU_ORDER.filter(id => STAGE_CONFIG[id])
       const [cRes, ...sRes] = await Promise.all([
         supabase.from('companies').select('*').order('company_id'),
         ...ids.map(sid => supabase.from(STAGE_CONFIG[sid].table).select('*')),
@@ -65,9 +65,21 @@ export default async function DashboardPage() {
   }
 
   const summary = MENU_ORDER.map(sid => [sid, STAGE_CONFIG[sid]] as const)
-    .filter(([, c]) => !c.isNameClearance)
     .map(([sid, c]) => {
       const rows = stageRows[sid] || []
+      if (c.isNameClearance) {
+        // Trade Name Clearance has its own validity statuses: Active = green, Warning = yellow, Urgent/Expired = red
+        return {
+          id: sid,
+          label: `Phase ${phaseOf(sid)}: ${c.label}`,
+          employee: c.employee,
+          total: rows.length,
+          green: rows.filter(r => r.status === 'Active').length,
+          yellow: rows.filter(r => r.status === 'Warning').length,
+          red: rows.filter(r => r.status === 'Urgent' || r.status === 'Expired').length,
+          avg: null as number | null,
+        }
+      }
       const st = (r: any) => r.status || r.usa_status
       const pct = rows.map(r => r.completion_percent ?? r.usa_completion_percent).filter((x: any) => typeof x === 'number')
       return {

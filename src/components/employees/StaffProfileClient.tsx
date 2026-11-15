@@ -33,6 +33,7 @@ import {
 } from 'lucide-react'
 import { Employee, EmployeeTask, SalaryDetails, PerformanceReview, SalaryType } from '@/lib/types'
 import { STAGE_MODULE_NAMES } from '@/lib/employeeData'
+import { phaseOf } from '@/lib/stageData'
 import EmployeeModal from './EmployeeModal'
 
 interface Props {
@@ -363,7 +364,7 @@ export default function StaffProfileClient({ initialEmployee }: Props) {
               </span>
               <div className="flex items-center gap-2 text-slate-800 font-semibold text-xs">
                 <div className="w-6 h-6 rounded-lg bg-blue-600 text-white flex items-center justify-center text-xs font-bold shrink-0">
-                  {employee.assigned_stage}
+                  {phaseOf(employee.assigned_stage)}
                 </div>
                 <span className="leading-tight">{STAGE_MODULE_NAMES[employee.assigned_stage]}</span>
               </div>

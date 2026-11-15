@@ -1,3 +1,4 @@
+import { MENU_ORDER } from '@/lib/stageData'
 // Which workflow stages a user may open / edit.
 type StaffLike = { role?: string; assigned_stage?: number | null; assigned_stages?: number[] | null } | null | undefined
 
@@ -18,5 +19,7 @@ export function canAccessStage(emp: StaffLike, stage: number): boolean {
 export function homeFor(emp: StaffLike): string {
   const s = stagesOf(emp)
   if (s === null) return '/dashboard'
-  return s.length ? `/dashboard/stage/${Math.min(...s)}` : '/dashboard/settings'
+  if (!s.length) return '/dashboard/settings'
+  const first = MENU_ORDER.find(id => s.includes(Number(id))) ?? String(s[0])
+  return `/dashboard/stage/${first}`
 }

@@ -1,20 +1,20 @@
 'use client'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Building2, Briefcase, Layers, Globe2, Award, Menu } from 'lucide-react'
+import { LayoutDashboard, Building2, Briefcase, Layers, Globe2, Flag, Menu } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useSidebar } from './DashboardShell'
 import { canAccessStage } from '@/lib/access'
 import { Employee } from '@/lib/types'
 
-// Short names match the sidebar categories; the rest (CR, Portals, Final, Name Clearance) are under More.
+// Same order as the sidebar; the rest (Name Clearance, MISA, CR, Portals, Final) are under More.
 const ITEMS: { href: string; label: string; icon: any; stage?: number; adminOnly?: boolean }[] = [
   { href: '/dashboard', label: 'Home', icon: LayoutDashboard, adminOnly: true },
   { href: '/dashboard/companies', label: 'Companies', icon: Building2, adminOnly: true },
   { href: '/dashboard/stage/1', label: 'Parent', icon: Briefcase, stage: 1 },
+  { href: '/dashboard/stage/9', label: 'BD Co.', icon: Flag, stage: 9 },
   { href: '/dashboard/stage/2', label: 'Activity', icon: Layers, stage: 2 },
   { href: '/dashboard/stage/3', label: 'Foreign', icon: Globe2, stage: 3 },
-  { href: '/dashboard/stage/4', label: 'MISA', icon: Award, stage: 4 },
 ]
 
 export default function BottomNav({ employee }: { employee?: Employee | null }) {

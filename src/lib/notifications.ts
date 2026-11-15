@@ -1,5 +1,5 @@
 import { createClient, createServiceClient, isSupabaseConfigured } from '@/lib/supabase/server'
-import { STAGE_CONFIG, phaseOf } from '@/lib/stageData'
+import { STAGE_CONFIG, MENU_ORDER, phaseOf } from '@/lib/stageData'
 import { stagesOf } from '@/lib/access'
 import { isEligibleForStage, eligibilityColumns, type StageEntriesMap } from '@/lib/stageRules'
 
@@ -19,7 +19,7 @@ export interface AppNotification {
  */
 export async function getNotifications(): Promise<AppNotification[]> {
   if (!isSupabaseConfigured) return []
-  const ids = Object.keys(STAGE_CONFIG)
+  const ids = MENU_ORDER.filter(id => STAGE_CONFIG[id])
   const all: StageEntriesMap = {}
 
   const supabase = await createClient()
