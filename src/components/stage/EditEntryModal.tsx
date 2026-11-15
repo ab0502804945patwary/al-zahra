@@ -17,9 +17,11 @@ interface Props {
   isUSACanada?: boolean; isNameClearance?: boolean
 }
 
+import { useSecureDelete } from '@/components/ui/useSecureDelete'
 export default function EditEntryModal({ stageId, entry, companies, employees, onClose, isUSACanada, isNameClearance }: Props) {
   const router = useRouter()
   const supabase = createClient()
+  const { askDelete, dialog } = useSecureDelete()
   const [loading, setLoading] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [form, setForm] = useState<Record<string, string>>(entry)
@@ -66,12 +68,8 @@ export default function EditEntryModal({ stageId, entry, companies, employees, o
   }
 
   async function handleDelete() {
-    if (!confirm('Are you sure you want to delete this record?')) return
+    if (!(await askDelete(STAGE_TABLES[stageId], entry.id, 'this record'))) return
     setDeleting(true)
-    if (isSupabaseConfigured) {
-      const { error } = await supabase.from(STAGE_TABLES[stageId]).delete().eq('id', entry.id)
-      if (error) { alert('Could not delete: ' + error.message); setDeleting(false); return }
-    }
     router.refresh()
     onClose()
   }
@@ -104,6 +102,7 @@ export default function EditEntryModal({ stageId, entry, companies, employees, o
 
   return (
     <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      {dialog}
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto border border-slate-100">
         <div className="flex items-center justify-between p-5 border-b border-slate-100 sticky top-0 bg-white z-10">
           <div>

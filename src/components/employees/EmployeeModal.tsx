@@ -32,9 +32,11 @@ const MODULE_OPTIONS = [
   { value: 8, label: '08: Trade Name Clearance' },
 ]
 
+import { useSecureDelete } from '@/components/ui/useSecureDelete'
 export default function EmployeeModal({ employee, onClose, onSave, onDelete }: Props) {
   const router = useRouter()
   const supabase = createClient()
+  const { askDelete, dialog } = useSecureDelete()
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const [loading, setLoading] = useState(false)
@@ -287,11 +289,7 @@ export default function EmployeeModal({ employee, onClose, onSave, onDelete }: P
   }
 
   async function handleDelete() {
-    if (!confirm('Are you sure you want to remove this staff member?')) return
-    if (isSupabaseConfigured) {
-      const { error } = await supabase.from('employees').delete().eq('id', employee!.id)
-      if (error) { alert('Could not delete: ' + error.message); return }
-    }
+    if (!(await askDelete('employees', employee!.id, 'this staff member and their login'))) return
     onDelete?.(employee!.id)
     router.refresh()
     onClose()
@@ -299,6 +297,7 @@ export default function EmployeeModal({ employee, onClose, onSave, onDelete }: P
 
   return (
     <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      {dialog}
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg border border-slate-100 max-h-[92vh] flex flex-col overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-slate-100 shrink-0">

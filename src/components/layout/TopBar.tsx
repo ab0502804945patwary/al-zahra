@@ -2,7 +2,7 @@
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { Employee } from '@/lib/types'
-import { Bell, LogOut, Search, ShieldCheck, PanelLeft, PanelLeftOpen, Menu } from 'lucide-react'
+import { Bell, LogOut, Search, ShieldCheck, PanelLeft, PanelLeftOpen, Menu, Settings } from 'lucide-react'
 import { useState, useRef, useEffect } from 'react'
 import { useSidebar } from './DashboardShell'
 import NotificationBell from './NotificationBell'
@@ -117,6 +117,13 @@ export default function TopBar({ employee }: TopBarProps) {
                 </div>
                 <div className="text-[11px] text-slate-400 font-mono truncate">{employee?.email || 'admin@alzahra.com'}</div>
               </div>
+
+              <button
+                onClick={() => { router.push('/dashboard/settings'); setShowMenu(false); }}
+                className="w-full flex items-center gap-2.5 px-4 py-2 text-xs text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition"
+              >
+                <Settings className="w-3.5 h-3.5 text-slate-400" /> Settings
+              </button>
 
               {isAdmin && (
                 <button

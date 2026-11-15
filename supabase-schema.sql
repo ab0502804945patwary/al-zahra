@@ -363,9 +363,7 @@ CREATE POLICY "emp_stage8" ON stage8_name_clearance FOR ALL USING (get_user_stag
 -- ============================================
 -- SAMPLE DATA
 -- ============================================
-INSERT INTO companies (company_id, country_of_origin, company_name, entity_type) VALUES
-('AZC801', 'Afghanistan', 'Steel Com', 'Trading License'),
-('AZC802', 'Bangladesh', 'al tamayyuz sharikat taj Trading', 'Trading License');
+-- (demo seed companies AZC801/AZC802 removed: all data is entered by the team)
 
 
 -- ============================================
@@ -394,3 +392,14 @@ CREATE OR REPLACE FUNCTION user_has_stage(n INTEGER) RETURNS BOOLEAN AS $$
   SELECT COALESCE((SELECT n = ANY(assigned_stages) OR assigned_stage = n FROM employees WHERE user_id = auth.uid() LIMIT 1), false);
 $$ LANGUAGE SQL SECURITY DEFINER;
 -- emp_stageN policies now use: FOR ALL USING (user_has_stage(N))
+
+-- ============================================
+-- MIGRATION: app settings (hashed master password used to confirm deletes)
+-- Server-only: RLS is on and there are no policies, so only the service role can use it.
+-- ============================================
+CREATE TABLE IF NOT EXISTS app_settings (
+  key TEXT PRIMARY KEY,
+  value TEXT NOT NULL,
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+ALTER TABLE app_settings ENABLE ROW LEVEL SECURITY;

@@ -9,6 +9,7 @@ const POLL_MS = 20000
 
 function beep() {
   try {
+    if (localStorage.getItem('alzahra_sound_on') === 'off') return
     const Ctx = window.AudioContext || (window as any).webkitAudioContext
     const ctx = new Ctx()
     const play = (freq: number, start: number) => {
