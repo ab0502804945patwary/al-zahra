@@ -30,7 +30,7 @@ export default function CompaniesClient({ companies: initialCompanies }: Props) 
   const isRenewal = (c: Company) => c.service_type === 'renewal'
   const TypeBadge = ({ company }: { company: Company }) => isRenewal(company) ? (
     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">
-      <RefreshCw className="w-2.5 h-2.5" /> Renewal Only
+      <RefreshCw className="w-2.5 h-2.5" /> Renewal / Other
     </span>
   ) : (
     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200">
@@ -139,7 +139,7 @@ export default function CompaniesClient({ companies: initialCompanies }: Props) 
             {([
               ['all', `All (${companiesList.length})`],
               ['a2z', `A2Z Setup (${companiesList.length - renewalCount})`],
-              ['renewal', `Renewal (${renewalCount})`],
+              ['renewal', `Renewal / Other (${renewalCount})`],
             ] as const).map(([k, label]) => (
               <button
                 key={k}

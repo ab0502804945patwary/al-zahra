@@ -180,7 +180,7 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
             <div className="grid grid-cols-2 gap-2">
               {[
                 { value: 'a2z', title: 'A2Z Full Setup', desc: 'A2Z handles the whole process, stage by stage' },
-                { value: 'renewal', title: 'Renewal Only', desc: 'Existing company — only renewal, no stage handoff' },
+                { value: 'renewal', title: 'Renewal / Other Service', desc: 'Existing company — renewal or other service only, no stage handoff' },
               ].map(opt => {
                 const active = (form.service_type || 'a2z') === opt.value
                 return (

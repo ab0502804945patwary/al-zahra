@@ -2,6 +2,7 @@ import { createClient, isSupabaseConfigured } from '@/lib/supabase/server'
 import { cookies } from 'next/headers'
 import MasterMatrixDashboard from '@/components/dashboard/MasterMatrixDashboard'
 import { Company } from '@/lib/types'
+import ExpiryAlerts from '@/components/dashboard/ExpiryAlerts'
 import StageSummaryTable from '@/components/dashboard/StageSummaryTable'
 import { STAGE_CONFIG, FALLBACK_STAGE_ENTRIES } from '@/lib/stageData'
 
@@ -86,6 +87,7 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-6">
       <MasterMatrixDashboard initialCompanies={companies} kpiStats={kpiStats} />
+      <ExpiryAlerts companies={companies} />
       <StageSummaryTable rows={summary} />
     </div>
   )
