@@ -112,6 +112,13 @@ export const TABLE_COLUMNS: Record<string, string[]> = {
   '8': ['company_id', 'entity_type', 'company_name_english', 'arabic_name', 'name_clearance_number', 'submit_date', 'approval_date', 'expire_date', 'remaining_days', 'status', 'cr_status', 'notes'],
 }
 
+/** Columns the eligibility check needs, limited to those that exist in the given stage table. */
+export function eligibilityColumns(stageId: string, extra: string[] = []): string {
+  const wanted = ['company_id', 'submit_date', 'complete_date', 'usa_complete_date', ...extra]
+  const real = new Set(TABLE_COLUMNS[stageId] || [])
+  return wanted.filter(c => real.has(c)).join(', ')
+}
+
 /** Keep only real columns; turn empty strings into null (DATE columns reject ""). */
 export function pickColumns(stageId: string, payload: Record<string, any>) {
   const allowed = new Set(TABLE_COLUMNS[stageId] || [])

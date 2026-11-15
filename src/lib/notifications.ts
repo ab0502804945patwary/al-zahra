@@ -2,7 +2,7 @@ import { createClient, isSupabaseConfigured } from '@/lib/supabase/server'
 import { cookies } from 'next/headers'
 import { STAGE_CONFIG, FALLBACK_STAGE_ENTRIES } from '@/lib/stageData'
 import { INITIAL_EMPLOYEES } from '@/lib/employeeData'
-import { isEligibleForStage, type StageEntriesMap } from '@/lib/stageRules'
+import { isEligibleForStage, eligibilityColumns, type StageEntriesMap } from '@/lib/stageRules'
 
 export interface AppNotification {
   key: string
@@ -45,7 +45,7 @@ export async function getNotifications(): Promise<AppNotification[]> {
     const [empRes, cRes, ...sRes] = await Promise.all([
       supabase.from('employees').select('role, assigned_stage').eq('user_id', user.id).single(),
       supabase.from('companies').select('company_id, company_name, entity_type, service_type'),
-      ...ids.map(sid => supabase.from(STAGE_CONFIG[sid].table).select('company_id, submit_date, complete_date, usa_complete_date')),
+      ...ids.map(sid => supabase.from(STAGE_CONFIG[sid].table).select(eligibilityColumns(sid))),
     ])
     myStage = empRes.data?.role === 'admin' ? null : (empRes.data?.assigned_stage ?? -1)
     if (cRes.data?.length) companies = cRes.data

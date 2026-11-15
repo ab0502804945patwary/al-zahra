@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation'
 import StageTable from '@/components/stage/StageTable'
 import StageHeader from '@/components/stage/StageHeader'
 import { STAGE_CONFIG, FALLBACK_STAGE_ENTRIES } from '@/lib/stageData'
-import { isEligibleForStage, ELIGIBILITY_HINT, type StageEntriesMap } from '@/lib/stageRules'
+import { isEligibleForStage, eligibilityColumns, ELIGIBILITY_HINT, type StageEntriesMap } from '@/lib/stageRules'
 
 export const dynamic = 'force-dynamic'
 
@@ -52,7 +52,7 @@ export default async function StagePage({ params }: { params: Promise<{ id: stri
         entriesQuery,
         supabase.from('companies').select('company_id, company_name, country_of_origin, entity_type, service_type, client_name, client_phone').order('company_id'),
         supabase.from('employees').select('id, name, assigned_stage'),
-        ...upstream.map(sid => supabase.from(STAGE_CONFIG[sid].table).select('company_id, submit_date, complete_date, usa_complete_date, priority, category')),
+        ...upstream.map(sid => supabase.from(STAGE_CONFIG[sid].table).select(eligibilityColumns(sid, ['priority', 'category']))),
       ])
       if (eRes.data && eRes.data.length > 0) entries = eRes.data
       if (cRes.data && cRes.data.length > 0) companies = cRes.data
