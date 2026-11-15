@@ -1,8 +1,9 @@
-import { createClient, createServiceClient, isSupabaseConfigured } from '@/lib/supabase/server'
+import { createServiceClient, isSupabaseConfigured } from '@/lib/supabase/server'
 import { notFound, redirect } from 'next/navigation'
 import StageTable from '@/components/stage/StageTable'
 import StageHeader from '@/components/stage/StageHeader'
 import { STAGE_CONFIG } from '@/lib/stageData'
+import { getSessionInfo } from '@/lib/session'
 import { canAccessStage } from '@/lib/access'
 import { isEligibleForStage, eligibilityColumns, ELIGIBILITY_HINT, type StageEntriesMap } from '@/lib/stageRules'
 
@@ -18,13 +19,11 @@ export default async function StagePage({ params }: { params: Promise<{ id: stri
   let companies: any[] = []
   let employees: any[] = []
 
-  const supabase = await createClient()
-  const lookup = await createServiceClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { supabase, user, employee: me } = await getSessionInfo()
   if (!user) redirect('/login')
+  const lookup = await createServiceClient()
 
   // Staff may only open the stages they are assigned to (admins: all stages)
-  const { data: me } = await supabase.from('employees').select('role, assigned_stage, assigned_stages').eq('user_id', user.id).single()
   if (!canAccessStage(me, Number(id))) redirect('/dashboard')
   const canEdit = true
 
