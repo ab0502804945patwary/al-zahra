@@ -50,11 +50,11 @@ const navGroups: NavGroup[] = [
       { href: '/dashboard/stage/1', label: 'Parent Entity Verification', icon: Briefcase, stage: 1 },
       { href: '/dashboard/stage/2', label: 'Activity Classification', icon: Layers, stage: 2 },
       { href: '/dashboard/stage/3', label: 'Foreign Entity Licensing', icon: Globe2, stage: 3 },
+      { href: '/dashboard/stage/8', label: 'Trade Name Clearance', icon: Tag, stage: 8 },
       { href: '/dashboard/stage/4', label: 'MISA Investment License', icon: Award, stage: 4 },
       { href: '/dashboard/stage/5', label: 'Commercial Registration', icon: Store, stage: 5 },
       { href: '/dashboard/stage/6', label: 'Portals & Compliance', icon: FileCheck2, stage: 6 },
       { href: '/dashboard/stage/7', label: 'Final Dossier & Filing', icon: FolderCheck, stage: 7 },
-      { href: '/dashboard/stage/8', label: 'Trade Name Clearance', icon: Tag, stage: 8 },
     ]
   },
   {
