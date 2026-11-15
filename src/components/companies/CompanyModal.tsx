@@ -140,8 +140,9 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
     onClose()
   }
 
+  const WIDE = new Set(['official_email', 'national_address', 'drive_link', 'remarks'])
   const SPAN: Record<number, string> = {
-    12: 'sm:col-span-2 lg:col-span-12',
+    12: 'col-span-2 lg:col-span-12',
     6: 'lg:col-span-6',
     4: 'lg:col-span-4',
     3: 'lg:col-span-3',
@@ -168,7 +169,7 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
 
   // plain function (not a component) so inputs keep focus while typing
   const field = (f: { label: string; name: string; type?: string; span: number }) => (
-    <div key={f.name} className={SPAN[f.span]}>
+    <div key={f.name} className={`${WIDE.has(f.name) ? 'col-span-2 ' : ''}${SPAN[f.span]}`}>
       <label className="block"><Lbl name={f.name}>{f.label}</Lbl></label>
       <input
         type={f.type || 'text'}
@@ -185,7 +186,7 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
         <div className="flex items-center justify-between mb-1">
           <span className="text-xs font-medium text-slate-700 flex items-center gap-1.5 whitespace-nowrap"><Hash className="w-3.5 h-3.5 text-blue-500" />Company ID *</span>
           {!company && (
-            <span className="text-[10px] font-bold text-blue-600 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-full inline-flex items-center gap-1">
+            <span className="text-[10px] font-bold text-blue-600 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-full hidden sm:inline-flex items-center gap-1">
               <Sparkles className="w-2.5 h-2.5 text-blue-500" /> Auto
             </span>
           )}
@@ -212,7 +213,7 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
         <CountrySelect value={form.country_of_origin} onChange={v => set('country_of_origin', v)} />
       </div>
 
-      <div className={SPAN[4]}>
+      <div className={`col-span-2 ${SPAN[4]}`}>
         <Lbl name="entity_type">License Type</Lbl>
         <select value={form.entity_type || ''} onChange={e => set('entity_type', e.target.value)} className={inputCls}>
           <option value="">Select license type</option>
@@ -235,7 +236,7 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
 
       <div className={SPAN[12]}>
         <Lbl name="service_type">Service Type</Lbl>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-2 sm:gap-3">
           {[
             { value: 'a2z', title: 'New Company', desc: 'We set up the whole company, stage by stage' },
             { value: 'renewal', title: 'Renewal / Other Service', desc: 'Existing company — renewal or other service only, no stage handoff' },
@@ -246,7 +247,7 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
                 key={opt.value}
                 type="button"
                 onClick={() => set('service_type', opt.value)}
-                className={`text-left p-3 rounded-lg border transition ${active ? 'border-blue-500 bg-blue-50 ring-1 ring-blue-500' : 'border-slate-200 bg-white hover:bg-slate-50'}`}
+                className={`text-left p-2.5 sm:p-3 rounded-lg border transition ${active ? 'border-blue-500 bg-blue-50 ring-1 ring-blue-500' : 'border-slate-200 bg-white hover:bg-slate-50'}`}
               >
                 <div className={`text-xs font-bold ${active ? 'text-blue-700' : 'text-slate-800'}`}>{opt.title}</div>
                 <div className="text-[10px] text-slate-500 mt-0.5">{opt.desc}</div>
@@ -343,7 +344,7 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
                 <SectionIcon className="w-4 h-4 text-blue-600" />
                 <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wide">{section.title}</h3>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-x-4 gap-y-3">
+              <div className="grid grid-cols-2 lg:grid-cols-12 gap-x-3 sm:gap-x-4 gap-y-3">
                 {section.custom ?? section.fields?.map(field)}
               </div>
             </div>
