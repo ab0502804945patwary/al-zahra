@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { X, Loader2, Globe, Building2, User, FileText, CheckCircle2, Sparkles } from 'lucide-react'
 import { createClient, isSupabaseConfigured } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
@@ -26,10 +26,11 @@ const MODULE_TITLES: Record<string, string> = {
 interface Props {
   eligibilityHint?: string
   stageId: string; companies: any[]; employees: any[]; onClose: () => void
+  initialCompanyId?: string
   isUSACanada?: boolean; isNameClearance?: boolean
 }
 
-export default function AddEntryModal({ stageId, companies, employees, onClose, isUSACanada, isNameClearance, eligibilityHint }: Props) {
+export default function AddEntryModal({ stageId, companies, employees, onClose, isUSACanada, isNameClearance, eligibilityHint, initialCompanyId }: Props) {
   const router = useRouter()
   const supabase = createClient()
   const [loading, setLoading] = useState(false)
@@ -41,6 +42,9 @@ export default function AddEntryModal({ stageId, companies, employees, onClose, 
 
   const set = (k: string, v: string) => setForm(prev => ({ ...prev, [k]: v }))
   const clientInfo = { name: form.client_name, phone: form.client_phone }
+
+  // Opened from the "Waiting for you" list: pre-select that company
+  useEffect(() => { if (initialCompanyId) handleCompanySelect(initialCompanyId) }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   function handleCompanySelect(selectedCompanyId: string) {
     const comp = companies.find(c => c.company_id === selectedCompanyId)

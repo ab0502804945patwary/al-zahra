@@ -1,6 +1,7 @@
 'use client'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useEffect, useState } from 'react'
 import { cn } from '@/lib/utils'
 import { Employee } from '@/lib/types'
 import { useSidebar } from './DashboardShell'
@@ -72,6 +73,21 @@ export default function Sidebar({ employee }: SidebarProps) {
   const collapsed = rawCollapsed && !mobileOpen
   const toggleOrClose = () => (mobileOpen ? setMobileOpen(false) : toggle())
   const isAdmin = employee?.role === 'admin'
+
+  // How many companies are waiting at each stage (red badge)
+  const [waiting, setWaiting] = useState<Record<number, number>>({})
+  useEffect(() => {
+    let alive = true
+    const load = () => fetch('/api/notifications', { cache: 'no-store' }).then(r => r.json()).then(d => {
+      if (!alive) return
+      const m: Record<number, number> = {}
+      for (const i of d.items || []) m[i.stage] = (m[i.stage] || 0) + 1
+      setWaiting(m)
+    }).catch(() => {})
+    load()
+    const t = setInterval(load, 30000)
+    return () => { alive = false; clearInterval(t) }
+  }, [pathname])
 
   return (
     <aside
@@ -175,6 +191,7 @@ export default function Sidebar({ employee }: SidebarProps) {
                       {isActive && (
                         <span className="absolute left-1 top-2.5 bottom-2.5 w-1 bg-blue-600 rounded-full" />
                       )}
+                      {item.stage && waiting[item.stage] ? <span className="absolute top-1 right-1 w-2.5 h-2.5 rounded-full bg-rose-500 ring-2 ring-white" /> : null}
                     </Link>
                   )
                 }
@@ -200,7 +217,9 @@ export default function Sidebar({ employee }: SidebarProps) {
                       <span className="truncate">{item.label}</span>
                     </div>
 
-                    {isActive && <ChevronRight className="w-3.5 h-3.5 text-blue-500 shrink-0" />}
+                    {item.stage && waiting[item.stage] ? (
+                      <span className="ml-1 min-w-5 h-5 px-1.5 bg-rose-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center shrink-0">{waiting[item.stage]}</span>
+                    ) : isActive ? <ChevronRight className="w-3.5 h-3.5 text-blue-500 shrink-0" /> : null}
                   </Link>
                 )
               })}

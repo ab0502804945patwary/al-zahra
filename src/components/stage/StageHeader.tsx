@@ -1,6 +1,6 @@
 'use client'
 import { useState } from 'react'
-import { Plus, CheckCircle2, Clock, AlertCircle, AlertTriangle, Layers } from 'lucide-react'
+import { Plus, PlayCircle, CheckCircle2, Clock, AlertCircle, AlertTriangle, Layers } from 'lucide-react'
 import AddEntryModal from './AddEntryModal'
 
 interface Props {
@@ -23,6 +23,9 @@ interface Props {
 
 export default function StageHeader({ stageId, config, stats, companies, employees, eligibleIds, eligibilityHint, canEdit = true }: Props) {
   const [showModal, setShowModal] = useState(false)
+  const [startFor, setStartFor] = useState<string | undefined>()
+  // Companies that reached this stage and are waiting for the assigned staff to start
+  const waiting = canEdit && eligibleIds ? companies.filter(c => eligibleIds.includes(c.company_id) && c.service_type !== 'renewal') : []
   const kpis = [
     { label: 'Total Files', value: stats.total, icon: Layers, color: 'text-blue-600', bg: 'bg-blue-50' },
     { label: 'On Track (≤10d)', value: stats.green, icon: CheckCircle2, color: 'text-emerald-600', bg: 'bg-emerald-50' },
@@ -78,15 +81,42 @@ export default function StageHeader({ stageId, config, stats, companies, employe
         })}
       </div>
 
+      {waiting.length > 0 && (
+        <div className="bg-amber-50/70 border border-amber-200 rounded-xl p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <span className="relative flex h-2.5 w-2.5"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" /><span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500" /></span>
+            <h2 className="text-sm font-bold text-amber-900">Waiting for you ({waiting.length})</h2>
+            <span className="text-[11px] text-amber-700">These companies are ready for this stage — start work on them</span>
+          </div>
+          <ul className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+            {waiting.map(c => (
+              <li key={c.company_id} className="bg-white border border-amber-200/80 rounded-lg px-3 py-2.5 flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="text-xs font-bold text-slate-900 truncate">{c.company_name}</div>
+                  <div className="text-[11px] text-slate-500 font-mono">{c.company_id}{c.entity_type ? ` · ${c.entity_type}` : ''}</div>
+                </div>
+                <button
+                  onClick={() => { setStartFor(c.company_id); setShowModal(true) }}
+                  className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white text-[11px] font-semibold rounded-lg"
+                >
+                  <PlayCircle className="w-3.5 h-3.5" /> Start
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       {showModal && (
         <AddEntryModal
           stageId={stageId}
+          initialCompanyId={startFor}
           isUSACanada={config.hasUSACanada}
           isNameClearance={config.isNameClearance}
           companies={eligibleIds ? companies.filter(c => eligibleIds.includes(c.company_id)) : companies}
           eligibilityHint={eligibilityHint}
           employees={employees}
-          onClose={() => setShowModal(false)}
+          onClose={() => { setShowModal(false); setStartFor(undefined) }}
         />
       )}
     </>
