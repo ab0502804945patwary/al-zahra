@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { Bell, CheckCheck } from 'lucide-react'
 import type { AppNotification } from '@/lib/notifications'
+import { fetchNotifications } from '@/lib/notifClient'
 
 const SEEN_KEY = 'alzahra_seen_notifications'
 const POLL_MS = 20000
@@ -47,9 +48,7 @@ export default function NotificationBell() {
 
   const load = useCallback(async () => {
     try {
-      const res = await fetch('/api/notifications', { cache: 'no-store' })
-      if (!res.ok) return
-      const { items: next } = (await res.json()) as { items: AppNotification[] }
+      const next = await fetchNotifications()
       const prev = known.current
       // sound only for items that appeared after the first load and were never marked read
       if (prev && next.some(n => !prev.has(n.key) && !readSeen().includes(n.key))) beep()

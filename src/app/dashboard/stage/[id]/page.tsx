@@ -39,18 +39,23 @@ export default async function StagePage({ params }: { params: Promise<{ id: stri
       .from(config.table)
       .select(config.isNameClearance
         ? '*, companies(company_name, country_of_origin)'
-        : '*, companies(company_name, country_of_origin), employees(name)')
+        : '*, companies(company_name, country_of_origin)')
       .order('created_at', { ascending: false })
 
     const [eRes, cRes, empRes, ...upRes] = await Promise.all([
       entriesQuery,
       supabase.from('companies').select('company_id, company_name, country_of_origin, entity_type, service_type, client_name, client_phone').order('company_id'),
-      supabase.from('employees').select('id, name, assigned_stage, assigned_stages'),
+      // colleague names are read on the server: staff may only read their own staff row
+      lookup.from('employees').select('id, name, assigned_stage, assigned_stages'),
       ...upstream.map(sid => lookup.from(STAGE_CONFIG[sid].table).select(eligibilityColumns(sid, ['priority', 'category']))),
     ])
-    entries = (eRes.data || []).map((e: any) => (config.isNameClearance ? e : enrichTiming(e)))
     companies = cRes.data || []
     employees = empRes.data || []
+    const nameOf = new Map<string, string>(employees.map((x: any) => [x.id, x.name]))
+    entries = (eRes.data || []).map((e: any) => {
+      const withName = { ...e, employees: e.employee_id && nameOf.get(e.employee_id) ? { name: nameOf.get(e.employee_id) } : null }
+      return config.isNameClearance ? withName : enrichTiming(withName)
+    })
     upstream.forEach((sid, k) => { dbEntries[sid] = (upRes[k]?.data as any[]) || [] })
   } catch (e) {
     console.error('Error fetching stage data:', e)

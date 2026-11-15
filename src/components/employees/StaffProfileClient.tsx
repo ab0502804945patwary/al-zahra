@@ -126,6 +126,8 @@ export default function StaffProfileClient({ initialEmployee }: Props) {
     // Only real columns are stored in the database
     const { error } = await createClient().from('employees').update({
       name: updatedEmp.name, phone: updatedEmp.phone ?? null, avatar_url: updatedEmp.avatar_url ?? null,
+      designation: updatedEmp.designation ?? null, department: updatedEmp.department ?? null,
+      salary: updatedEmp.salary ?? null, tasks: updatedEmp.tasks ?? [], reviews: updatedEmp.reviews ?? [],
     }).eq('id', updatedEmp.id)
     if (error) alert('Could not save: ' + error.message)
   }

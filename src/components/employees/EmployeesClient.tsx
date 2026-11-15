@@ -117,7 +117,7 @@ export default function EmployeesClient({ employees: initialEmployees }: Props) 
           const tasksCount = emp.tasks?.length || 0
           const completedCount = emp.tasks?.filter(t => t.status === 'Completed').length || 0
           const salaryType = emp.salary?.salary_type || 'monthly_fixed'
-          const baseSalary = emp.salary?.base_salary || 6500
+          const baseSalary = emp.salary?.base_salary || 0
 
           return (
             <div

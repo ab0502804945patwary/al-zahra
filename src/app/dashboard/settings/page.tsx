@@ -10,5 +10,5 @@ export default async function SettingsPage() {
   const { user, employee: emp } = await getSessionInfo()
   if (!user) redirect('/login')
   if (!emp) redirect('/login')
-  return <SettingsClient profile={emp} />
+  return <SettingsClient profile={{ name: emp.name, email: emp.email, phone: emp.phone, role: emp.role, avatar_url: emp.avatar_url }} />
 }

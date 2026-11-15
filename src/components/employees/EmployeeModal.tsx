@@ -203,7 +203,7 @@ export default function EmployeeModal({ employee, onClose, onSave, onDelete }: P
     const stageList = form.role === 'admin' ? [] : [...form.assigned_stages].map(Number).sort((x, y) => x - y)
     const assignedStageNum = stageList.length ? stageList[0] : null
 
-    const baseAmount = parseFloat(form.base_salary) || 6000
+    const baseAmount = parseFloat(form.base_salary) || 0
 
     const savedData: Employee = {
       id: employee ? employee.id : `emp-${Date.now()}`,
@@ -224,11 +224,11 @@ export default function EmployeeModal({ employee, onClose, onSave, onDelete }: P
         salary_type: form.salary_type,
         base_salary: baseAmount,
         currency: 'SAR',
-        housing_allowance: employee?.salary?.housing_allowance || Math.round(baseAmount * 0.25),
-        transport_allowance: employee?.salary?.transport_allowance || 500,
-        food_allowance: employee?.salary?.food_allowance || 300,
+        housing_allowance: employee?.salary?.housing_allowance ?? 0,
+        transport_allowance: employee?.salary?.transport_allowance ?? 0,
+        food_allowance: employee?.salary?.food_allowance ?? 0,
         commission_rate: employee?.salary?.commission_rate || '',
-        bank_name: employee?.salary?.bank_name || 'Al Rajhi Bank',
+        bank_name: employee?.salary?.bank_name || '',
         account_number: employee?.salary?.account_number || '',
         iban: employee?.salary?.iban || '',
         payment_cycle: 'monthly',
@@ -250,6 +250,10 @@ export default function EmployeeModal({ employee, onClose, onSave, onDelete }: P
             assigned_stages: stageList,
             is_active: form.is_active,
             avatar_url: avatarUrl || null,
+            designation: form.designation.trim() || null,
+            department: form.department.trim() || null,
+            office_location: form.office_location || null,
+            salary: savedData.salary,
           }
           const { error } = await supabase.from('employees').update(payload).eq('id', employee.id)
           if (error) { alert('Could not save: ' + error.message); setLoading(false); return }

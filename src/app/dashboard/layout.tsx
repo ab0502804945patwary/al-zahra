@@ -18,8 +18,15 @@ export default async function DashboardLayout({ children }: { children: React.Re
     redirect('/login')
   }
 
+  // salary, tasks, national id etc. never go to the browser from the layout
+  const safeEmployee = {
+    id: emp.id, user_id: emp.user_id, name: emp.name, email: emp.email, role: emp.role,
+    assigned_stage: emp.assigned_stage, assigned_stages: emp.assigned_stages, avatar_url: emp.avatar_url,
+    is_active: emp.is_active, created_at: emp.created_at,
+  }
+
   return (
-    <DashboardShell employee={emp as Employee}>
+    <DashboardShell employee={safeEmployee as Employee}>
       {children}
     </DashboardShell>
   )

@@ -2,6 +2,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
+import { fetchNotifications } from '@/lib/notifClient'
 import { cn } from '@/lib/utils'
 import { Employee } from '@/lib/types'
 import { useSidebar } from './DashboardShell'
@@ -80,12 +81,12 @@ export default function Sidebar({ employee }: SidebarProps) {
   const [waiting, setWaiting] = useState<Record<number, number>>({})
   useEffect(() => {
     let alive = true
-    const load = () => fetch('/api/notifications', { cache: 'no-store' }).then(r => r.json()).then(d => {
+    const load = () => fetchNotifications().then(items => {
       if (!alive) return
       const m: Record<number, number> = {}
-      for (const i of d.items || []) m[i.stage] = (m[i.stage] || 0) + 1
+      for (const i of items) m[i.stage] = (m[i.stage] || 0) + 1
       setWaiting(m)
-    }).catch(() => {})
+    })
     load()
     const t = setInterval(load, 30000)
     return () => { alive = false; clearInterval(t) }

@@ -34,9 +34,13 @@ const waLink = (n?: string) => {
 export default function ExpiryAlerts({ companies: initial }: { companies: Company[] }) {
   const companies = initial
   const [win, setWin] = useState<Win>(30)
+  // Day counts depend on today's date, which differs between server and browser: compute after mount only
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => { setMounted(true) }, [])
 
   const all = useMemo(() => {
     const out: Item[] = []
+    if (!mounted) return out
     for (const company of companies) {
       for (const { doc, field } of DOC_FIELDS) {
         const date = company[field]
@@ -47,7 +51,7 @@ export default function ExpiryAlerts({ companies: initial }: { companies: Compan
       }
     }
     return out.sort((a, b) => a.days - b.days)
-  }, [companies])
+  }, [companies, mounted])
 
   const inWindow = (i: Item, w: Win) => (w === 'expired' ? i.days < 0 : i.days >= 0 && i.days <= w)
   const wins: { key: Win; label: string }[] = [
