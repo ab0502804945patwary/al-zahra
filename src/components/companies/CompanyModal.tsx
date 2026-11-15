@@ -11,7 +11,28 @@ import {
   Landmark,
   Sliders,
   Sparkles,
-  RefreshCw
+  RefreshCw,
+  Hash,
+  Globe2,
+  BadgeCheck,
+  CalendarDays,
+  CalendarX2,
+  Receipt,
+  Mail,
+  MessageCircle,
+  MapPin,
+  User,
+  IdCard,
+  Phone,
+  Banknote,
+  CreditCard,
+  KeyRound,
+  Activity,
+  FolderOpen,
+  StickyNote,
+  FileText,
+  Briefcase,
+  Layers
 } from 'lucide-react'
 import { createClient, isSupabaseConfigured } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
@@ -125,12 +146,30 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
     4: 'lg:col-span-4',
     3: 'lg:col-span-3',
   }
+  const ICONS: Record<string, any> = {
+    company_id: Hash, country_of_origin: Globe2, entity_type: Layers, company_name: Building2, service_type: Briefcase,
+    cr_number: FileText, cr_issue_date: CalendarDays, cr_expire_date: CalendarX2,
+    misa_license_no: BadgeCheck, misa_issue_date: CalendarDays, misa_expire_date: CalendarX2,
+    tin_number: Receipt, vat_number: Receipt, chamber_registration_no: Building2, gosi_qiwa_status: BadgeCheck,
+    official_email: Mail, whatsapp_number: MessageCircle, national_address: MapPin,
+    ceo_gm_name: User, iqama_no: IdCard, shareholders_name: Users, shareholder_phone: Phone,
+    bank_name: Landmark, account_name: User, account_number: CreditCard, iban_swift: Banknote,
+    file_portal_login: KeyRound, account_status: Activity, assigned_office: MapPin, drive_link: FolderOpen, employee: User, remarks: StickyNote,
+  }
+  const Lbl = ({ name, children }: { name: string; children: React.ReactNode }) => {
+    const Ic = ICONS[name]
+    return (
+      <span className="text-xs font-medium text-slate-700 mb-1 flex items-center gap-1.5 whitespace-nowrap min-w-0 overflow-hidden">
+        {Ic && <Ic className="w-3.5 h-3.5 text-blue-500 shrink-0" />}<span className="truncate">{children}</span>
+      </span>
+    )
+  }
   const inputCls = 'w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white'
 
   // plain function (not a component) so inputs keep focus while typing
   const field = (f: { label: string; name: string; type?: string; span: number }) => (
     <div key={f.name} className={SPAN[f.span]}>
-      <label className="text-xs font-medium text-slate-700 mb-1 block">{f.label}</label>
+      <label className="block"><Lbl name={f.name}>{f.label}</Lbl></label>
       <input
         type={f.type || 'text'}
         value={form[f.name] || ''}
@@ -144,7 +183,7 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
     <>
       <div className={SPAN[4]}>
         <div className="flex items-center justify-between mb-1">
-          <label className="text-xs font-medium text-slate-700">Company Identifier (ID) *</label>
+          <span className="text-xs font-medium text-slate-700 flex items-center gap-1.5 whitespace-nowrap"><Hash className="w-3.5 h-3.5 text-blue-500" />Company ID *</span>
           {!company && (
             <span className="text-[10px] font-bold text-blue-600 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-full inline-flex items-center gap-1">
               <Sparkles className="w-2.5 h-2.5 text-blue-500" /> Auto
@@ -169,12 +208,12 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
       </div>
 
       <div className={SPAN[4]}>
-        <label className="text-xs font-medium text-slate-700 mb-1 block">Country of Origin / Nationality</label>
+        <Lbl name="country_of_origin">Country</Lbl>
         <CountrySelect value={form.country_of_origin} onChange={v => set('country_of_origin', v)} />
       </div>
 
       <div className={SPAN[4]}>
-        <label className="text-xs font-medium text-slate-700 mb-1 block">License Type</label>
+        <Lbl name="entity_type">License Type</Lbl>
         <select value={form.entity_type || ''} onChange={e => set('entity_type', e.target.value)} className={inputCls}>
           <option value="">Select license type</option>
           <option value="Trading License">Trading License</option>
@@ -183,7 +222,7 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
       </div>
 
       <div className={SPAN[12]}>
-        <label className="text-xs font-medium text-slate-700 mb-1 block">Official Registered Name *</label>
+        <Lbl name="company_name">Official Registered Name *</Lbl>
         <input
           type="text"
           required
@@ -195,7 +234,7 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
       </div>
 
       <div className={SPAN[12]}>
-        <label className="text-xs font-medium text-slate-700 mb-1 block">Service Type</label>
+        <Lbl name="service_type">Service Type</Lbl>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {[
             { value: 'a2z', title: 'New Company', desc: 'We set up the whole company, stage by stage' },
@@ -226,16 +265,16 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
       title: 'Statutory & Legal Identifiers',
       icon: FileCheck,
       fields: [
-        { label: 'Commercial Registration (CR) Number', name: 'cr_number', span: 4 },
+        { label: 'CR Number', name: 'cr_number', span: 4 },
         { label: 'CR Issue Date', name: 'cr_issue_date', type: 'date', span: 4 },
         { label: 'CR Expiration Date', name: 'cr_expire_date', type: 'date', span: 4 },
-        { label: 'MISA License Number', name: 'misa_license_no', span: 4 },
+        { label: 'MISA License No.', name: 'misa_license_no', span: 4 },
         { label: 'MISA Issue Date', name: 'misa_issue_date', type: 'date', span: 4 },
         { label: 'MISA Expiration Date', name: 'misa_expire_date', type: 'date', span: 4 },
-        { label: 'Tax Identification Number (TIN)', name: 'tin_number', span: 3 },
-        { label: 'VAT Registration Number', name: 'vat_number', span: 3 },
-        { label: 'Chamber of Commerce Ref', name: 'chamber_registration_no', span: 3 },
-        { label: 'GOSI / Qiwa Compliance Status', name: 'gosi_qiwa_status', span: 3 },
+        { label: 'TIN Number', name: 'tin_number', span: 3 },
+        { label: 'VAT Number', name: 'vat_number', span: 3 },
+        { label: 'Chamber of Commerce', name: 'chamber_registration_no', span: 3 },
+        { label: 'GOSI / Qiwa Status', name: 'gosi_qiwa_status', span: 3 },
       ],
     },
     {
@@ -244,16 +283,16 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
       fields: [
         { label: 'Corporate Email', name: 'official_email', type: 'email', span: 4 },
         { label: 'Direct WhatsApp Contact', name: 'whatsapp_number', span: 4 },
-        { label: 'National Address / Headquarters Location', name: 'national_address', span: 4 },
+        { label: 'National Address', name: 'national_address', span: 4 },
       ],
     },
     {
       title: 'Executive Leadership & Shareholders',
       icon: Users,
       fields: [
-        { label: 'CEO / General Manager Name', name: 'ceo_gm_name', span: 3 },
-        { label: 'National ID / Iqama Number', name: 'iqama_no', span: 3 },
-        { label: 'Principal Shareholder Name', name: 'shareholders_name', span: 3 },
+        { label: 'CEO / GM Name', name: 'ceo_gm_name', span: 3 },
+        { label: 'National ID / Iqama', name: 'iqama_no', span: 3 },
+        { label: 'Main Shareholder', name: 'shareholders_name', span: 3 },
         { label: 'Shareholder Mobile', name: 'shareholder_phone', span: 3 },
       ],
     },
@@ -261,22 +300,22 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
       title: 'Banking & Treasury Accounts',
       icon: Landmark,
       fields: [
-        { label: 'Depository Bank Name', name: 'bank_name', span: 3 },
-        { label: 'Beneficiary Account Name', name: 'account_name', span: 3 },
+        { label: 'Bank Name', name: 'bank_name', span: 3 },
+        { label: 'Account Name', name: 'account_name', span: 3 },
         { label: 'Account Number', name: 'account_number', span: 3 },
-        { label: 'IBAN / SWIFT Identifier', name: 'iban_swift', span: 3 },
+        { label: 'IBAN / SWIFT', name: 'iban_swift', span: 3 },
       ],
     },
     {
       title: 'Administrative & Operational Controls',
       icon: Sliders,
       fields: [
-        { label: 'Portal / Digital Credentials Reference', name: 'file_portal_login', span: 4 },
+        { label: 'Portal Login Ref', name: 'file_portal_login', span: 4 },
         { label: 'Operational Status', name: 'account_status', span: 4 },
-        { label: 'Assigned Regional Office', name: 'assigned_office', span: 4 },
-        { label: 'Cloud Document Folder (Google Drive)', name: 'drive_link', span: 6 },
-        { label: 'Account Handler Officer', name: 'employee', span: 6 },
-        { label: 'Confidential Internal Remarks', name: 'remarks', span: 12 },
+        { label: 'Regional Office', name: 'assigned_office', span: 4 },
+        { label: 'Google Drive Folder', name: 'drive_link', span: 6 },
+        { label: 'Account Handler', name: 'employee', span: 6 },
+        { label: 'Internal Remarks', name: 'remarks', span: 12 },
       ],
     },
   ]
