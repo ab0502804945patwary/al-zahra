@@ -406,3 +406,41 @@ ALTER TABLE app_settings ENABLE ROW LEVEL SECURITY;
 
 -- MIGRATION: province / state of the company
 ALTER TABLE companies ADD COLUMN IF NOT EXISTS province TEXT;
+-- ============================================
+-- STAGE 9: BANGLADESH COMPANY NAME (RJSC registry + workflow)
+-- ============================================
+CREATE TABLE IF NOT EXISTS stage9_bd_company (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  company_id TEXT REFERENCES companies(company_id) ON DELETE SET NULL,
+  bd_company_name TEXT,
+  country TEXT DEFAULT 'Bangladesh',
+  rjsc_reg_no TEXT,
+  issue_no TEXT,
+  incorporation_date DATE,
+  auditor_firm TEXT,
+  rjsc_return_due_date DATE,
+  client_name TEXT,
+  client_phone TEXT,
+  category TEXT,
+  priority TEXT,
+  current_stage TEXT,
+  submit_date DATE,
+  target_date DATE,
+  complete_date DATE,
+  payment_status TEXT,
+  remarks TEXT,
+  employee_id UUID REFERENCES employees(id),
+  drive_link TEXT,
+  overdue_status TEXT,
+  days_taken INTEGER,
+  status TEXT,
+  completion_percent INTEGER,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+ALTER TABLE stage9_bd_company ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "admin_stage9" ON stage9_bd_company;
+DROP POLICY IF EXISTS "emp_stage9" ON stage9_bd_company;
+CREATE POLICY "admin_stage9" ON stage9_bd_company FOR ALL USING (get_user_role() = 'admin');
+CREATE POLICY "emp_stage9" ON stage9_bd_company FOR ALL USING (user_has_stage(9));
+NOTIFY pgrst, 'reload schema';

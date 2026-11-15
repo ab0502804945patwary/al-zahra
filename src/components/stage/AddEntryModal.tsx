@@ -3,13 +3,14 @@ import { useState, useEffect } from 'react'
 import { X, Loader2, Globe, Building2, User, FileText, CheckCircle2, Sparkles } from 'lucide-react'
 import { createClient, isSupabaseConfigured } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
+import BdFields from './BdFields'
 import { COUNTRIES, CATEGORIES, PAYMENT_STATUSES, PRIORITIES, PHASE_OPTIONS, FOREIGN_FILING_OPTIONS, CANADA_OPTIONS, CR_STATUSES, toOptions, pickColumns, validateDates } from '@/lib/stageRules'
 import { calculateNameClearance, calculateOverdue, calculateDaysTaken, calculateStatus, calculateCompletion } from '@/lib/utils'
 
 const STAGE_TABLES: Record<string, string> = {
   '1': 'stage1_mother_company', '2': 'stage2_activity_list', '3': 'stage3_foreign_company',
   '4': 'stage4_misa_license', '5': 'stage5_commercial_registration', '6': 'stage6_other_websites',
-  '7': 'stage7_file_ready', '8': 'stage8_name_clearance',
+  '7': 'stage7_file_ready', '8': 'stage8_name_clearance', '9': 'stage9_bd_company',
 }
 
 const MODULE_TITLES: Record<string, string> = {
@@ -21,6 +22,7 @@ const MODULE_TITLES: Record<string, string> = {
   '6': 'Government Portals Compliance',
   '7': 'Final Legal Dossier & Issuance',
   '8': 'Trade Name Clearance',
+  '9': 'Bangladesh Company Name',
 }
 
 interface Props {
@@ -37,6 +39,7 @@ export default function AddEntryModal({ stageId, companies, employees, onClose, 
   const [form, setForm] = useState<Record<string, string>>({
     submit_date: new Date().toISOString().slice(0, 10),
     current_stage: (PHASE_OPTIONS[stageId] || [])[0] || '',
+    ...(stageId === '9' ? { country: 'Bangladesh' } : {}),
     employee_id: employees.find(e => String(e.assigned_stage) === stageId)?.id || '',
   })
 
@@ -159,10 +162,11 @@ export default function AddEntryModal({ stageId, companies, employees, onClose, 
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          {stageId === '9' && <BdFields form={form} set={set} />}
           <Select
-            label="Corporate Entity (Auto-fills client profile)"
+            label={stageId === '9' ? 'Linked Client Company (optional)' : 'Corporate Entity (Auto-fills client profile)'}
             name="company_id"
-            required
+            required={stageId !== '9'}
             onChange={handleCompanySelect}
             options={companies.map(c => ({ value: c.company_id, label: `${c.company_id} — ${c.company_name}` }))}
           />

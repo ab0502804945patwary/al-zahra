@@ -34,6 +34,7 @@ export const PHASE_OPTIONS: Record<string, string[]> = {
   '5': DEFAULT_PHASES,
   '6': ['SPL', 'QIWA', 'MUQEEM', 'GOSI CERTIFICATE', 'Chamber Of Commerce', 'VAT'],
   '7': DEFAULT_PHASES,
+  '9': DEFAULT_PHASES,
 }
 
 export const toOptions = (list: string[]) => list.map(v => ({ value: v, label: v }))
@@ -105,6 +106,7 @@ export const ELIGIBILITY_HINT: Record<string, string> = {
 // ---- Columns that really exist in each Supabase stage table (see supabase-schema.sql) ----
 const COMMON = ['company_id', 'client_name', 'client_phone', 'category', 'priority', 'current_stage', 'submit_date', 'target_date', 'complete_date', 'payment_status', 'remarks', 'employee_id', 'drive_link', 'overdue_status', 'days_taken', 'status', 'completion_percent']
 export const TABLE_COLUMNS: Record<string, string[]> = {
+  '9': [...COMMON, 'bd_company_name', 'country', 'rjsc_reg_no', 'issue_no', 'incorporation_date', 'auditor_firm', 'rjsc_return_due_date'],
   '1': COMMON, '2': COMMON, '4': COMMON, '5': COMMON, '6': COMMON, '7': COMMON,
   '3': ['company_id', 'client_name', 'client_phone', 'category', 'priority', 'current_stage',
     'usa_type', 'usa_submit_date', 'usa_target_date', 'usa_complete_date', 'usa_overdue_status', 'usa_days_taken', 'usa_status', 'usa_completion_percent', 'usa_payment_status',

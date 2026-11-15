@@ -34,6 +34,7 @@ const MODULE_NAMES: Record<number, string> = {
   6: 'Government Portals & Compliance',
   7: 'Final Legal Dossier & Issuance',
   8: 'Trade Name Clearance',
+  9: 'Bangladesh Company Name',
 }
 
 const SALARY_TYPE_BADGES: Record<SalaryType, string> = {

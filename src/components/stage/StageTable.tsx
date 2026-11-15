@@ -94,7 +94,7 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
   const filtered = entries.filter((e, i) => {
     const comp = companies.find(c => c.company_id === e.company_id)
     return matchesQuery(search, i + 1, [
-      e.company_id, e.companies?.company_name, e.companies?.country_of_origin, comp?.client_name, comp?.client_phone,
+      e.bd_company_name, e.rjsc_reg_no, e.issue_no, e.auditor_firm, e.company_id, e.companies?.company_name, e.companies?.country_of_origin, comp?.client_name, comp?.client_phone,
       e.client_name, e.client_phone, e.category, e.priority, e.current_stage, e.name_clearance_number, e.entity_type,
     ])
   })
@@ -305,6 +305,15 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
           <thead>
             <tr className="bg-slate-50/80 text-slate-500 font-semibold uppercase tracking-wider border-b border-slate-200">
               <th className="py-3 px-4">No.</th>
+              {stageId === '9' && (<>
+                <th className="py-3 px-4">Bangladesh Company Name</th>
+                <th className="py-3 px-4">Country</th>
+                <th className="py-3 px-4">RJSC Reg. No.</th>
+                <th className="py-3 px-4">Issue No</th>
+                <th className="py-3 px-4">Incorporation</th>
+                <th className="py-3 px-4">Auditor / Firm</th>
+                <th className="py-3 px-4">Annual Return Due</th>
+              </>)}
               <th className="py-3 px-4">Entity Portfolio</th>
               <th className="py-3 px-4">Authorized Contact</th>
               <th className="py-3 px-4">Classification</th>
@@ -326,10 +335,19 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
           </thead>
           <tbody className="divide-y divide-slate-100 text-slate-700">
             {filtered.length === 0 ? (
-              <tr><td colSpan={18} className="text-center py-12 text-slate-400">No active files found in this workflow module.</td></tr>
+              <tr><td colSpan={25} className="text-center py-12 text-slate-400">No active files found in this workflow module.</td></tr>
             ) : filtered.map((e, idx) => (
               <tr key={e.id} className="hover:bg-slate-50/60 transition-colors">
                 <td className="py-3 px-4 text-slate-400 font-mono text-[11px]">{idx + 1}</td>
+                {stageId === '9' && (<>
+                  <td className="py-3 px-4 font-semibold text-slate-900 whitespace-nowrap">{e.bd_company_name || '—'}</td>
+                  <td className="py-3 px-4"><span className="inline-flex items-center gap-1.5 whitespace-nowrap"><Flag country={e.country} />{e.country || '—'}</span></td>
+                  <td className="py-3 px-4 font-mono">{e.rjsc_reg_no || '—'}</td>
+                  <td className="py-3 px-4 font-mono">{e.issue_no || '—'}</td>
+                  <td className="py-3 px-4 whitespace-nowrap">{formatDate(e.incorporation_date)}</td>
+                  <td className="py-3 px-4 whitespace-nowrap">{e.auditor_firm || '—'}</td>
+                  <td className="py-3 px-4 whitespace-nowrap">{formatDate(e.rjsc_return_due_date)}</td>
+                </>)}
                 <td className="py-3 px-4">
                   <div className="font-semibold text-slate-900">{e.company_id}</div>
                   <div className="text-slate-500 text-[11px]">{e.companies?.company_name}</div>

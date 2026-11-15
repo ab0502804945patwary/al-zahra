@@ -57,6 +57,13 @@ export const STAGE_CONFIG: Record<string, {
     category: 'Corporate File Handover',
     employee: 'Md Azad'
   },
+  '9': {
+    step: '09',
+    table: 'stage9_bd_company',
+    label: 'Bangladesh Company Name',
+    category: 'RJSC Registration & Annual Return',
+    employee: 'Operations'
+  },
   '8': {
     step: '08',
     table: 'stage8_name_clearance',

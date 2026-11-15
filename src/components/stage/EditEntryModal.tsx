@@ -3,13 +3,14 @@ import { useState } from 'react'
 import { X, Loader2, Trash2 } from 'lucide-react'
 import { createClient, isSupabaseConfigured } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
+import BdFields from './BdFields'
 import { COUNTRIES, CATEGORIES, PAYMENT_STATUSES, PRIORITIES, PHASE_OPTIONS, FOREIGN_FILING_OPTIONS, CANADA_OPTIONS, CR_STATUSES, toOptions, pickColumns, validateDates } from '@/lib/stageRules'
 import { calculateNameClearance, calculateOverdue, calculateDaysTaken, calculateStatus, calculateCompletion } from '@/lib/utils'
 
 const STAGE_TABLES: Record<string, string> = {
   '1': 'stage1_mother_company', '2': 'stage2_activity_list', '3': 'stage3_foreign_company',
   '4': 'stage4_misa_license', '5': 'stage5_commercial_registration', '6': 'stage6_other_websites',
-  '7': 'stage7_file_ready', '8': 'stage8_name_clearance',
+  '7': 'stage7_file_ready', '8': 'stage8_name_clearance', '9': 'stage9_bd_company',
 }
 
 interface Props {
@@ -115,8 +116,9 @@ export default function EditEntryModal({ stageId, entry, companies, employees, o
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          {stageId === '9' && <BdFields form={form} set={set} />}
           <Sel
-            label="Corporate Entity"
+            label={stageId === '9' ? 'Linked Client Company (optional)' : 'Corporate Entity'}
             name="company_id"
             options={companies.map(c => ({ value: c.company_id, label: `${c.company_id} — ${c.company_name}` }))}
           />

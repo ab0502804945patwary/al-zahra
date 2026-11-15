@@ -30,6 +30,7 @@ const MODULE_OPTIONS = [
   { value: 6, label: '06: Government Portals & Compliance' },
   { value: 7, label: '07: Final Legal Dossier & Issuance' },
   { value: 8, label: '08: Trade Name Clearance' },
+  { value: 9, label: '09: Bangladesh Company Name' },
 ]
 
 import { useSecureDelete } from '@/components/ui/useSecureDelete'

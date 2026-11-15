@@ -17,6 +17,7 @@ import {
   Store,
   FolderCheck,
   Tag,
+  Flag,
   ChevronRight,
   Briefcase,
   PanelLeftClose,
@@ -48,6 +49,7 @@ const navGroups: NavGroup[] = [
     title: 'INVESTOR WORKFLOW',
     items: [
       { href: '/dashboard/stage/1', label: 'Parent Entity Verification', icon: Briefcase, stage: 1 },
+      { href: '/dashboard/stage/9', label: 'Bangladesh Company Name', icon: Flag, stage: 9 },
       { href: '/dashboard/stage/2', label: 'Activity Classification', icon: Layers, stage: 2 },
       { href: '/dashboard/stage/3', label: 'Foreign Entity Licensing', icon: Globe2, stage: 3 },
       { href: '/dashboard/stage/8', label: 'Trade Name Clearance', icon: Tag, stage: 8 },

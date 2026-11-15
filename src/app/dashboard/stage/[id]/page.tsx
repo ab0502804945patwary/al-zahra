@@ -86,7 +86,7 @@ export default async function StagePage({ params }: { params: Promise<{ id: stri
         stats={stats}
         companies={companies}
         employees={employees}
-        eligibleIds={eligibleCompanies.filter(c => !entries.some(e => e.company_id === c.company_id)).map(c => c.company_id)}
+        eligibleIds={id === '9' ? undefined : eligibleCompanies.filter(c => !entries.some(e => e.company_id === c.company_id)).map(c => c.company_id)}
         eligibilityHint={eligibilityHint}
         canEdit={canEdit}
       />
