@@ -165,7 +165,7 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
       </span>
     )
   }
-  const inputCls = 'w-full px-3 py-2.5 text-sm text-slate-900 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white placeholder:text-slate-400'
+  const inputCls = 'w-full px-3 py-2.5 text-sm text-slate-900 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white placeholder:text-slate-400'
 
   // plain function (not a component) so inputs keep focus while typing
   const field = (f: { label: string; name: string; type?: string; span: number; options?: string[] }) => (
@@ -345,7 +345,7 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
         {sections.map(section => {
           const SectionIcon = section.icon
           return (
-            <div key={section.title} className="bg-slate-100/70 border border-slate-300/70 rounded-xl p-5">
+            <div key={section.title} className="bg-slate-50/60 border border-slate-200/80 rounded-xl p-5">
               <div className="flex items-center gap-2 mb-3 pb-2 border-b border-slate-200/60">
                 <SectionIcon className="w-4 h-4 text-blue-600" />
                 <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wide">{section.title}</h3>
