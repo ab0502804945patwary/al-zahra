@@ -64,7 +64,7 @@ function submittedAndDone(entries: AnyEntry[] | undefined, companyId: string) {
  * Stage 5: Stage4 submit + complete dates present
  * Stage 6: Stage5 submit + complete dates present
  * Stage 7: Stage6 submit + complete dates present
- * Parallel start for a new company: Service License -> Stages 1, 2, 8. Trading License -> Stages 1, 2, 3, 8. Stage 3 is Trading License only.
+ * Parallel start for a new company: Service License -> Stages 1, 9 (Bangladesh company), 2, 8. Trading License -> Stages 1, 9, 2, 3, 8. Stage 3 is Trading License only.
  * Stages 1,8: open to every company.
  */
 export function isEligibleForStage(stageId: string, company: { company_id: string; entity_type?: string; category?: string; service_type?: string }, all: StageEntriesMap): boolean {

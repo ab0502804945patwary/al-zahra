@@ -38,7 +38,6 @@ export async function getNotifications(): Promise<AppNotification[]> {
   const out: AppNotification[] = []
   for (const sid of ids) {
     const n = Number(sid)
-    if (n === 9) continue // Bangladesh company register is not part of the relay
     if (myStages !== null && !myStages.includes(n)) continue
     for (const c of companies) {
       // Renewal-only companies are not part of the stage-to-stage relay
