@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
+import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 
 const rawUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const rawKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
@@ -36,4 +37,16 @@ export async function createClient() {
       },
     },
   })
+}
+
+/**
+ * Server-only client that bypasses row-level security. Use it ONLY for read-only lookups the
+ * signed-in user is already allowed to see in the UI (e.g. upstream stage dates for the
+ * eligibility check, which staff cannot read directly because each staff member is limited
+ * to their own stage table). Falls back to the normal client when the key is missing.
+ */
+export async function createServiceClient() {
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY
+  if (!isSupabaseConfigured || !key) return createClient()
+  return createSupabaseClient(rawUrl!, key, { auth: { persistSession: false, autoRefreshToken: false } })
 }

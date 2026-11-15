@@ -1,4 +1,4 @@
-import { createClient, isSupabaseConfigured } from '@/lib/supabase/server'
+import { createClient, createServiceClient, isSupabaseConfigured } from '@/lib/supabase/server'
 import { cookies } from 'next/headers'
 import { notFound } from 'next/navigation'
 import StageTable from '@/components/stage/StageTable'
@@ -40,6 +40,7 @@ export default async function StagePage({ params }: { params: Promise<{ id: stri
 
   if (!isDemo && isSupabaseConfigured) {
     const supabase = await createClient()
+    const lookup = await createServiceClient()
     try {
       const entriesQuery = supabase
         .from(config.table)
@@ -52,7 +53,7 @@ export default async function StagePage({ params }: { params: Promise<{ id: stri
         entriesQuery,
         supabase.from('companies').select('company_id, company_name, country_of_origin, entity_type, service_type, client_name, client_phone').order('company_id'),
         supabase.from('employees').select('id, name, assigned_stage'),
-        ...upstream.map(sid => supabase.from(STAGE_CONFIG[sid].table).select(eligibilityColumns(sid, ['priority', 'category']))),
+        ...upstream.map(sid => lookup.from(STAGE_CONFIG[sid].table).select(eligibilityColumns(sid, ['priority', 'category']))),
       ])
       if (eRes.data && eRes.data.length > 0) entries = eRes.data
       if (cRes.data && cRes.data.length > 0) companies = cRes.data

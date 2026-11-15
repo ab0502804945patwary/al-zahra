@@ -1,4 +1,4 @@
-import { createClient, isSupabaseConfigured } from '@/lib/supabase/server'
+import { createClient, createServiceClient, isSupabaseConfigured } from '@/lib/supabase/server'
 import { cookies } from 'next/headers'
 import { STAGE_CONFIG, FALLBACK_STAGE_ENTRIES } from '@/lib/stageData'
 import { INITIAL_EMPLOYEES } from '@/lib/employeeData'
@@ -40,12 +40,13 @@ export async function getNotifications(): Promise<AppNotification[]> {
     for (const sid of ids) all[sid] = FALLBACK_STAGE_ENTRIES[sid] || []
   } else if (isSupabaseConfigured) {
     const supabase = await createClient()
+    const lookup = await createServiceClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return []
     const [empRes, cRes, ...sRes] = await Promise.all([
       supabase.from('employees').select('role, assigned_stage').eq('user_id', user.id).single(),
       supabase.from('companies').select('company_id, company_name, entity_type, service_type'),
-      ...ids.map(sid => supabase.from(STAGE_CONFIG[sid].table).select(eligibilityColumns(sid))),
+      ...ids.map(sid => lookup.from(STAGE_CONFIG[sid].table).select(eligibilityColumns(sid))),
     ])
     myStage = empRes.data?.role === 'admin' ? null : (empRes.data?.assigned_stage ?? -1)
     if (cRes.data?.length) companies = cRes.data
