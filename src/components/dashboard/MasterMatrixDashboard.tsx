@@ -27,6 +27,7 @@ interface CompanyMatrixRow {
   company_name: string
   country_of_origin?: string
   entity_type?: string
+  isRenewal: boolean
   stages: Record<number, StageSummary>
 }
 
@@ -44,14 +45,20 @@ interface DashboardProps {
 export default function MasterMatrixDashboard({ initialCompanies, kpiStats, stageMap }: DashboardProps) {
   const companiesList = initialCompanies
   const [search, setSearch] = useState('')
-  const [filterType, setFilterType] = useState<'all' | 'attention' | 'completed'>('all')
+  const [filterType, setFilterType] = useState<'all' | 'new' | 'renewal' | 'attention' | 'completed'>('all')
 
   // Build matrix rows for each company
   const matrixRows: CompanyMatrixRow[] = useMemo(() => {
     return companiesList.map(c => {
       const real = stageMap[c.company_id] || {}
       const stages: Record<number, StageSummary> = {}
-      for (let n = 1; n <= 8; n++) stages[n] = real[n] || { status: 'Not Started', label: 'Not started' }
+      const isRenewal = c.service_type === 'renewal'
+      for (let n = 1; n <= 9; n++) {
+        if (real[n]) stages[n] = real[n]
+        else if (isRenewal) stages[n] = { status: 'Not Started', label: '—' } // renewal: no stage handoff
+        else if (n === 3 && c.entity_type === 'Service License') stages[n] = { status: 'Not Started', label: 'N/A' } // Service License skips Stage 3
+        else stages[n] = { status: 'Not Started', label: 'Not started' }
+      }
 
       return {
         id: c.id,
@@ -59,6 +66,7 @@ export default function MasterMatrixDashboard({ initialCompanies, kpiStats, stag
         company_name: c.company_name,
         country_of_origin: c.country_of_origin,
         entity_type: c.entity_type,
+        isRenewal,
         stages,
       }
     })
@@ -76,6 +84,8 @@ export default function MasterMatrixDashboard({ initialCompanies, kpiStats, stag
 
       if (!matchesSearch) return false
 
+      if (filterType === 'new' && row.isRenewal) return false
+      if (filterType === 'renewal' && !row.isRenewal) return false
       if (filterType === 'attention') {
         return Object.values(row.stages).some(s => s.status === 'Red')
       }
@@ -188,6 +198,22 @@ export default function MasterMatrixDashboard({ initialCompanies, kpiStats, stag
                 All ({matrixRows.length})
               </button>
               <button
+                onClick={() => setFilterType('new')}
+                className={`px-2.5 py-1 rounded-md font-medium transition ${
+                  filterType === 'new' ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                New Company ({matrixRows.filter(r => !r.isRenewal).length})
+              </button>
+              <button
+                onClick={() => setFilterType('renewal')}
+                className={`px-2.5 py-1 rounded-md font-medium transition ${
+                  filterType === 'renewal' ? 'bg-violet-600 text-white shadow-xs' : 'text-slate-600 hover:text-violet-700'
+                }`}
+              >
+                Renewal / Other ({matrixRows.filter(r => r.isRenewal).length})
+              </button>
+              <button
                 onClick={() => setFilterType('attention')}
                 className={`px-2.5 py-1 rounded-md font-medium transition ${
                   filterType === 'attention' ? 'bg-rose-600 text-white shadow-xs' : 'text-slate-600 hover:text-rose-600'
@@ -206,13 +232,14 @@ export default function MasterMatrixDashboard({ initialCompanies, kpiStats, stag
               <tr className="bg-slate-100/70 text-slate-600 font-semibold uppercase tracking-wider border-b border-slate-200 text-[11px]">
                 <th className="py-3 px-4 font-mono">Company</th>
                 <th className="py-3 px-3 text-center">S1: Parent</th>
+                <th className="py-3 px-3 text-center">BD Company</th>
                 <th className="py-3 px-3 text-center">S2: Activity</th>
                 <th className="py-3 px-3 text-center">S3: Foreign</th>
+                <th className="py-3 px-3 text-center">S8: Name</th>
                 <th className="py-3 px-3 text-center">S4: MISA</th>
                 <th className="py-3 px-3 text-center">S5: CR</th>
                 <th className="py-3 px-3 text-center">S6: Portals</th>
                 <th className="py-3 px-3 text-center">S7: Filing</th>
-                <th className="py-3 px-3 text-center">S8: Name</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-slate-700">
@@ -231,13 +258,14 @@ export default function MasterMatrixDashboard({ initialCompanies, kpiStats, stag
                         <div className="text-[10px] text-slate-400 font-medium">
                           <span className="font-mono text-slate-500 font-semibold">{row.company_id}</span>
                           {row.country_of_origin && <span> • {row.country_of_origin}</span>}
+                          {row.isRenewal && <span className="ml-1.5 px-1.5 py-px rounded-full bg-violet-50 text-violet-700 border border-violet-200 font-semibold">Renewal / Other</span>}
                         </div>
                       </div>
                     </div>
                   </td>
 
                   {/* 8 Stages Badges */}
-                  {[1, 2, 3, 4, 5, 6, 7, 8].map(stgNum => {
+                  {[1, 9, 2, 3, 8, 4, 5, 6, 7].map(stgNum => {
                     const stg = row.stages[stgNum] || { status: 'Not Started', label: 'Queued' }
 
                     let badgeClass = 'bg-slate-100 text-slate-400 border-slate-200'
@@ -266,7 +294,7 @@ export default function MasterMatrixDashboard({ initialCompanies, kpiStats, stag
 
               {filteredRows.length === 0 && (
                 <tr>
-                  <td colSpan={9} className="py-12 text-center text-slate-400">
+                  <td colSpan={10} className="py-12 text-center text-slate-400">
                     <p className="text-xs">No corporate entities found matching your filter</p>
                   </td>
                 </tr>

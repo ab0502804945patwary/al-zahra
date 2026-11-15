@@ -22,7 +22,7 @@ export default async function DashboardPage() {
   if (isSupabaseConfigured) {
     const supabase = await createClient()
     try {
-      const ids = Object.keys(STAGE_CONFIG).filter(k => k !== '9')
+      const ids = Object.keys(STAGE_CONFIG)
       const [cRes, ...sRes] = await Promise.all([
         supabase.from('companies').select('*').order('company_id'),
         ...ids.map(sid => supabase.from(STAGE_CONFIG[sid].table).select('*')),
