@@ -1,6 +1,6 @@
 'use client'
 import { matchesQuery } from '@/lib/search'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { ExternalLink, Edit2, Search, CheckCircle2, Clock, AlertTriangle, AlertCircle, FileText } from 'lucide-react'
 import { cn, formatDate } from '@/lib/utils'
 import { Flag } from '@/components/ui/CountrySelect'
@@ -86,9 +86,24 @@ interface Props {
   canEdit?: boolean
 }
 
-export default function StageTable({ stageId, entries, companies, employees, isUSACanada, isNameClearance, canEdit = true }: Props) {
+export default function StageTable({ stageId, entries: serverEntries, companies, employees, isUSACanada, isNameClearance, canEdit = true }: Props) {
   const [editEntry, setEditEntry] = useState<any>(null)
   const [search, setSearch] = useState('')
+  const [localEntries, setLocalEntries] = useState<any[]>([])
+
+  // Demo mode: entries added in this browser
+  useEffect(() => {
+    const read = () => {
+      try {
+        const all = JSON.parse(localStorage.getItem('alzahra_demo_entries') || '{}')
+        setLocalEntries(Array.isArray(all[stageId]) ? all[stageId] : [])
+      } catch {}
+    }
+    read()
+    window.addEventListener('alzahra:companies', read)
+    return () => window.removeEventListener('alzahra:companies', read)
+  }, [stageId])
+  const entries = localEntries.length ? [...localEntries, ...serverEntries] : serverEntries
 
   const filtered = entries.filter((e, i) => {
     const comp = companies.find(c => c.company_id === e.company_id)
