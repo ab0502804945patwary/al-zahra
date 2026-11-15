@@ -66,7 +66,9 @@ function submittedAndDone(entries: AnyEntry[] | undefined, companyId: string) {
  * Stages 2,3: company must exist in Stage 1.
  * Stages 1,8: open to every company.
  */
-export function isEligibleForStage(stageId: string, company: { company_id: string; entity_type?: string; category?: string }, all: StageEntriesMap): boolean {
+export function isEligibleForStage(stageId: string, company: { company_id: string; entity_type?: string; category?: string; service_type?: string }, all: StageEntriesMap): boolean {
+  // Existing companies that only need renewal skip the handoff chain entirely.
+  if (company.service_type === 'renewal') return true
   const id = company.company_id
   const category = company.category || company.entity_type
   switch (stageId) {

@@ -82,6 +82,8 @@ export interface Company {
   country_of_origin?: string
   company_name: string
   entity_type?: string
+  /** 'a2z' = A2Z handles the full setup flow; 'renewal' = existing company, renewal only */
+  service_type?: 'a2z' | 'renewal' | string
   cr_number?: string
   cr_issue_date?: string
   cr_expire_date?: string

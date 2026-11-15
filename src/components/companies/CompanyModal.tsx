@@ -57,6 +57,7 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
       country_of_origin: 'Saudi Arabia',
       entity_type: 'Trading License',
       account_status: 'Active',
+      service_type: 'a2z',
     }
   })
 
@@ -172,6 +173,29 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
           <div>
             <label className="text-xs font-medium text-slate-700 mb-1 block">Country of Origin / Nationality</label>
             <CountrySelect value={form.country_of_origin} onChange={v => set('country_of_origin', v)} />
+          </div>
+
+          <div className="sm:col-span-2">
+            <label className="text-xs font-medium text-slate-700 mb-1 block">Service Type</label>
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                { value: 'a2z', title: 'A2Z Full Setup', desc: 'A2Z handles the whole process, stage by stage' },
+                { value: 'renewal', title: 'Renewal Only', desc: 'Existing company — only renewal, no stage handoff' },
+              ].map(opt => {
+                const active = (form.service_type || 'a2z') === opt.value
+                return (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => set('service_type', opt.value)}
+                    className={`text-left p-3 rounded-lg border transition ${active ? 'border-blue-500 bg-blue-50 ring-1 ring-blue-500' : 'border-slate-200 bg-white hover:bg-slate-50'}`}
+                  >
+                    <div className={`text-xs font-bold ${active ? 'text-blue-700' : 'text-slate-800'}`}>{opt.title}</div>
+                    <div className="text-[10px] text-slate-500 mt-0.5">{opt.desc}</div>
+                  </button>
+                )
+              })}
+            </div>
           </div>
 
           <div className="sm:col-span-2">

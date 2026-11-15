@@ -44,7 +44,7 @@ export async function getNotifications(): Promise<AppNotification[]> {
     if (!user) return []
     const [empRes, cRes, ...sRes] = await Promise.all([
       supabase.from('employees').select('role, assigned_stage').eq('user_id', user.id).single(),
-      supabase.from('companies').select('company_id, company_name, entity_type'),
+      supabase.from('companies').select('company_id, company_name, entity_type, service_type'),
       ...ids.map(sid => supabase.from(STAGE_CONFIG[sid].table).select('company_id, submit_date, complete_date, usa_complete_date')),
     ])
     myStage = empRes.data?.role === 'admin' ? null : (empRes.data?.assigned_stage ?? -1)
@@ -60,6 +60,8 @@ export async function getNotifications(): Promise<AppNotification[]> {
     if (n === 8) continue
     if (myStage !== null && myStage !== n) continue
     for (const c of companies) {
+      // Renewal-only companies are not part of the stage-to-stage relay
+      if (c.service_type === 'renewal') continue
       const started = (all[sid] || []).some(e => e.company_id === c.company_id)
       if (started) continue
       if (!isEligibleForStage(sid, c, all)) continue

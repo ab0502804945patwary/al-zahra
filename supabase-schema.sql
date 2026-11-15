@@ -372,3 +372,10 @@ INSERT INTO companies (company_id, country_of_origin, company_name, entity_type)
 -- MIGRATION: Add avatar_url to employees
 -- ============================================
 ALTER TABLE employees ADD COLUMN IF NOT EXISTS avatar_url TEXT;
+
+-- ============================================
+-- MIGRATION: Company service type
+-- 'a2z'     = A2Z handles the full setup (stage-by-stage handoff)
+-- 'renewal' = existing company, renewal only (no handoff chain)
+-- ============================================
+ALTER TABLE companies ADD COLUMN IF NOT EXISTS service_type TEXT DEFAULT 'a2z';
