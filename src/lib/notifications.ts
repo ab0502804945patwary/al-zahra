@@ -2,6 +2,7 @@ import { createClient, createServiceClient, isSupabaseConfigured } from '@/lib/s
 import { cookies } from 'next/headers'
 import { STAGE_CONFIG, FALLBACK_STAGE_ENTRIES } from '@/lib/stageData'
 import { INITIAL_EMPLOYEES } from '@/lib/employeeData'
+import { stagesOf } from '@/lib/access'
 import { isEligibleForStage, eligibilityColumns, type StageEntriesMap } from '@/lib/stageRules'
 
 export interface AppNotification {
@@ -27,7 +28,7 @@ export async function getNotifications(): Promise<AppNotification[]> {
   const cookieStore = await cookies()
   const demo = cookieStore.get('demo_session')?.value
 
-  let myStage: number | null = null // null = admin (all stages)
+  let myStages: number[] | null = null // null = admin (all stages)
   let companies: any[] = FALLBACK_COMPANIES
   const all: StageEntriesMap = {}
   const ids = Object.keys(STAGE_CONFIG)
@@ -35,7 +36,7 @@ export async function getNotifications(): Promise<AppNotification[]> {
   if (demo) {
     if (demo !== 'admin') {
       const emp = INITIAL_EMPLOYEES.find(e => e.id === demo || e.email === demo) || INITIAL_EMPLOYEES[0]
-      myStage = emp.assigned_stage ?? -1
+      myStages = stagesOf(emp)
     }
     for (const sid of ids) all[sid] = FALLBACK_STAGE_ENTRIES[sid] || []
   } else if (isSupabaseConfigured) {
@@ -44,11 +45,11 @@ export async function getNotifications(): Promise<AppNotification[]> {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return []
     const [empRes, cRes, ...sRes] = await Promise.all([
-      supabase.from('employees').select('role, assigned_stage').eq('user_id', user.id).single(),
+      supabase.from('employees').select('role, assigned_stage, assigned_stages').eq('user_id', user.id).single(),
       supabase.from('companies').select('company_id, company_name, entity_type, service_type'),
       ...ids.map(sid => lookup.from(STAGE_CONFIG[sid].table).select(eligibilityColumns(sid))),
     ])
-    myStage = empRes.data?.role === 'admin' ? null : (empRes.data?.assigned_stage ?? -1)
+    myStages = stagesOf(empRes.data)
     if (cRes.data?.length) companies = cRes.data
     ids.forEach((sid, k) => { all[sid] = (sRes[k].data as any[]) || [] })
   } else {
@@ -59,7 +60,7 @@ export async function getNotifications(): Promise<AppNotification[]> {
   for (const sid of ids) {
     const n = Number(sid)
     if (n === 8) continue
-    if (myStage !== null && myStage !== n) continue
+    if (myStages !== null && !myStages.includes(n)) continue
     for (const c of companies) {
       // Renewal-only companies are not part of the stage-to-stage relay
       if (c.service_type === 'renewal') continue

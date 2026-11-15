@@ -4,6 +4,7 @@ import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { Employee } from '@/lib/types'
 import { useSidebar } from './DashboardShell'
+import { canAccessStage } from '@/lib/access'
 import {
   LayoutDashboard,
   Building2,
@@ -132,6 +133,7 @@ export default function Sidebar({ employee }: SidebarProps) {
         {navGroups.map((group, groupIdx) => {
           const visibleItems = group.items.filter(item => {
             if (item.adminOnly && !isAdmin) return false
+            if (item.stage && !canAccessStage(employee, item.stage)) return false
             return true
           })
 

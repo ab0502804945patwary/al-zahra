@@ -21,7 +21,7 @@ export async function POST(request: Request) {
   if (me?.role !== 'admin') return NextResponse.json({ error: 'Admins only.' }, { status: 403 })
 
   const body = await request.json()
-  const { name, email, password, phone, role, assigned_stage, is_active, avatar_url } = body
+  const { name, email, password, phone, role, assigned_stage, assigned_stages, is_active, avatar_url } = body
   if (!name || !email || !password || String(password).length < 6) {
     return NextResponse.json({ error: 'Name, email and a password of at least 6 characters are required.' }, { status: 400 })
   }
@@ -43,6 +43,7 @@ export async function POST(request: Request) {
     phone: phone || null,
     role: role || 'employee',
     assigned_stage: assigned_stage ?? null,
+    assigned_stages: Array.isArray(assigned_stages) ? assigned_stages : [],
     is_active: is_active ?? true,
     avatar_url: avatar_url || null,
   }])

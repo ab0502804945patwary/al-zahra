@@ -68,7 +68,7 @@ export default function DashboardShell({
           <main className="flex-1 overflow-y-auto p-3 sm:p-4 lg:p-6 pb-24 lg:pb-6">
             {children}
           </main>
-          <BottomNav />
+          <BottomNav employee={employee} />
         </div>
       </div>
     </SidebarContext.Provider>

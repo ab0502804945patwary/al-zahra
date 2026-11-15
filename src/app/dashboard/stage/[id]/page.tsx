@@ -1,9 +1,10 @@
 import { createClient, createServiceClient, isSupabaseConfigured } from '@/lib/supabase/server'
 import { cookies } from 'next/headers'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import StageTable from '@/components/stage/StageTable'
 import StageHeader from '@/components/stage/StageHeader'
 import { STAGE_CONFIG, FALLBACK_STAGE_ENTRIES } from '@/lib/stageData'
+import { canAccessStage } from '@/lib/access'
 import { INITIAL_EMPLOYEES } from '@/lib/employeeData'
 import { isEligibleForStage, eligibilityColumns, ELIGIBILITY_HINT, type StageEntriesMap } from '@/lib/stageRules'
 
@@ -35,19 +36,21 @@ export default async function StagePage({ params }: { params: Promise<{ id: stri
   let companies: any[] = []
   let employees: any[] = []
 
-  let canEdit = true // admin, or the staff member assigned to this stage
+  // Staff may only open the stages they are assigned to (admins: all stages)
   const demoId = cookieStore.get('demo_session')?.value
+  let me: any = { role: 'admin' }
   if (demoId && demoId !== 'admin') {
-    const emp = INITIAL_EMPLOYEES.find(e => e.id === demoId || e.email === demoId)
-    canEdit = emp?.role === 'admin' || emp?.assigned_stage === Number(id)
+    me = INITIAL_EMPLOYEES.find(e => e.id === demoId || e.email === demoId) || INITIAL_EMPLOYEES[0]
   } else if (!demoId && isSupabaseConfigured) {
     try {
       const sb = await createClient()
       const { data: { user } } = await sb.auth.getUser()
-      const { data: me } = await sb.from('employees').select('role, assigned_stage').eq('user_id', user?.id ?? '').single()
-      if (me) canEdit = me.role === 'admin' || me.assigned_stage === Number(id)
-    } catch {}
+      const { data } = await sb.from('employees').select('role, assigned_stage, assigned_stages').eq('user_id', user?.id ?? '').single()
+      me = data || null
+    } catch { me = null }
   }
+  if (!canAccessStage(me, Number(id))) redirect('/dashboard')
+  const canEdit = true
 
   const gated = ['2', '3', '4', '5', '6', '7'].includes(id)
   const upstream = gated ? ['1', '2', '3', '4', '5', '6'].filter(sid => Number(sid) < Number(id)) : []

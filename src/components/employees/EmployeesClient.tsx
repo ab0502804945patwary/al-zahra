@@ -266,12 +266,14 @@ export default function EmployeesClient({ employees: initialEmployees }: Props) 
                       <span>{emp.phone}</span>
                     </div>
                   )}
-                  {emp.assigned_stage ? (
-                    <div className="mt-2">
-                      <span className="inline-flex items-center gap-1.5 bg-slate-50 text-slate-700 border border-slate-200 px-2 py-0.5 rounded-md text-[10px] font-medium truncate max-w-full">
-                        <Layers className="w-3 h-3 text-blue-600 shrink-0" />
-                        {MODULE_NAMES[emp.assigned_stage]}
-                      </span>
+                  {(emp.assigned_stages?.length ? emp.assigned_stages : (emp.assigned_stage ? [emp.assigned_stage] : [])).length > 0 ? (
+                    <div className="mt-2 flex flex-wrap gap-1">
+                      {(emp.assigned_stages?.length ? emp.assigned_stages : [emp.assigned_stage as number]).map((st) => (
+                        <span key={st} className="inline-flex items-center gap-1.5 bg-slate-50 text-slate-700 border border-slate-200 px-2 py-0.5 rounded-md text-[10px] font-medium truncate max-w-full">
+                          <Layers className="w-3 h-3 text-blue-600 shrink-0" />
+                          {MODULE_NAMES[st]}
+                        </span>
+                      ))}
                     </div>
                   ) : null}
                 </div>

@@ -63,6 +63,8 @@ export interface Employee {
   phone?: string
   role: UserRole
   assigned_stage?: number
+  /** All stages this staff member may work on (admins have access to every stage) */
+  assigned_stages?: number[]
   is_active: boolean
   avatar_url?: string
   department?: string

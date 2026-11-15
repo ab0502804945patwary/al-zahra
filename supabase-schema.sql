@@ -386,3 +386,11 @@ ALTER TABLE companies ADD COLUMN IF NOT EXISTS employee TEXT;
 -- MIGRATION: Client contact stored once on the company (stages read it from here)
 ALTER TABLE companies ADD COLUMN IF NOT EXISTS client_name TEXT;
 ALTER TABLE companies ADD COLUMN IF NOT EXISTS client_phone TEXT;
+
+-- MIGRATION: staff can be assigned one or more stages
+ALTER TABLE employees ADD COLUMN IF NOT EXISTS assigned_stages INTEGER[] DEFAULT '{}';
+UPDATE employees SET assigned_stages = ARRAY[assigned_stage] WHERE assigned_stage IS NOT NULL AND (assigned_stages IS NULL OR assigned_stages = '{}');
+CREATE OR REPLACE FUNCTION user_has_stage(n INTEGER) RETURNS BOOLEAN AS $$
+  SELECT COALESCE((SELECT n = ANY(assigned_stages) OR assigned_stage = n FROM employees WHERE user_id = auth.uid() LIMIT 1), false);
+$$ LANGUAGE SQL SECURITY DEFINER;
+-- emp_stageN policies now use: FOR ALL USING (user_has_stage(N))

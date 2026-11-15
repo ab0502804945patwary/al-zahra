@@ -51,7 +51,7 @@ export default function EmployeeModal({ employee, onClose, onSave, onDelete }: P
     email: employee?.email || '',
     phone: employee?.phone || '',
     role: employee?.role || 'employee',
-    assigned_stage: employee?.assigned_stage?.toString() || '',
+    assigned_stages: (employee?.assigned_stages?.length ? employee.assigned_stages : (employee?.assigned_stage ? [employee.assigned_stage] : [])).map(String) as string[],
     designation: employee?.designation || '',
     department: employee?.department || '',
     office_location: employee?.office_location || 'Riyadh HQ - Al Olaya',
@@ -197,9 +197,8 @@ export default function EmployeeModal({ employee, onClose, onSave, onDelete }: P
     e.preventDefault()
     setLoading(true)
 
-    const assignedStageNum = form.role === 'admin'
-      ? null
-      : (form.assigned_stage ? parseInt(form.assigned_stage) : null)
+    const stageList = form.role === 'admin' ? [] : [...form.assigned_stages].map(Number).sort((x, y) => x - y)
+    const assignedStageNum = stageList.length ? stageList[0] : null
 
     const baseAmount = parseFloat(form.base_salary) || 6000
 
@@ -211,6 +210,7 @@ export default function EmployeeModal({ employee, onClose, onSave, onDelete }: P
       phone: form.phone.trim() || undefined,
       role: form.role as any,
       assigned_stage: assignedStageNum || undefined,
+      assigned_stages: stageList,
       is_active: form.is_active,
       avatar_url: avatarUrl.trim() || undefined,
       designation: form.designation.trim() || undefined,
@@ -244,6 +244,7 @@ export default function EmployeeModal({ employee, onClose, onSave, onDelete }: P
             phone: form.phone,
             role: form.role,
             assigned_stage: assignedStageNum,
+            assigned_stages: stageList,
             is_active: form.is_active,
             avatar_url: avatarUrl || null,
           }
@@ -259,6 +260,7 @@ export default function EmployeeModal({ employee, onClose, onSave, onDelete }: P
               phone: form.phone,
               role: form.role,
               assigned_stage: assignedStageNum,
+              assigned_stages: stageList,
               is_active: form.is_active,
               avatar_url: avatarUrl || null,
             }),
@@ -541,19 +543,24 @@ export default function EmployeeModal({ employee, onClose, onSave, onDelete }: P
 
             {form.role === 'employee' && (
               <div>
-                <label className="text-xs font-medium text-slate-700 mb-1 block">Assigned Module</label>
-                <select
-                  value={form.assigned_stage}
-                  onChange={(e) => setForm((p) => ({ ...p, assigned_stage: e.target.value }))}
-                  className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-slate-700"
-                >
-                  <option value="">Select Module...</option>
-                  {MODULE_OPTIONS.map((m) => (
-                    <option key={m.value} value={m.value}>
-                      {m.label}
-                    </option>
-                  ))}
-                </select>
+                <label className="text-xs font-medium text-slate-700 mb-1 block">Assigned Modules (one or more)</label>
+                <div className="grid grid-cols-1 gap-1.5 border border-slate-200 rounded-lg p-2 bg-white max-h-44 overflow-y-auto">
+                  {MODULE_OPTIONS.map((m) => {
+                    const v = String(m.value)
+                    const on = form.assigned_stages.includes(v)
+                    return (
+                      <label key={v} className={`flex items-center gap-2 px-2 py-1.5 rounded-md text-xs cursor-pointer ${on ? 'bg-blue-50 text-blue-700' : 'text-slate-700 hover:bg-slate-50'}`}>
+                        <input
+                          type="checkbox"
+                          checked={on}
+                          onChange={() => setForm((p) => ({ ...p, assigned_stages: on ? p.assigned_stages.filter((x) => x !== v) : [...p.assigned_stages, v] }))}
+                          className="accent-blue-600"
+                        />
+                        {m.label}
+                      </label>
+                    )
+                  })}
+                </div>
               </div>
             )}
           </div>
