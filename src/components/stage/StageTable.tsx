@@ -1,4 +1,5 @@
 'use client'
+import { matchesQuery } from '@/lib/search'
 import { useState } from 'react'
 import { ExternalLink, Edit2, Search, CheckCircle2, Clock, AlertTriangle, AlertCircle, FileText } from 'lucide-react'
 import { cn, formatDate } from '@/lib/utils'
@@ -89,12 +90,13 @@ export default function StageTable({ stageId, entries, companies, employees, isU
   const [editEntry, setEditEntry] = useState<any>(null)
   const [search, setSearch] = useState('')
 
-  const filtered = entries.filter(e =>
-    !search ||
-    e.companies?.company_name?.toLowerCase().includes(search.toLowerCase()) ||
-    e.company_id?.toLowerCase().includes(search.toLowerCase()) ||
-    e.client_name?.toLowerCase().includes(search.toLowerCase())
-  )
+  const filtered = entries.filter((e, i) => {
+    const comp = companies.find(c => c.company_id === e.company_id)
+    return matchesQuery(search, i + 1, [
+      e.company_id, e.companies?.company_name, e.companies?.country_of_origin, comp?.client_name, comp?.client_phone,
+      e.client_name, e.client_phone, e.category, e.priority, e.current_stage, e.name_clearance_number, e.entity_type,
+    ])
+  })
 
   if (isNameClearance) {
     return (

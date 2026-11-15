@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { Plus, Edit2, Building2, Search, ExternalLink, Sparkles, LayoutGrid, List, RefreshCw } from 'lucide-react'
 import { Company } from '@/lib/types'
 import CompanyModal, { computeNextCompanyId } from './CompanyModal'
+import { matchesQuery } from '@/lib/search'
 
 interface Props { companies: Company[] }
 
@@ -89,12 +90,14 @@ export default function CompaniesClient({ companies: initialCompanies }: Props) 
 
   const nextAutoId = computeNextCompanyId(companiesList)
 
+  const serialOf = (c: Company) => companiesList.indexOf(c) + 1
   const filtered = companiesList.filter(c =>
     (typeFilter === 'all' || (typeFilter === 'renewal' ? isRenewal(c) : !isRenewal(c))) &&
-    (!search ||
-    c.company_name?.toLowerCase().includes(search.toLowerCase()) ||
-    c.company_id?.toLowerCase().includes(search.toLowerCase()) ||
-    c.country_of_origin?.toLowerCase().includes(search.toLowerCase()))
+    matchesQuery(search, serialOf(c), [
+      c.company_id, c.company_name, c.country_of_origin, c.entity_type, c.client_name, c.client_phone,
+      c.whatsapp_number, c.official_email, c.cr_number, c.misa_license_no, c.tin_number, c.vat_number,
+      c.ceo_gm_name, c.iqama_no, c.shareholders_name, c.shareholder_phone, c.bank_name, c.account_number,
+    ])
   )
   const renewalCount = companiesList.filter(isRenewal).length
 
@@ -135,7 +138,7 @@ export default function CompaniesClient({ companies: initialCompanies }: Props) 
           <input
             value={search}
             onChange={e => setSearch(e.target.value)}
-            placeholder="Search by company name, entity ID, nationality..."
+            placeholder="Search name, ID, serial no., phone, country, CR, MISA..."
             className="w-full pl-9 pr-4 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
           />
         </div>
@@ -169,7 +172,7 @@ export default function CompaniesClient({ companies: initialCompanies }: Props) 
           <table className="w-full text-xs min-w-[900px]">
             <thead className="bg-slate-50 text-slate-500 uppercase text-[10px] tracking-wide">
               <tr>
-                {['ID', 'Company', 'Country', 'Service Type', 'License', 'CR No.', 'MISA No.', 'CR Expiry', 'Status', 'Folder', ''].map(h => (
+                {['SL', 'ID', 'Company', 'Country', 'Service Type', 'License', 'CR No.', 'MISA No.', 'CR Expiry', 'Status', 'Folder', ''].map(h => (
                   <th key={h} className="text-left font-semibold px-3 py-2.5 whitespace-nowrap">{h}</th>
                 ))}
               </tr>
@@ -177,6 +180,7 @@ export default function CompaniesClient({ companies: initialCompanies }: Props) 
             <tbody className="divide-y divide-slate-100">
               {filtered.map(c => (
                 <tr key={c.id} className="hover:bg-slate-50/70">
+                  <td className="px-3 py-2.5 text-slate-400 font-mono">{serialOf(c)}</td>
                   <td className="px-3 py-2.5 font-mono font-bold text-blue-700">{c.company_id}</td>
                   <td className="px-3 py-2.5 font-semibold text-slate-900">{c.company_name}</td>
                   <td className="px-3 py-2.5 text-slate-600"><span className="inline-flex items-center gap-1"><Flag country={c.country_of_origin} />{c.country_of_origin}</span></td>
@@ -195,7 +199,7 @@ export default function CompaniesClient({ companies: initialCompanies }: Props) 
                 </tr>
               ))}
               {filtered.length === 0 && (
-                <tr><td colSpan={11} className="text-center py-12 text-slate-400">No matching corporate entities located</td></tr>
+                <tr><td colSpan={12} className="text-center py-12 text-slate-400">No matching corporate entities located</td></tr>
               )}
             </tbody>
           </table>
