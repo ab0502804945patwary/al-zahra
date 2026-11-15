@@ -1,4 +1,7 @@
 import { createClient, isSupabaseConfigured } from '@/lib/supabase/server'
+import { redirect } from 'next/navigation'
+import { getSessionInfo } from '@/lib/session'
+import { homeFor } from '@/lib/access'
 import MasterMatrixDashboard from '@/components/dashboard/MasterMatrixDashboard'
 import { Company } from '@/lib/types'
 import ExpiryAlerts from '@/components/dashboard/ExpiryAlerts'
@@ -8,6 +11,10 @@ import { STAGE_CONFIG } from '@/lib/stageData'
 export const dynamic = 'force-dynamic'
 
 export default async function DashboardPage() {
+  // Staff do not get the dashboard: send them to their own stage
+  const { employee } = await getSessionInfo()
+  if (employee && employee.role !== 'admin') redirect(homeFor(employee))
+
   let companies: Company[] = []
   const kpiStats = { totalCompanies: 0, compliant: 0, overdue: 0, expiring: 0 }
   const stageRows: Record<string, any[]> = {}

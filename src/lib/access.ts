@@ -13,3 +13,10 @@ export function canAccessStage(emp: StaffLike, stage: number): boolean {
   const s = stagesOf(emp)
   return s === null || s.includes(stage)
 }
+
+/** Where a user lands after login: admins get the dashboard, staff their first assigned stage. */
+export function homeFor(emp: StaffLike): string {
+  const s = stagesOf(emp)
+  if (s === null) return '/dashboard'
+  return s.length ? `/dashboard/stage/${Math.min(...s)}` : '/dashboard/settings'
+}
