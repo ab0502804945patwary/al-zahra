@@ -85,22 +85,9 @@ export default function AddEntryModal({ stageId, companies, employees, onClose, 
       if (form.canada_submit_date) { payload.canada_status = calculateStatus(canDays); payload.canada_days_taken = canDays; payload.canada_completion_percent = calculateCompletion(payload.canada_status); payload.canada_overdue_status = calculateOverdue(form.canada_complete_date, form.canada_target_date) }
     }
 
-    const isDemo = typeof document !== 'undefined' && document.cookie.includes('demo_session=')
-    if (isDemo || !isSupabaseConfigured) {
-      // Demo mode: keep the entry in this browser only (no database write)
-      try {
-        const all = JSON.parse(localStorage.getItem('alzahra_demo_entries') || '{}')
-        const comp = companies.find((c: any) => c.company_id === payload.company_id)
-        const emp = employees.find((x: any) => x.id === payload.employee_id)
-        const row = { ...payload, id: `local-${Date.now()}`, created_at: new Date().toISOString(), companies: comp ? { company_name: comp.company_name, country_of_origin: comp.country_of_origin } : undefined, employees: emp ? { name: emp.name } : undefined }
-        all[stageId] = [row, ...(all[stageId] || [])]
-        localStorage.setItem('alzahra_demo_entries', JSON.stringify(all))
-        window.dispatchEvent(new Event('alzahra:companies'))
-      } catch {}
-    } else {
-      const { error } = await supabase.from(STAGE_TABLES[stageId]).insert([pickColumns(stageId, payload)])
-      if (error) { alert('Could not save: ' + error.message); setLoading(false); return }
-    }
+    if (!isSupabaseConfigured) { alert('Database is not connected.'); setLoading(false); return }
+    const { error } = await supabase.from(STAGE_TABLES[stageId]).insert([pickColumns(stageId, payload)])
+    if (error) { alert('Could not save: ' + error.message); setLoading(false); return }
 
     router.refresh()
     onClose()

@@ -56,11 +56,8 @@ export default function EditEntryModal({ stageId, entry, companies, employees, o
     }
 
     if (isSupabaseConfigured) {
-      try {
-        await supabase.from(STAGE_TABLES[stageId]).update(pickColumns(stageId, payload)).eq('id', entry.id)
-      } catch (err) {
-        console.log('Updated entry locally:', err)
-      }
+      const { error } = await supabase.from(STAGE_TABLES[stageId]).update(pickColumns(stageId, payload)).eq('id', entry.id)
+      if (error) { alert('Could not save: ' + error.message); setLoading(false); return }
     }
 
     router.refresh()
@@ -72,11 +69,8 @@ export default function EditEntryModal({ stageId, entry, companies, employees, o
     if (!confirm('Are you sure you want to delete this record?')) return
     setDeleting(true)
     if (isSupabaseConfigured) {
-      try {
-        await supabase.from(STAGE_TABLES[stageId]).delete().eq('id', entry.id)
-      } catch (err) {
-        console.log('Deleted locally:', err)
-      }
+      const { error } = await supabase.from(STAGE_TABLES[stageId]).delete().eq('id', entry.id)
+      if (error) { alert('Could not delete: ' + error.message); setDeleting(false); return }
     }
     router.refresh()
     onClose()

@@ -46,18 +46,7 @@ export default function NotificationBell() {
 
   const load = useCallback(async () => {
     try {
-      let local = ''
-      try {
-        const stored = JSON.parse(localStorage.getItem('alzahra_companies_data') || '[]')
-        const slim = Array.isArray(stored) ? stored.filter((c: any) => c?.company_id).map((c: any) => ({ company_id: c.company_id, company_name: c.company_name, entity_type: c.entity_type, service_type: c.service_type })) : []
-        const ent = JSON.parse(localStorage.getItem('alzahra_demo_entries') || '{}')
-        const entries: Record<string, any[]> = {}
-        for (const [sid, list] of Object.entries(ent)) {
-          entries[sid] = (list as any[]).map(e => ({ company_id: e.company_id, submit_date: e.submit_date, complete_date: e.complete_date, usa_complete_date: e.usa_complete_date }))
-        }
-        if (slim.length || Object.keys(entries).length) local = `?local=${encodeURIComponent(JSON.stringify({ companies: slim, entries }))}`
-      } catch {}
-      const res = await fetch('/api/notifications' + local, { cache: 'no-store' })
+      const res = await fetch('/api/notifications', { cache: 'no-store' })
       if (!res.ok) return
       const { items: next } = (await res.json()) as { items: AppNotification[] }
       const prev = known.current
@@ -74,9 +63,7 @@ export default function NotificationBell() {
     const t = setInterval(load, POLL_MS)
     const onFocus = () => load()
     window.addEventListener('focus', onFocus)
-    window.addEventListener('alzahra:companies', onFocus)
     return () => {
-      window.removeEventListener('alzahra:companies', onFocus)
       clearInterval(t)
       window.removeEventListener('focus', onFocus)
     }

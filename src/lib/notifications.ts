@@ -1,7 +1,5 @@
 import { createClient, createServiceClient, isSupabaseConfigured } from '@/lib/supabase/server'
-import { cookies } from 'next/headers'
-import { STAGE_CONFIG, FALLBACK_STAGE_ENTRIES } from '@/lib/stageData'
-import { INITIAL_EMPLOYEES } from '@/lib/employeeData'
+import { STAGE_CONFIG } from '@/lib/stageData'
 import { stagesOf } from '@/lib/access'
 import { isEligibleForStage, eligibilityColumns, type StageEntriesMap } from '@/lib/stageRules'
 
@@ -15,52 +13,27 @@ export interface AppNotification {
   href: string
 }
 
-const FALLBACK_COMPANIES = [
-  { company_id: 'AZC801', company_name: 'Steel Com', entity_type: 'Trading License' },
-  { company_id: 'AZC802', company_name: 'al tamayyuz sharikat taj Trading', entity_type: 'Trading License' },
-]
-
 /**
  * A company is "waiting" for a stage when it is eligible for that stage but has no entry there yet.
  * Staff see only their own stage; admin sees every stage.
  */
-export async function getNotifications(localCompanies: any[] = [], localEntries: Record<string, any[]> = {}): Promise<AppNotification[]> {
-  const cookieStore = await cookies()
-  const demo = cookieStore.get('demo_session')?.value
-
-  let myStages: number[] | null = null // null = admin (all stages)
-  let companies: any[] = FALLBACK_COMPANIES
-  const all: StageEntriesMap = {}
+export async function getNotifications(): Promise<AppNotification[]> {
+  if (!isSupabaseConfigured) return []
   const ids = Object.keys(STAGE_CONFIG)
+  const all: StageEntriesMap = {}
 
-  if (demo) {
-    if (demo !== 'admin') {
-      const emp = INITIAL_EMPLOYEES.find(e => e.id === demo || e.email === demo) || INITIAL_EMPLOYEES[0]
-      myStages = stagesOf(emp)
-    }
-    for (const sid of ids) {
-      const extra = Array.isArray(localEntries[sid]) ? localEntries[sid].slice(0, 500) : []
-      all[sid] = [...extra, ...(FALLBACK_STAGE_ENTRIES[sid] || [])]
-    }
-    // demo mode: companies created in the browser (localStorage) are unknown to the server
-    const known = new Set(companies.map(c => c.company_id))
-    companies = [...companies, ...localCompanies.filter(c => c && typeof c.company_id === 'string' && !known.has(c.company_id))]
-  } else if (isSupabaseConfigured) {
-    const supabase = await createClient()
-    const lookup = await createServiceClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return []
-    const [empRes, cRes, ...sRes] = await Promise.all([
-      supabase.from('employees').select('role, assigned_stage, assigned_stages').eq('user_id', user.id).single(),
-      supabase.from('companies').select('company_id, company_name, entity_type, service_type'),
-      ...ids.map(sid => lookup.from(STAGE_CONFIG[sid].table).select(eligibilityColumns(sid))),
-    ])
-    myStages = stagesOf(empRes.data)
-    if (cRes.data?.length) companies = cRes.data
-    ids.forEach((sid, k) => { all[sid] = (sRes[k].data as any[]) || [] })
-  } else {
-    return []
-  }
+  const supabase = await createClient()
+  const lookup = await createServiceClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return []
+  const [empRes, cRes, ...sRes] = await Promise.all([
+    supabase.from('employees').select('role, assigned_stage, assigned_stages').eq('user_id', user.id).single(),
+    supabase.from('companies').select('company_id, company_name, entity_type, service_type'),
+    ...ids.map(sid => lookup.from(STAGE_CONFIG[sid].table).select(eligibilityColumns(sid))),
+  ])
+  const myStages = stagesOf(empRes.data) // null = admin (all stages)
+  const companies: any[] = cRes.data || []
+  ids.forEach((sid, k) => { all[sid] = (sRes[k].data as any[]) || [] })
 
   const out: AppNotification[] = []
   for (const sid of ids) {

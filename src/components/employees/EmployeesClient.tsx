@@ -21,7 +21,7 @@ import {
 import { Employee, SalaryType } from '@/lib/types'
 import EmployeeModal from './EmployeeModal'
 import { cn } from '@/lib/utils'
-import { INITIAL_EMPLOYEES } from '@/lib/employeeData'
+import { useRouter } from 'next/navigation'
 
 interface Props { employees: Employee[] }
 
@@ -45,60 +45,30 @@ const SALARY_TYPE_BADGES: Record<SalaryType, string> = {
 }
 
 export default function EmployeesClient({ employees: initialEmployees }: Props) {
+  const router = useRouter()
   const [employeesList, setEmployeesList] = useState<Employee[]>(initialEmployees)
   const [showAdd, setShowAdd] = useState(false)
   const [selected, setSelected] = useState<Employee | null>(null)
 
-  // Local storage synchronization to preserve additions and edits in local/demo mode
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem('alzahra_employees_data')
-      if (stored) {
-        const parsed = JSON.parse(stored) as Employee[]
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          // Merge with initial, prioritizing stored custom items
-          setEmployeesList(prev => {
-            const map = new Map<string, Employee>(prev.map(e => [e.id, e]))
-            parsed.forEach(item => {
-              const prevItem = map.get(item.id)
-              map.set(item.id, { ...prevItem, ...item })
-            })
-            return Array.from(map.values())
-          })
-        }
-      }
-    } catch (e) {
-      console.warn('Could not read from localStorage:', e)
-    }
-  }, [])
+  // Server data is the source of truth; refresh after every change
+  useEffect(() => { setEmployeesList(initialEmployees) }, [initialEmployees])
 
   function handleSave(savedEmp: Employee) {
     setEmployeesList(prev => {
       const index = prev.findIndex(e => e.id === savedEmp.id)
-      let updated: Employee[]
       if (index >= 0) {
-        updated = [...prev]
+        const updated = [...prev]
         updated[index] = { ...prev[index], ...savedEmp }
-      } else {
-        // Find default template if matched
-        const template = INITIAL_EMPLOYEES.find(i => i.id === savedEmp.id)
-        updated = [{ ...template, ...savedEmp }, ...prev]
+        return updated
       }
-      try {
-        localStorage.setItem('alzahra_employees_data', JSON.stringify(updated))
-      } catch {}
-      return updated
+      return [savedEmp, ...prev]
     })
+    router.refresh()
   }
 
   function handleDelete(id: string) {
-    setEmployeesList(prev => {
-      const updated = prev.filter(e => e.id !== id)
-      try {
-        localStorage.setItem('alzahra_employees_data', JSON.stringify(updated))
-      } catch {}
-      return updated
-    })
+    setEmployeesList(prev => prev.filter(e => e.id !== id))
+    router.refresh()
   }
 
   return (

@@ -248,7 +248,8 @@ export default function EmployeeModal({ employee, onClose, onSave, onDelete }: P
             is_active: form.is_active,
             avatar_url: avatarUrl || null,
           }
-          await supabase.from('employees').update(payload).eq('id', employee.id)
+          const { error } = await supabase.from('employees').update(payload).eq('id', employee.id)
+          if (error) { alert('Could not save: ' + error.message); setLoading(false); return }
         } else {
           const res = await fetch('/api/staff', {
             method: 'POST',
@@ -272,8 +273,10 @@ export default function EmployeeModal({ employee, onClose, onSave, onDelete }: P
             return
           }
         }
-      } catch (err) {
-        console.log('Saved employee locally/fallback:', err)
+      } catch (err: any) {
+        alert('Could not save: ' + (err?.message || 'network error'))
+        setLoading(false)
+        return
       }
     }
 
@@ -286,11 +289,8 @@ export default function EmployeeModal({ employee, onClose, onSave, onDelete }: P
   async function handleDelete() {
     if (!confirm('Are you sure you want to remove this staff member?')) return
     if (isSupabaseConfigured) {
-      try {
-        await supabase.from('employees').delete().eq('id', employee!.id)
-      } catch (err) {
-        console.log('Deleted employee locally/fallback:', err)
-      }
+      const { error } = await supabase.from('employees').delete().eq('id', employee!.id)
+      if (error) { alert('Could not delete: ' + error.message); return }
     }
     onDelete?.(employee!.id)
     router.refresh()

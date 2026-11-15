@@ -1,5 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
+import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import {
   ArrowLeft,
@@ -119,39 +120,13 @@ export default function StaffProfileClient({ initialEmployee }: Props) {
     feedback: '',
   })
 
-  // Load updated custom profile if saved in localStorage
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem('alzahra_employees_data')
-      if (stored) {
-        const parsed = JSON.parse(stored) as Employee[]
-        const found = parsed.find(e => e.id === employee.id || e.email === employee.email)
-        if (found) {
-          setEmployee(prev => ({
-            ...prev,
-            ...found,
-            salary: found.salary || prev.salary,
-            tasks: found.tasks && found.tasks.length > 0 ? found.tasks : prev.tasks,
-            reviews: found.reviews && found.reviews.length > 0 ? found.reviews : prev.reviews
-          }))
-        }
-      }
-    } catch {}
-  }, [employee.id, employee.email])
-
-  function persistEmployeeUpdate(updatedEmp: Employee) {
+  async function persistEmployeeUpdate(updatedEmp: Employee) {
     setEmployee(updatedEmp)
-    try {
-      const stored = localStorage.getItem('alzahra_employees_data')
-      let list: Employee[] = stored ? JSON.parse(stored) : []
-      const idx = list.findIndex(e => e.id === updatedEmp.id)
-      if (idx >= 0) {
-        list[idx] = updatedEmp
-      } else {
-        list.push(updatedEmp)
-      }
-      localStorage.setItem('alzahra_employees_data', JSON.stringify(list))
-    } catch {}
+    // Only real columns are stored in the database
+    const { error } = await createClient().from('employees').update({
+      name: updatedEmp.name, phone: updatedEmp.phone ?? null, avatar_url: updatedEmp.avatar_url ?? null,
+    }).eq('id', updatedEmp.id)
+    if (error) alert('Could not save: ' + error.message)
   }
 
   // Task metrics calculation ("ke koto gulo kaj korlo na korlo")

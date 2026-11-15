@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import {
   Building2,
@@ -31,6 +31,7 @@ interface CompanyMatrixRow {
 }
 
 interface DashboardProps {
+  stageMap: Record<string, Record<number, StageSummary>>
   initialCompanies: Company[]
   kpiStats: {
     totalCompanies: number
@@ -40,68 +41,17 @@ interface DashboardProps {
   }
 }
 
-export default function MasterMatrixDashboard({ initialCompanies, kpiStats }: DashboardProps) {
-  const [companiesList, setCompaniesList] = useState<Company[]>(initialCompanies)
+export default function MasterMatrixDashboard({ initialCompanies, kpiStats, stageMap }: DashboardProps) {
+  const companiesList = initialCompanies
   const [search, setSearch] = useState('')
   const [filterType, setFilterType] = useState<'all' | 'attention' | 'completed'>('all')
-
-  // Sync with localStorage for newly added companies
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem('alzahra_companies_data')
-      if (stored) {
-        const parsed = JSON.parse(stored) as Company[]
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setCompaniesList(prev => {
-            const map = new Map<string, Company>(prev.map(c => [c.company_id, c]))
-            parsed.forEach(item => {
-              if (item.company_id) {
-                map.set(item.company_id, { ...map.get(item.company_id), ...item })
-              }
-            })
-            return Array.from(map.values())
-          })
-        }
-      }
-    } catch {}
-  }, [])
 
   // Build matrix rows for each company
   const matrixRows: CompanyMatrixRow[] = useMemo(() => {
     return companiesList.map(c => {
-      const is801 = c.company_id === 'AZC801'
-      const is802 = c.company_id === 'AZC802'
-
-      const stages: Record<number, StageSummary> = {
-        1: is801
-          ? { status: 'Green', label: 'Approved', days: 8 }
-          : is802
-          ? { status: 'Red', label: 'Approved', days: 85 }
-          : { status: 'Pending', label: 'In Review', days: 2 },
-        2: is801
-          ? { status: 'Green', label: 'Approved', days: 10 }
-          : is802
-          ? { status: 'Green', label: 'Approved', days: 8 }
-          : { status: 'Not Started', label: 'Queued' },
-        3: is801
-          ? { status: 'Red', label: 'USA Delayed', sublabel: 'CAN Green' }
-          : is802
-          ? { status: 'Green', label: 'USA / CAN', days: 4 }
-          : { status: 'Not Started', label: 'Queued' },
-        4: is801
-          ? { status: 'Red', label: 'Delay 17d', days: 17 }
-          : is802
-          ? { status: 'Red', label: 'Delay 97d', days: 97 }
-          : { status: 'Not Started', label: 'Queued' },
-        5: { status: 'Not Started', label: 'In Queue' },
-        6: { status: 'Not Started', label: 'In Queue' },
-        7: { status: 'Not Started', label: 'In Queue' },
-        8: is801
-          ? { status: 'Green', label: '48d Left' }
-          : is802
-          ? { status: 'Green', label: '60d Left' }
-          : { status: 'Green', label: 'Active' },
-      }
+      const real = stageMap[c.company_id] || {}
+      const stages: Record<number, StageSummary> = {}
+      for (let n = 1; n <= 8; n++) stages[n] = real[n] || { status: 'Not Started', label: 'Not started' }
 
       return {
         id: c.id,
@@ -112,7 +62,7 @@ export default function MasterMatrixDashboard({ initialCompanies, kpiStats }: Da
         stages,
       }
     })
-  }, [companiesList])
+  }, [companiesList, stageMap])
 
   // Filtered rows
   const filteredRows = useMemo(() => {

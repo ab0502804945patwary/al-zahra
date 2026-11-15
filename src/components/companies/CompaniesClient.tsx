@@ -39,54 +39,23 @@ export default function CompaniesClient({ companies: initialCompanies }: Props) 
     </span>
   )
 
-  // Sync with localStorage for demo/offline resilience
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem('alzahra_companies_data')
-      if (stored) {
-        const parsed = JSON.parse(stored) as Company[]
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setCompaniesList(prev => {
-            const map = new Map<string, Company>(prev.map(c => [c.id, c]))
-            parsed.forEach(item => {
-              const prevItem = map.get(item.id)
-              map.set(item.id, { ...prevItem, ...item })
-            })
-            return Array.from(map.values())
-          })
-        }
-      }
-    } catch (e) {
-      console.warn('Could not read companies from localStorage:', e)
-    }
-  }, [])
+  // Server data is the source of truth
+  useEffect(() => { setCompaniesList(initialCompanies) }, [initialCompanies])
 
   function handleSave(savedCompany: Company) {
     setCompaniesList(prev => {
       const index = prev.findIndex(c => c.id === savedCompany.id || c.company_id === savedCompany.company_id)
-      let updated: Company[]
       if (index >= 0) {
-        updated = [...prev]
+        const updated = [...prev]
         updated[index] = { ...prev[index], ...savedCompany }
-      } else {
-        updated = [savedCompany, ...prev]
+        return updated
       }
-      try {
-        localStorage.setItem('alzahra_companies_data', JSON.stringify(updated))
-        setTimeout(() => window.dispatchEvent(new Event('alzahra:companies')), 0)
-      } catch {}
-      return updated
+      return [savedCompany, ...prev]
     })
   }
 
   function handleDelete(id: string) {
-    setCompaniesList(prev => {
-      const updated = prev.filter(c => c.id !== id)
-      try {
-        localStorage.setItem('alzahra_companies_data', JSON.stringify(updated))
-      } catch {}
-      return updated
-    })
+    setCompaniesList(prev => prev.filter(c => c.id !== id))
   }
 
   const nextAutoId = computeNextCompanyId(companiesList)

@@ -32,24 +32,8 @@ const waLink = (n?: string) => {
 }
 
 export default function ExpiryAlerts({ companies: initial }: { companies: Company[] }) {
-  const [companies, setCompanies] = useState<Company[]>(initial)
+  const companies = initial
   const [win, setWin] = useState<Win>(30)
-
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem('alzahra_companies_data')
-      if (stored) {
-        const parsed = JSON.parse(stored) as Company[]
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setCompanies(prev => {
-            const map = new Map<string, Company>(prev.map(c => [c.company_id, c]))
-            parsed.forEach(c => { if (c.company_id) map.set(c.company_id, { ...map.get(c.company_id), ...c }) })
-            return Array.from(map.values())
-          })
-        }
-      }
-    } catch {}
-  }, [])
 
   const all = useMemo(() => {
     const out: Item[] = []

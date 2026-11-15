@@ -1,60 +1,50 @@
 import { createClient, isSupabaseConfigured } from '@/lib/supabase/server'
-import { cookies } from 'next/headers'
 import MasterMatrixDashboard from '@/components/dashboard/MasterMatrixDashboard'
 import { Company } from '@/lib/types'
 import ExpiryAlerts from '@/components/dashboard/ExpiryAlerts'
 import StageSummaryTable from '@/components/dashboard/StageSummaryTable'
-import { STAGE_CONFIG, FALLBACK_STAGE_ENTRIES } from '@/lib/stageData'
+import { STAGE_CONFIG } from '@/lib/stageData'
 
 export const dynamic = 'force-dynamic'
 
-const FALLBACK_COMPANIES: Company[] = [
-  {
-    id: '1',
-    company_id: 'AZC801',
-    country_of_origin: 'Afghanistan',
-    company_name: 'Steel Com',
-    entity_type: 'Trading License',
-    cr_number: 'CR-801-4432',
-    misa_license_no: 'MISA-2026-801',
-    account_status: 'Active',
-    created_at: '2026-01-01T00:00:00.000Z',
-  },
-  {
-    id: '2',
-    company_id: 'AZC802',
-    country_of_origin: 'Bangladesh',
-    company_name: 'al tamayyuz sharikat taj Trading',
-    entity_type: 'Trading License',
-    ceo_gm_name: 'Belayet Hossain',
-    account_status: 'Active',
-    created_at: '2026-01-01T00:00:00.000Z',
-  },
-]
-
 export default async function DashboardPage() {
-  let companies: Company[] = FALLBACK_COMPANIES
-  const kpiStats = { totalCompanies: 2, compliant: 0, overdue: 0, expiring: 0 }
-  let stageRows: Record<string, any[]> = { ...FALLBACK_STAGE_ENTRIES }
+  let companies: Company[] = []
+  const kpiStats = { totalCompanies: 0, compliant: 0, overdue: 0, expiring: 0 }
+  const stageRows: Record<string, any[]> = {}
 
-  const cookieStore = await cookies()
-  const isDemo = Boolean(cookieStore.get('demo_session')?.value)
-
-  if (!isDemo && isSupabaseConfigured) {
+  if (isSupabaseConfigured) {
     const supabase = await createClient()
     try {
       const ids = Object.keys(STAGE_CONFIG)
       const [cRes, ...sRes] = await Promise.all([
         supabase.from('companies').select('*').order('company_id'),
-        ...ids.map(sid => supabase.from(STAGE_CONFIG[sid].table).select('status, usa_status, canada_status, remaining_days, completion_percent, usa_completion_percent')),
+        ...ids.map(sid => supabase.from(STAGE_CONFIG[sid].table).select('company_id, status, usa_status, canada_status, remaining_days, completion_percent, usa_completion_percent, complete_date, usa_complete_date, current_stage, days_taken, usa_days_taken')),
       ])
-      if (cRes.data && cRes.data.length > 0) {
-        companies = cRes.data
-        kpiStats.totalCompanies = cRes.data.length
-      }
-      stageRows = {}
+      companies = (cRes.data as Company[]) || []
+      kpiStats.totalCompanies = companies.length
       ids.forEach((sid, k) => { stageRows[sid] = (sRes[k].data as any[]) || [] })
     } catch {}
+  }
+
+  // Real per-company stage status for the matrix
+  const stageMap: Record<string, Record<number, any>> = {}
+  for (const [sid, rows] of Object.entries(stageRows)) {
+    for (const r of rows) {
+      if (!r.company_id) continue
+      const n = Number(sid)
+      let status: string, label: string, days: number | undefined
+      if (n === 8) {
+        status = r.status === 'Active' ? 'Green' : r.status === 'Warning' ? 'Yellow' : 'Red'
+        label = r.status === 'Expired' ? 'Expired' : `${r.remaining_days ?? '-'}d Left`
+      } else {
+        const st = r.status || r.usa_status
+        status = st === 'Green' || st === 'Yellow' || st === 'Red' ? st : 'Pending'
+        const done = n === 3 ? r.usa_complete_date : r.complete_date
+        label = done ? 'Complete' : (r.current_stage || 'In Progress')
+        days = r.days_taken ?? r.usa_days_taken ?? undefined
+      }
+      ;(stageMap[r.company_id] ||= {})[n] = { status, label, days }
+    }
   }
 
   for (const rows of Object.values(stageRows)) {
@@ -86,7 +76,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <MasterMatrixDashboard initialCompanies={companies} kpiStats={kpiStats} />
+      <MasterMatrixDashboard initialCompanies={companies} kpiStats={kpiStats} stageMap={stageMap} />
       <ExpiryAlerts companies={companies} />
       <StageSummaryTable rows={summary} />
     </div>

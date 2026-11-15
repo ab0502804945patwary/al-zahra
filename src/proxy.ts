@@ -3,16 +3,6 @@ import { NextResponse, type NextRequest } from 'next/server'
 export async function proxy(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
 
-  const demoCookie = request.cookies.get('demo_session')?.value
-  if (demoCookie) {
-    if (request.nextUrl.pathname === '/login') {
-      const url = request.nextUrl.clone()
-      url.pathname = '/dashboard'
-      return NextResponse.redirect(url)
-    }
-    return supabaseResponse
-  }
-
   const rawUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const rawKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 

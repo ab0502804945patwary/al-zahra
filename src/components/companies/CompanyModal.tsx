@@ -101,20 +101,24 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
       created_at: company?.created_at || '2026-01-01T00:00:00.000Z',
     } as unknown as Company
 
-    if (isSupabaseConfigured) {
-      try {
-        if (company) {
-          await supabase.from('companies').update(form).eq('id', company.id)
-        } else {
-          await supabase.from('companies').insert([form])
-        }
-      } catch (err) {
-        console.log('Saved company locally:', err)
-      }
+    let saved: Company = finalPayload
+    if (!isSupabaseConfigured) { alert('Database is not connected.'); setLoading(false); return }
+    // Never send client-side placeholders to the database
+    const { id: _id, created_at: _c, ...rest } = form as any
+    const row: Record<string, any> = {}
+    for (const [k, v] of Object.entries(rest)) row[k] = v === '' ? null : v
+    if (company) {
+      const { data, error } = await supabase.from('companies').update(row).eq('id', company.id).select().single()
+      if (error) { alert('Could not save: ' + error.message); setLoading(false); return }
+      saved = data as Company
+    } else {
+      const { data, error } = await supabase.from('companies').insert([row]).select().single()
+      if (error) { alert('Could not save: ' + error.message); setLoading(false); return }
+      saved = data as Company
     }
 
     if (onSave) {
-      onSave(finalPayload)
+      onSave(saved)
     }
 
     router.refresh()
@@ -125,11 +129,8 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
     if (!company) return
     if (!confirm('Are you sure you want to delete this company entity and all associated records?')) return
     if (isSupabaseConfigured) {
-      try {
-        await supabase.from('companies').delete().eq('id', company.id)
-      } catch (err) {
-        console.log('Deleted locally:', err)
-      }
+      const { error } = await supabase.from('companies').delete().eq('id', company.id)
+      if (error) { alert('Could not delete: ' + error.message); return }
     }
 
     if (onDelete) {

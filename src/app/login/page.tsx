@@ -1,7 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { createClient, isSupabaseConfigured } from '@/lib/supabase/client'
-import { INITIAL_EMPLOYEES } from '@/lib/employeeData'
+import { QUICK_ACCOUNTS } from '@/lib/quickAccounts'
 import { useRouter } from 'next/navigation'
 import { Eye, EyeOff, Loader2, Lock, Mail, Sparkles } from 'lucide-react'
 
@@ -20,7 +20,7 @@ export default function LoginPage() {
     setLoading(true)
     setError('')
     if (!isSupabaseConfigured) {
-      setError('Live login is not connected yet. Use Instant Demo Access or Demo Staff Login below.')
+      setError('Database is not connected. Check the Supabase settings.')
       setLoading(false)
       return
     }
@@ -33,17 +33,19 @@ export default function LoginPage() {
     }
   }
 
-  function handleStaffDemo(id: string) {
-    if (!id) return
+  async function quickLogin(key: string) {
+    if (!key) return
     setDemoLoading(true)
-    document.cookie = `demo_session=${id}; path=/; max-age=86400; SameSite=Lax`
-    window.location.href = '/dashboard'
-  }
-
-  function handleDemoLogin() {
-    setDemoLoading(true)
-    document.cookie = "demo_session=admin; path=/; max-age=86400; SameSite=Lax"
-    window.location.href = '/dashboard'
+    setError('')
+    try {
+      const res = await fetch('/api/quick-login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ key }) })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) { setError(data.error || 'Quick login failed.'); setDemoLoading(false); return }
+      window.location.href = '/dashboard'
+    } catch {
+      setError('Cannot reach the server.')
+      setDemoLoading(false)
+    }
   }
 
   return (
@@ -129,22 +131,22 @@ export default function LoginPage() {
           <div className="mt-5 pt-4 border-t border-slate-100">
             <button
               type="button"
-              onClick={handleDemoLogin}
+              onClick={() => quickLogin('admin')}
               disabled={demoLoading || loading}
               className="w-full py-2 px-3 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 rounded-lg font-medium text-xs transition flex items-center justify-center gap-2"
             >
               {demoLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5 text-blue-600" />}
-              Instant Demo Access (Explore Full ERP)
+              One-Click Admin Login
             </button>
             <select
               defaultValue=""
-              onChange={e => handleStaffDemo(e.target.value)}
+              onChange={e => quickLogin(e.target.value)}
               disabled={demoLoading || loading}
               className="mt-2 w-full py-2 px-3 bg-white border border-slate-200 text-slate-700 rounded-lg text-xs"
             >
-              <option value="">Demo Staff Login — choose employee...</option>
-              {INITIAL_EMPLOYEES.filter(e => e.role === 'employee').map(e => (
-                <option key={e.id} value={e.id}>{e.name} ({(e.assigned_stages?.length ? e.assigned_stages : [e.assigned_stage]).map(n => `Stage ${n}`).join(', ')})</option>
+              <option value="">One-Click Staff Login — choose employee...</option>
+              {QUICK_ACCOUNTS.filter(a => a.role === 'employee').map(a => (
+                <option key={a.key} value={a.key}>{a.name} ({a.stages.map(n => `Stage ${n}`).join(', ')})</option>
               ))}
             </select>
           </div>
