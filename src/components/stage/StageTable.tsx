@@ -152,7 +152,7 @@ export default function StageTable({ stageId, entries, companies, employees, isU
                       </span>
                     ) : '—'}
                   </td>
-                  <td className="py-3 px-4"><StatusBadge status={e.status} /></td>
+                  <td className="py-3 px-4">{e.approval_date ? <StatusBadge status={e.status} /> : '—'}</td>
                   <td className="py-3 px-4"><MilestoneBadge status={e.cr_status} /></td>
                   <td className="py-3 px-4 text-slate-400 max-w-32 truncate">{e.notes || '—'}</td>
                   <td className="py-3 px-4 text-right">
