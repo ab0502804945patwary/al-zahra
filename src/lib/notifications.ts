@@ -44,8 +44,6 @@ export async function getNotifications(): Promise<AppNotification[]> {
       if (c.service_type === 'renewal') continue
       const started = (all[sid] || []).some(e => e.company_id === c.company_id)
       if (started) continue
-      // Trade Name Clearance runs in parallel only for Service License companies
-      if (n === 8 && (c.entity_type || c.category) !== 'Service License') continue
       if (!isEligibleForStage(sid, c, all)) continue
       out.push({
         key: `${sid}:${c.company_id}`,
