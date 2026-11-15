@@ -44,13 +44,13 @@ export const GREEN_MAX_DAYS = 10
 export const YELLOW_MAX_DAYS = 13
 
 // ---- Eligibility: which companies may enter a stage ----
-type AnyEntry = { company_id?: string; complete_date?: string | null; submit_date?: string | null; usa_complete_date?: string | null }
+type AnyEntry = { company_id?: string; complete_date?: string | null; submit_date?: string | null; usa_complete_date?: string | null; approval_date?: string | null }
 
 export type StageEntriesMap = Record<string, AnyEntry[]>
 
 const has = (v: unknown) => v !== null && v !== undefined && String(v).trim() !== ''
 
-function done(entries: AnyEntry[] | undefined, companyId: string, field: 'complete_date' | 'usa_complete_date' = 'complete_date') {
+function done(entries: AnyEntry[] | undefined, companyId: string, field: 'complete_date' | 'usa_complete_date' | 'approval_date' = 'complete_date') {
   return (entries || []).some(e => e.company_id === companyId && has(e[field]))
 }
 
@@ -59,8 +59,8 @@ function submittedAndDone(entries: AnyEntry[] | undefined, companyId: string) {
 }
 
 /**
- * Stage 4: Service  -> Stage1 done AND Stage2 done
- *          Trading  -> Stage2 done AND Stage3 (USA/UK) done
+ * Stage 4: Service  -> Stages 1, 9, 2, 8 complete
+ *          Trading  -> Stages 1, 9, 2, 3 (USA/UK), 8 complete
  * Stage 5: Stage4 submit + complete dates present
  * Stage 6: Stage5 submit + complete dates present
  * Stage 7: Stage6 submit + complete dates present
@@ -74,11 +74,12 @@ export function isEligibleForStage(stageId: string, company: { company_id: strin
   const category = company.category || company.entity_type
   switch (stageId) {
     case '4': {
-      const s1 = done(all['1'], id)
-      const s2 = done(all['2'], id)
-      const s3 = done(all['3'], id, 'usa_complete_date')
-      if (category === 'Service License') return s1 && s2
-      if (category === 'Trading License') return s2 && s3
+      // MISA opens only when every parallel step is complete:
+      //   Service License: Parent (1), Bangladesh Company (9), Activity (2), Trade Name (8)
+      //   Trading License: the same plus Foreign Entity (3)
+      const common = done(all['1'], id) && done(all['9'], id) && done(all['2'], id) && done(all['8'], id, 'approval_date')
+      if (category === 'Service License') return common
+      if (category === 'Trading License') return common && done(all['3'], id, 'usa_complete_date')
       return false
     }
     case '2':
@@ -97,7 +98,7 @@ export function isEligibleForStage(stageId: string, company: { company_id: strin
 export const ELIGIBILITY_HINT: Record<string, string> = {
   '2': 'Starts together with Stage 1 and Trade Name Clearance.',
   '3': 'Trading License only (Service License skips this stage). Starts together with Stage 1.',
-  '4': 'Service License: Stage 1 + Stage 2 complete. Trading License: Stage 2 + Stage 3 complete.',
+  '4': 'Opens when every earlier step is complete: Parent Entity, Bangladesh Company, Activity Classification, Trade Name Clearance (and Foreign Entity for Trading License).',
   '5': 'Requires Stage 4 (MISA) submit and complete dates.',
   '6': 'Requires Stage 5 (Commercial Registration) submit and complete dates.',
   '7': 'Requires Stage 6 (Other Websites) submit and complete dates.',
@@ -117,7 +118,7 @@ export const TABLE_COLUMNS: Record<string, string[]> = {
 
 /** Columns the eligibility check needs, limited to those that exist in the given stage table. */
 export function eligibilityColumns(stageId: string, extra: string[] = []): string {
-  const wanted = ['company_id', 'submit_date', 'complete_date', 'usa_complete_date', ...extra]
+  const wanted = ['company_id', 'submit_date', 'complete_date', 'usa_complete_date', 'approval_date', ...extra]
   const real = new Set(TABLE_COLUMNS[stageId] || [])
   return wanted.filter(c => real.has(c)).join(', ')
 }

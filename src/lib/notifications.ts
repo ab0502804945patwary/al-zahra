@@ -1,5 +1,5 @@
 import { createClient, createServiceClient, isSupabaseConfigured } from '@/lib/supabase/server'
-import { STAGE_CONFIG } from '@/lib/stageData'
+import { STAGE_CONFIG, phaseOf } from '@/lib/stageData'
 import { stagesOf } from '@/lib/access'
 import { isEligibleForStage, eligibilityColumns, type StageEntriesMap } from '@/lib/stageRules'
 
@@ -51,7 +51,7 @@ export async function getNotifications(): Promise<AppNotification[]> {
         stageLabel: STAGE_CONFIG[sid].label,
         company_id: c.company_id,
         company_name: c.company_name,
-        message: `${c.company_id} ${c.company_name} is ready for Stage ${n}`,
+        message: `${c.company_id} ${c.company_name} is ready for Phase ${phaseOf(n)}`,
         href: `/dashboard/stage/${sid}`,
       })
     }

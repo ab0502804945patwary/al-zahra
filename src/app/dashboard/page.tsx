@@ -6,7 +6,7 @@ import MasterMatrixDashboard from '@/components/dashboard/MasterMatrixDashboard'
 import { Company } from '@/lib/types'
 import ExpiryAlerts from '@/components/dashboard/ExpiryAlerts'
 import StageSummaryTable from '@/components/dashboard/StageSummaryTable'
-import { STAGE_CONFIG } from '@/lib/stageData'
+import { STAGE_CONFIG, MENU_ORDER, phaseOf } from '@/lib/stageData'
 import { enrichTiming } from '@/lib/utils'
 
 export const dynamic = 'force-dynamic'
@@ -64,7 +64,7 @@ export default async function DashboardPage() {
     }
   }
 
-  const summary = Object.entries(STAGE_CONFIG)
+  const summary = MENU_ORDER.map(sid => [sid, STAGE_CONFIG[sid]] as const)
     .filter(([, c]) => !c.isNameClearance)
     .map(([sid, c]) => {
       const rows = stageRows[sid] || []
@@ -72,7 +72,7 @@ export default async function DashboardPage() {
       const pct = rows.map(r => r.completion_percent ?? r.usa_completion_percent).filter((x: any) => typeof x === 'number')
       return {
         id: sid,
-        label: `Stage ${Number(sid)}: ${c.label}`,
+        label: `Phase ${phaseOf(sid)}: ${c.label}`,
         employee: c.employee,
         total: rows.length,
         green: rows.filter(r => st(r) === 'Green').length,

@@ -23,14 +23,14 @@ interface Props {
 
 const MODULE_OPTIONS = [
   { value: 1, label: '01: Parent Entity Verification' },
-  { value: 2, label: '02: Activity Classification' },
-  { value: 3, label: '03: Cross-Border Foreign Licensing' },
-  { value: 4, label: '04: MISA Investment Licensing' },
-  { value: 5, label: '05: Commercial Registration (CR)' },
-  { value: 6, label: '06: Government Portals & Compliance' },
-  { value: 7, label: '07: Final Legal Dossier & Issuance' },
-  { value: 8, label: '08: Trade Name Clearance' },
-  { value: 9, label: '09: Bangladesh Company Name' },
+  { value: 9, label: '02: Bangladesh Company Name' },
+  { value: 2, label: '03: Activity Classification' },
+  { value: 3, label: '04: Cross-Border Foreign Licensing' },
+  { value: 8, label: '05: Trade Name Clearance' },
+  { value: 4, label: '06: MISA Investment Licensing' },
+  { value: 5, label: '07: Commercial Registration (CR)' },
+  { value: 6, label: '08: Government Portals & Compliance' },
+  { value: 7, label: '09: Final Legal Dossier & Issuance' },
 ]
 
 import { useSecureDelete } from '@/components/ui/useSecureDelete'

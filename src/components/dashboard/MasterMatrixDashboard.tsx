@@ -14,6 +14,7 @@ import {
 } from 'lucide-react'
 import { Company } from '@/lib/types'
 import StatusGuide from '@/components/ui/StatusGuide'
+import { phaseOf } from '@/lib/stageData'
 
 interface StageSummary {
   status: 'Green' | 'Yellow' | 'Red' | 'Pending' | 'Not Started'
@@ -232,15 +233,15 @@ export default function MasterMatrixDashboard({ initialCompanies, kpiStats, stag
             <thead>
               <tr className="bg-slate-100/70 text-slate-600 font-semibold uppercase tracking-wider border-b border-slate-200 text-[11px]">
                 <th className="py-3 px-4 font-mono">Company</th>
-                <th className="py-3 px-3 text-center">S1: Parent</th>
-                <th className="py-3 px-3 text-center">BD Company</th>
-                <th className="py-3 px-3 text-center">S2: Activity</th>
-                <th className="py-3 px-3 text-center">S3: Foreign</th>
-                <th className="py-3 px-3 text-center">S8: Name</th>
-                <th className="py-3 px-3 text-center">S4: MISA</th>
-                <th className="py-3 px-3 text-center">S5: CR</th>
-                <th className="py-3 px-3 text-center">S6: Portals</th>
-                <th className="py-3 px-3 text-center">S7: Filing</th>
+                <th className="py-3 px-3 text-center">1: Parent</th>
+                <th className="py-3 px-3 text-center">2: BD Company</th>
+                <th className="py-3 px-3 text-center">3: Activity</th>
+                <th className="py-3 px-3 text-center">4: Foreign</th>
+                <th className="py-3 px-3 text-center">5: Name</th>
+                <th className="py-3 px-3 text-center">6: MISA</th>
+                <th className="py-3 px-3 text-center">7: CR</th>
+                <th className="py-3 px-3 text-center">8: Portals</th>
+                <th className="py-3 px-3 text-center">9: Filing</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-slate-700">
@@ -282,7 +283,7 @@ export default function MasterMatrixDashboard({ initialCompanies, kpiStats, stag
                       <td key={stgNum} className="py-3 px-2 text-center">
                         <Link
                           href={`/dashboard/stage/${stgNum}`}
-                          title={`Click to view Stage ${stgNum}`}
+                          title={`Click to open Phase ${phaseOf(stgNum)}`}
                           className={`inline-block px-2 py-1 rounded-md text-[10px] border transition whitespace-nowrap ${badgeClass}`}
                         >
                           {stg.label}

@@ -31,7 +31,7 @@ export default async function StagePage({ params }: { params: Promise<{ id: stri
   const isAdmin = me?.role === 'admin'
 
   const gated = ['2', '3', '4', '5', '6', '7'].includes(id)
-  const upstream = gated ? ['1', '2', '3', '4', '5', '6'].filter(sid => Number(sid) < Number(id)) : []
+  const upstream = !gated ? [] : id === '4' ? ['1', '2', '3', '8', '9'] : ['1', '2', '3', '4', '5', '6'].filter(sid => Number(sid) < Number(id))
   const dbEntries: Record<string, any[]> = {}
 
   try {

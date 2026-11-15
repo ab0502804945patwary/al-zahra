@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { createClient, isSupabaseConfigured } from '@/lib/supabase/client'
 import { QUICK_ACCOUNTS } from '@/lib/quickAccounts'
+import { phaseOf } from '@/lib/stageData'
 import { useRouter } from 'next/navigation'
 import { Eye, EyeOff, Loader2, Lock, Mail, Sparkles } from 'lucide-react'
 
@@ -146,7 +147,7 @@ export default function LoginPage() {
             >
               <option value="">One-Click Staff Login — choose employee...</option>
               {QUICK_ACCOUNTS.filter(a => a.role === 'employee').map(a => (
-                <option key={a.key} value={a.key}>{a.name} ({a.stages.map(n => `Stage ${n}`).join(', ')})</option>
+                <option key={a.key} value={a.key}>{a.name} ({a.stages.map(n => `Phase ${phaseOf(n)}`).join(', ')})</option>
               ))}
             </select>
           </div>
