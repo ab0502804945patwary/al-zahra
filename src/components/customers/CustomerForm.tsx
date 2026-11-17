@@ -1,7 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { X, Loader2, IdCard, Globe2, Contact, BookUser, Save } from 'lucide-react'
+import { X, Loader2, Save } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import CountrySelect from '@/components/ui/CountrySelect'
 import type { Customer } from './CustomersClient'
@@ -17,21 +17,12 @@ export function nextCustomerCode(customers: Customer[]): string {
 
 const TYPES = ['Individual', 'Corporate', 'VIP', 'Guest Customer']
 const STATUSES = ['Active', 'Inactive', 'Blocked']
-const TABS = [
-  { key: 'basic', label: 'Basic Info', icon: IdCard },
-  { key: 'platform', label: 'Platform Info', icon: Globe2 },
-  { key: 'contact', label: 'Contact Details', icon: Contact },
-  { key: 'passport', label: 'Passport Info & Documents', icon: BookUser },
-] as const
-type Tab = typeof TABS[number]['key']
-
 const inputCls = 'w-full px-3 py-2.5 text-sm text-slate-900 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white placeholder:text-slate-400'
 const DATE_FIELDS = ['date_of_birth', 'platform_registered_on', 'passport_issue_date', 'passport_expiry_date']
 
 export default function CustomerForm({ customer, nextCode, staffNames, onClose }: { customer?: Customer; nextCode: string; staffNames: string[]; onClose: () => void }) {
   const router = useRouter()
   const supabase = createClient()
-  const [tab, setTab] = useState<Tab>('basic')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [form, setForm] = useState<Record<string, any>>(() => customer ? { ...customer } : {
@@ -80,7 +71,7 @@ export default function CustomerForm({ customer, nextCode, staffNames, onClose }
       ['given_name', 'Given Name'], ['surname', 'Surname'], ['gender', 'Gender'], ['phone', 'Phone'],
       ['email', 'Email'], ['assigned_to', 'Assigned To'],
     ].filter(([k]) => !String(form[k] || '').trim()).map(([, l]) => l)
-    if (missing.length) { setError(`Please fill: ${missing.join(', ')}`); setTab('basic'); return }
+    if (missing.length) { setError(`Please fill: ${missing.join(', ')}`); return }
     setLoading(true)
     const payload: Record<string, any> = { ...form }
     for (const k of Object.keys(payload)) if (payload[k] === '') payload[k] = null
@@ -107,19 +98,8 @@ export default function CustomerForm({ customer, nextCode, staffNames, onClose }
         <button onClick={onClose} title="Back to customers" className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-slate-600"><X className="w-5 h-5" /></button>
       </div>
 
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-2 flex flex-wrap gap-1">
-        {TABS.map(t => {
-          const Icon = t.icon
-          return (
-            <button key={t.key} type="button" onClick={() => setTab(t.key)} className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold transition ${tab === t.key ? 'bg-blue-600 text-white' : 'text-slate-600 hover:bg-slate-50'}`}>
-              <Icon className="w-3.5 h-3.5" />{t.label}
-            </button>
-          )
-        })}
-      </div>
-
       <form onSubmit={submit} className="space-y-4">
-        {tab === 'basic' && (
+        {(
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
             <div className="lg:col-span-3">
               {card(null, <>
@@ -157,39 +137,6 @@ export default function CustomerForm({ customer, nextCode, staffNames, onClose }
             </div>
           </div>
         )}
-
-        {tab === 'platform' && card('Platform Information', <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {select('Platform / Source', 'platform_name', ['Website', 'Facebook', 'WhatsApp', 'Agent', 'Walk-in', 'Referral', 'Other'])}
-          {text('Platform Username / ID', 'platform_username')}
-          {text('Registered On', 'platform_registered_on', { type: 'date' })}
-          <div className="sm:col-span-2 lg:col-span-3">
-            <label className="text-xs font-semibold text-slate-700 mb-1.5 block">Notes</label>
-            <textarea rows={3} value={form.platform_notes || ''} onChange={e => set('platform_notes', e.target.value)} className={inputCls} />
-          </div>
-        </div>)}
-
-        {tab === 'contact' && card('Contact Details', <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {text('WhatsApp Number', 'whatsapp')}
-          {text('City', 'city')}
-          <div>
-            <label className="text-xs font-semibold text-slate-700 mb-1.5 block">Country</label>
-            <CountrySelect value={form.country} onChange={v => set('country', v)} />
-          </div>
-          {text('Address', 'address', { span: 'sm:col-span-2 lg:col-span-3' })}
-          {text('Emergency Contact Name', 'emergency_contact_name')}
-          {text('Emergency Contact Phone', 'emergency_contact_phone')}
-        </div>)}
-
-        {tab === 'passport' && card('Passport Info & Documents', <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {text('Passport Number', 'passport_number')}
-          {text('Passport Issue Date', 'passport_issue_date', { type: 'date' })}
-          {text('Passport Expiry Date', 'passport_expiry_date', { type: 'date' })}
-          <div>
-            <label className="text-xs font-semibold text-slate-700 mb-1.5 block">Issuing Country</label>
-            <CountrySelect value={form.passport_issue_country} onChange={v => set('passport_issue_country', v)} />
-          </div>
-          {text('Documents Folder (link)', 'documents_link', { span: 'sm:col-span-2', placeholder: 'Google Drive folder link' })}
-        </div>)}
 
         {error && <div className="text-xs font-medium text-rose-700 bg-rose-50 border border-rose-200 rounded-lg px-3 py-2">{error}</div>}
 
