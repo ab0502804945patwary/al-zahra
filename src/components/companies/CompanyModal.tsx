@@ -242,6 +242,7 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
           <option value="">Select license type</option>
           <option value="Trading License">Trading License</option>
           <option value="Service License">Service License</option>
+          <option value="Service to Trade">Service to Trade</option>
         </select>
       </div>
 

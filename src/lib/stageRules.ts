@@ -2,7 +2,9 @@
 // Mirrors the client's Google Sheet ("INVESTOR LICENSE" workbook).
 
 export const COUNTRIES = ['Bangladesh', 'Pakistan', 'India', 'Afganistan', 'Sudan']
-export const CATEGORIES = ['Service License', 'Trading License']
+export const CATEGORIES = ['Service License', 'Trading License', 'Service to Trade']
+/** Service to Trade follows the Trading License flow (it needs Foreign Entity too). */
+const needsForeign = (c?: string) => c === 'Trading License' || c === 'Service to Trade'
 export const PAYMENT_STATUSES = ['Paid', 'Pending', 'Partial']
 export const PRIORITIES = [
   'BD Company Submited',
@@ -79,7 +81,7 @@ export function isEligibleForStage(stageId: string, company: { company_id: strin
       //   Trading License: the same plus Foreign Entity (3)
       const common = done(all['1'], id) && done(all['9'], id) && done(all['2'], id) && done(all['8'], id, 'approval_date')
       if (category === 'Service License') return common
-      if (category === 'Trading License') return common && done(all['3'], id, 'usa_complete_date')
+      if (needsForeign(category)) return common && done(all['3'], id, 'usa_complete_date')
       return false
     }
     case '2':
@@ -87,7 +89,7 @@ export function isEligibleForStage(stageId: string, company: { company_id: strin
       return true
     case '3':
       // Foreign licensing is only needed for Trading License (Service License skips Stage 3); starts together with Stage 1
-      return category === 'Trading License'
+      return needsForeign(category)
     case '5': return submittedAndDone(all['4'], id)
     case '6': return submittedAndDone(all['5'], id)
     case '7': return submittedAndDone(all['6'], id)
