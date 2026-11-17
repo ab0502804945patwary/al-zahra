@@ -484,3 +484,24 @@ CREATE TRIGGER guard_stage9 BEFORE INSERT OR UPDATE ON stage9_bd_company FOR EAC
 -- NOTE: later migrations live in db/ (run in this order after the file above):
 --   db/rls-lockdown.sql      removes open policies, staff/admin/delete rules, indexes
 --   db/stage3-8-guard.sql    staff lock + auto submission date for Stage 3 and Stage 8
+
+-- MIGRATION: renewal companies - RJSC and audit tracking (Bangladesh / Saudi)
+ALTER TABLE companies ADD COLUMN IF NOT EXISTS rjsc_issue_no TEXT;
+ALTER TABLE companies ADD COLUMN IF NOT EXISTS rjsc_auditor TEXT;
+ALTER TABLE companies ADD COLUMN IF NOT EXISTS rjsc_reg_no TEXT;
+ALTER TABLE companies ADD COLUMN IF NOT EXISTS rjsc_incorporation_date DATE;
+ALTER TABLE companies ADD COLUMN IF NOT EXISTS rjsc_annual_return_due DATE;
+ALTER TABLE companies ADD COLUMN IF NOT EXISTS bd_last_audit_date DATE;
+ALTER TABLE companies ADD COLUMN IF NOT EXISTS bd_audit_status TEXT;
+ALTER TABLE companies ADD COLUMN IF NOT EXISTS bd_next_audit_due DATE;
+ALTER TABLE companies ADD COLUMN IF NOT EXISTS bd_auditor TEXT;
+ALTER TABLE companies ADD COLUMN IF NOT EXISTS bd_financial_year TEXT;
+ALTER TABLE companies ADD COLUMN IF NOT EXISTS bd_audit_report TEXT;
+ALTER TABLE companies ADD COLUMN IF NOT EXISTS bd_audit_notes TEXT;
+ALTER TABLE companies ADD COLUMN IF NOT EXISTS sa_last_audit_date DATE;
+ALTER TABLE companies ADD COLUMN IF NOT EXISTS sa_audit_status TEXT;
+ALTER TABLE companies ADD COLUMN IF NOT EXISTS sa_next_audit_due DATE;
+ALTER TABLE companies ADD COLUMN IF NOT EXISTS sa_auditor TEXT;
+ALTER TABLE companies ADD COLUMN IF NOT EXISTS sa_financial_year TEXT;
+ALTER TABLE companies ADD COLUMN IF NOT EXISTS sa_audit_report TEXT;
+ALTER TABLE companies ADD COLUMN IF NOT EXISTS sa_audit_notes TEXT;

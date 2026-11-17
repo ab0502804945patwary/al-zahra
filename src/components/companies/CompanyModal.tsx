@@ -31,7 +31,8 @@ import {
   StickyNote,
   FileText,
   Briefcase,
-  Layers
+  Layers,
+  ClipboardCheck
 } from 'lucide-react'
 import { createClient, isSupabaseConfigured } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
@@ -46,6 +47,8 @@ interface Props {
   onSave?: (savedCompany: Company) => void
   onDelete?: (id: string) => void
 }
+
+const AUDIT_STATUSES = ['Not Started', 'In Progress', 'Completed', 'Overdue']
 
 export function computeNextCompanyId(companies: Company[] = []): string {
   let maxNum = 800
@@ -167,13 +170,16 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
   const inputCls = 'w-full px-3 py-2.5 text-sm text-slate-900 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white placeholder:text-slate-400'
 
   // plain function (not a component) so inputs keep focus while typing
-  const field = (f: { label: string; name: string; type?: string; span: number; options?: string[] }) => (
+  const field = (f: { label: string; name: string; type?: string; span: number; options?: string[]; textarea?: boolean }) => (
     <div key={f.name} className={`${WIDE.has(f.name) ? 'col-span-2 ' : ''}${SPAN[f.span]}`}>
       <label className="block"><Lbl name={f.name}>{f.label}</Lbl></label>
       {f.options ? (
-        <select value={form[f.name] || f.options[0]} onChange={e => set(f.name, e.target.value)} className={inputCls}>
+        <select value={form[f.name] || (f.name.endsWith('audit_status') ? '' : f.options[0])} onChange={e => set(f.name, e.target.value)} className={inputCls}>
+          {f.name.endsWith('audit_status') && <option value="">Select Status</option>}
           {f.options.map(o => <option key={o} value={o}>{o}</option>)}
         </select>
+      ) : f.textarea ? (
+        <textarea rows={3} value={form[f.name] || ''} onChange={e => set(f.name, e.target.value)} className={inputCls} />
       ) : (
         <input
           type={f.type || 'text'}
@@ -285,8 +291,8 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
     </>
   )
 
-  type FieldSpec = { label: string; name: string; type?: string; span: number; options?: string[] }
-  const sections: { title: string; icon: any; custom?: React.ReactNode; fields?: FieldSpec[] }[] = [
+  type FieldSpec = { label: string; name: string; type?: string; span: number; options?: string[]; textarea?: boolean }
+  const sections: { title: string; icon: any; custom?: React.ReactNode; fields?: FieldSpec[]; renewalOnly?: boolean }[] = [
     { title: 'Company Profile & Identification', icon: Building2, custom: profileFields },
     {
       title: 'Statutory & Legal Identifiers',
@@ -333,6 +339,46 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
         { label: 'IBAN / SWIFT', name: 'iban_swift', span: 3 },
       ],
     },
+    {
+      title: 'Bangladesh Company (RJSC)',
+      icon: Building2,
+      renewalOnly: true,
+      fields: [
+        { label: 'RJSC Registration No.', name: 'rjsc_reg_no', span: 4 },
+        { label: 'Incorporation Date', name: 'rjsc_incorporation_date', type: 'date', span: 4 },
+        { label: 'RJSC Annual Return Due Date', name: 'rjsc_annual_return_due', type: 'date', span: 4 },
+        { label: 'Issue No', name: 'rjsc_issue_no', span: 6 },
+        { label: 'Auditor / Firm', name: 'rjsc_auditor', span: 6 },
+      ],
+    },
+    {
+      title: 'Bangladesh Audit Information',
+      icon: ClipboardCheck,
+      renewalOnly: true,
+      fields: [
+        { label: 'Last Audit Date', name: 'bd_last_audit_date', type: 'date', span: 3 },
+        { label: 'Audit Status', name: 'bd_audit_status', span: 3, options: AUDIT_STATUSES },
+        { label: 'Next Audit Due Date', name: 'bd_next_audit_due', type: 'date', span: 3 },
+        { label: 'Financial Year', name: 'bd_financial_year', span: 3 },
+        { label: 'Auditor / Audit Firm Name', name: 'bd_auditor', span: 6 },
+        { label: 'Audit Report (link)', name: 'bd_audit_report', span: 6 },
+        { label: 'Additional Information', name: 'bd_audit_notes', span: 12, textarea: true },
+      ],
+    },
+    {
+      title: 'Saudi Audit Information',
+      icon: ClipboardCheck,
+      renewalOnly: true,
+      fields: [
+        { label: 'Last Audit Date', name: 'sa_last_audit_date', type: 'date', span: 3 },
+        { label: 'Audit Status', name: 'sa_audit_status', span: 3, options: AUDIT_STATUSES },
+        { label: 'Next Audit Due Date', name: 'sa_next_audit_due', type: 'date', span: 3 },
+        { label: 'Financial Year', name: 'sa_financial_year', span: 3 },
+        { label: 'Auditor / Audit Firm Name', name: 'sa_auditor', span: 6 },
+        { label: 'Audit Report (link)', name: 'sa_audit_report', span: 6 },
+        { label: 'Additional Information', name: 'sa_audit_notes', span: 12, textarea: true },
+      ],
+    },
   ]
 
   return (
@@ -351,7 +397,7 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
       </div>
 
       <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-5">
-        {sections.filter(section => !(form.service_type === 'renewal' && (section.title.startsWith('Headquarters') || section.title.startsWith('Banking')))).map(section => {
+        {sections.filter(section => form.service_type === 'renewal' ? !(section.title.startsWith('Headquarters') || section.title.startsWith('Banking')) : !section.renewalOnly).map(section => {
           const SectionIcon = section.icon
           return (
             <div key={section.title} className="bg-slate-50/60 border border-slate-200/80 rounded-xl p-5">

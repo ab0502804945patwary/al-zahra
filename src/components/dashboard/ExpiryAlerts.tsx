@@ -7,14 +7,17 @@ type Win = 'expired' | 7 | 15 | 30 | 60 | 90
 
 interface Item {
   company: Company
-  doc: 'CR' | 'MISA'
+  doc: string
   date: string
   days: number
 }
 
-const DOC_FIELDS: { doc: 'CR' | 'MISA'; field: 'cr_expire_date' | 'misa_expire_date' }[] = [
+const DOC_FIELDS: { doc: string; field: keyof Company }[] = [
   { doc: 'CR', field: 'cr_expire_date' },
   { doc: 'MISA', field: 'misa_expire_date' },
+  { doc: 'RJSC Annual Return', field: 'rjsc_annual_return_due' },
+  { doc: 'BD Audit', field: 'bd_next_audit_due' },
+  { doc: 'Saudi Audit', field: 'sa_next_audit_due' },
 ]
 
 function daysLeft(date: string) {
@@ -43,7 +46,7 @@ export default function ExpiryAlerts({ companies: initial }: { companies: Compan
     if (!mounted) return out
     for (const company of companies) {
       for (const { doc, field } of DOC_FIELDS) {
-        const date = company[field]
+        const date = company[field] as string | undefined
         if (!date) continue
         const days = daysLeft(date)
         if (days === null) continue
@@ -76,7 +79,7 @@ export default function ExpiryAlerts({ companies: initial }: { companies: Compan
         <div className="flex items-center gap-2">
           <CalendarClock className="w-4 h-4 text-amber-600" />
           <h2 className="text-sm font-bold text-slate-900">Upcoming Expiries — Contact List</h2>
-          <span className="text-[11px] text-slate-400">CR &amp; MISA licenses</span>
+          <span className="text-[11px] text-slate-400">CR, MISA, RJSC &amp; audit due dates</span>
         </div>
         <div className="inline-flex flex-wrap rounded-lg border border-slate-200 bg-white p-0.5 text-xs font-semibold">
           {wins.map(w => {

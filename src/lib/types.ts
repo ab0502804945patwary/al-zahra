@@ -85,6 +85,25 @@ export interface Company {
   province?: string
   company_name: string
   entity_type?: string
+  rjsc_issue_no?: string
+  rjsc_auditor?: string
+  rjsc_reg_no?: string
+  rjsc_incorporation_date?: string
+  rjsc_annual_return_due?: string
+  bd_last_audit_date?: string
+  bd_audit_status?: string
+  bd_next_audit_due?: string
+  bd_auditor?: string
+  bd_financial_year?: string
+  bd_audit_report?: string
+  bd_audit_notes?: string
+  sa_last_audit_date?: string
+  sa_audit_status?: string
+  sa_next_audit_due?: string
+  sa_auditor?: string
+  sa_financial_year?: string
+  sa_audit_report?: string
+  sa_audit_notes?: string
   client_name?: string
   client_phone?: string
   /** 'a2z' = A2Z handles the full setup flow; 'renewal' = existing company, renewal only */
