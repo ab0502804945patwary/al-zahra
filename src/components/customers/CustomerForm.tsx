@@ -103,7 +103,6 @@ export default function CustomerForm({ customer, nextCode, staffNames, onClose }
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
             <div className="lg:col-span-3">
               {card(null, <>
-                {text('Profile Picture (link)', 'profile_picture', { placeholder: 'Paste a photo link (Google Drive etc.)' })}
                 {radios('Customer Type', 'customer_type', TYPES)}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {text('Customer Code', 'customer_code', { required: true })}
