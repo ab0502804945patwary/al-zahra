@@ -247,7 +247,7 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
       </div>
 
       <div className={SPAN[12]}>
-        <Lbl name="company_name">Official Registered Name *</Lbl>
+        <Lbl name="company_name">Company Name *</Lbl>
         <input
           type="text"
           required
