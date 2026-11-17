@@ -8,6 +8,7 @@ import { Employee } from '@/lib/types'
 import { useSidebar } from './DashboardShell'
 import { canAccessStage } from '@/lib/access'
 import {
+  ChevronDown,
   LayoutDashboard,
   Building2,
   Users2,
@@ -79,6 +80,8 @@ export default function Sidebar({ employee }: SidebarProps) {
 
   // How many companies are waiting at each stage (red badge)
   const [waiting, setWaiting] = useState<Record<number, number>>({})
+  const [workflowOpen, setWorkflowOpen] = useState(false)
+  useEffect(() => { if (pathname.startsWith('/dashboard/stage')) setWorkflowOpen(true) }, [pathname])
   useEffect(() => {
     let alive = true
     const load = () => fetchNotifications().then(items => {
@@ -161,14 +164,24 @@ export default function Sidebar({ employee }: SidebarProps) {
           return (
             <div key={groupIdx} className="space-y-1">
               {!collapsed ? (
-                <div className="px-3 pb-1.5 text-[10px] font-bold tracking-wider text-slate-400 uppercase">
-                  {group.title}
-                </div>
+                group.title === 'INVESTOR WORKFLOW' ? (
+                  <button
+                    onClick={() => setWorkflowOpen(o => !o)}
+                    className="w-full flex items-center justify-between px-3 pb-1.5 text-[10px] font-bold tracking-wider text-slate-400 hover:text-slate-600 uppercase"
+                  >
+                    {group.title}
+                    <ChevronDown className={cn('w-3.5 h-3.5 transition-transform', workflowOpen ? 'rotate-180' : '')} />
+                  </button>
+                ) : (
+                  <div className="px-3 pb-1.5 text-[10px] font-bold tracking-wider text-slate-400 uppercase">
+                    {group.title}
+                  </div>
+                )
               ) : groupIdx > 0 ? (
                 <div className="my-2 border-t border-slate-100" />
               ) : null}
 
-              {visibleItems.map(item => {
+              {(collapsed || group.title !== 'INVESTOR WORKFLOW' || workflowOpen) && visibleItems.map(item => {
                 const Icon = item.icon
                 const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href))
 
