@@ -128,3 +128,10 @@
   background-color: #f1f5f9;
   color: #0f172a;
 }
+
+/* Printing (invoices): hide the app chrome */
+@media print {
+  aside, header, nav.fixed { display: none !important; }
+  main { overflow: visible !important; padding: 0 !important; }
+  body { background: #fff !important; }
+}

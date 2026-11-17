@@ -5,6 +5,7 @@ import { homeFor } from '@/lib/access'
 import MasterMatrixDashboard from '@/components/dashboard/MasterMatrixDashboard'
 import { Company } from '@/lib/types'
 import ExpiryAlerts from '@/components/dashboard/ExpiryAlerts'
+import AccountsSummary from '@/components/dashboard/AccountsSummary'
 import StageSummaryTable from '@/components/dashboard/StageSummaryTable'
 import { STAGE_CONFIG, MENU_ORDER, phaseOf } from '@/lib/stageData'
 import { enrichTiming } from '@/lib/utils'
@@ -17,11 +18,16 @@ export default async function DashboardPage() {
   if (employee && employee.role !== 'admin') redirect(homeFor(employee))
 
   let companies: Company[] = []
+  let invoices: any[] = []
   const kpiStats = { totalCompanies: 0, compliant: 0, overdue: 0, expiring: 0 }
   const stageRows: Record<string, any[]> = {}
 
   if (isSupabaseConfigured) {
     const supabase = await createClient()
+    try {
+      const inv = await supabase.from('invoices').select('id, invoice_no, customer_id, customer_name, total, status, payments(amount, paid_on)')
+      invoices = (inv.data as any[]) || []
+    } catch {}
     try {
       const ids = MENU_ORDER.filter(id => STAGE_CONFIG[id])
       const [cRes, ...sRes] = await Promise.all([
@@ -96,6 +102,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-6">
+      <AccountsSummary invoices={invoices} />
       <MasterMatrixDashboard initialCompanies={companies} kpiStats={kpiStats} stageMap={stageMap} />
       <ExpiryAlerts companies={companies} />
       <StageSummaryTable rows={summary} />
