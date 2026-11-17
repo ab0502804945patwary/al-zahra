@@ -8,6 +8,7 @@ import { Employee } from '@/lib/types'
 import { useSidebar } from './DashboardShell'
 import { canAccessStage } from '@/lib/access'
 import {
+  UserRound,
   ChevronDown,
   LayoutDashboard,
   Building2,
@@ -45,6 +46,7 @@ const navGroups: NavGroup[] = [
     items: [
       { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, adminOnly: true },
       { href: '/dashboard/companies', label: 'Company Directory', icon: Building2, adminOnly: true },
+      { href: '/dashboard/customers', label: 'Customers', icon: UserRound, adminOnly: true },
     ]
   },
   {
