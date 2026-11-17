@@ -331,16 +331,6 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
       ],
     },
     {
-      title: 'Banking & Treasury Accounts',
-      icon: Landmark,
-      fields: [
-        { label: 'Bank Name', name: 'bank_name', span: 3 },
-        { label: 'Account Name', name: 'account_name', span: 3 },
-        { label: 'Account Number', name: 'account_number', span: 3 },
-        { label: 'IBAN / SWIFT', name: 'iban_swift', span: 3 },
-      ],
-    },
-    {
       title: 'Bangladesh Company (RJSC)',
       icon: Building2,
       renewalOnly: true,
@@ -398,7 +388,7 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
       </div>
 
       <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-5">
-        {sections.filter(section => form.service_type === 'renewal' ? !(section.title.startsWith('Headquarters') || section.title.startsWith('Banking')) : !section.renewalOnly).map(section => {
+        {sections.filter(section => form.service_type === 'renewal' ? !section.title.startsWith('Headquarters') : !section.renewalOnly).map(section => {
           const SectionIcon = section.icon
           return (
             <div key={section.title} className="bg-slate-50/60 border border-slate-200/80 rounded-xl p-5">
