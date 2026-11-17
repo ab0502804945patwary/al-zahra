@@ -7,7 +7,7 @@ import CountrySelect from '@/components/ui/CountrySelect'
 import type { Customer } from './CustomersClient'
 
 export function nextCustomerCode(customers: Customer[]): string {
-  let max = 10906
+  let max = 0
   for (const c of customers) {
     const m = String(c.customer_code || '').match(/CUS(\d+)/i)
     if (m) max = Math.max(max, parseInt(m[1], 10))
