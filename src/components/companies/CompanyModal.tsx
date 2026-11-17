@@ -9,7 +9,6 @@ import {
   PhoneCall,
   Users,
   Landmark,
-  Sliders,
   Sparkles,
   RefreshCw,
   Hash,
@@ -334,18 +333,6 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
         { label: 'IBAN / SWIFT', name: 'iban_swift', span: 3 },
       ],
     },
-    {
-      title: 'Administrative & Operational Controls',
-      icon: Sliders,
-      fields: [
-        { label: 'Portal Login Ref', name: 'file_portal_login', span: 4 },
-        { label: 'Operational Status', name: 'account_status', span: 4, options: ['Active', 'Inactive'] },
-        { label: 'Regional Office', name: 'assigned_office', span: 4 },
-        { label: 'Google Drive Folder', name: 'drive_link', span: 6 },
-        { label: 'Account Handler', name: 'employee', span: 6 },
-        { label: 'Internal Remarks', name: 'remarks', span: 12 },
-      ],
-    },
   ]
 
   return (
@@ -364,7 +351,7 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
       </div>
 
       <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-5">
-        {sections.map(section => {
+        {sections.filter(section => !(form.service_type === 'renewal' && (section.title.startsWith('Headquarters') || section.title.startsWith('Banking')))).map(section => {
           const SectionIcon = section.icon
           return (
             <div key={section.title} className="bg-slate-50/60 border border-slate-200/80 rounded-xl p-5">
