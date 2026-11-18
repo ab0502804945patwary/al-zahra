@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 
@@ -10,8 +10,13 @@ export const metadata: Metadata = {
   icons: {
     icon: '/al_zahra_icon.svg',
     shortcut: '/al_zahra_icon.svg',
-    apple: '/al_zahra_icon.svg',
+    apple: '/icons/apple-touch-icon.png',
   },
+  appleWebApp: { capable: true, title: 'AL ZAHRA', statusBarStyle: 'default' },
+}
+
+export const viewport: Viewport = {
+  themeColor: '#3d5fab',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
