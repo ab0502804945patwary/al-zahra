@@ -8,6 +8,7 @@ import { Employee } from '@/lib/types'
 import { useSidebar } from './DashboardShell'
 import { canAccessStage } from '@/lib/access'
 import {
+  Wallet,
   RefreshCw,
   Handshake,
   ListChecks,
@@ -54,6 +55,7 @@ const navGroups: NavGroup[] = [
       { href: '/dashboard/customers', label: 'Customers', icon: UserRound, adminOnly: true },
       { href: '/dashboard/agents', label: 'Agents', icon: Handshake, adminOnly: true },
       { href: '/dashboard/services', label: 'Services', icon: ListChecks, adminOnly: true },
+      { href: '/dashboard/expenses', label: 'Expenses', icon: Wallet, adminOnly: true },
       { href: '/dashboard/invoices', label: 'Invoices', icon: Receipt, adminOnly: true },
     ]
   },
