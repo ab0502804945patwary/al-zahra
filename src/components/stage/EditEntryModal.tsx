@@ -5,6 +5,9 @@ import { createClient, isSupabaseConfigured } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import BdFields from './BdFields'
 import { FormCtx, Field, Select as Sel } from './formFields'
+import PortalAccountsEditor from './PortalAccountsEditor'
+import type { PortalAccount } from '@/lib/portals'
+import Link from 'next/link'
 import StatutoryFields, { STATUTORY_KEYS, statutoryFrom } from './StatutoryFields'
 import { COUNTRIES, CATEGORIES, PAYMENT_STATUSES, PRIORITIES, PHASE_OPTIONS, FOREIGN_FILING_OPTIONS, CANADA_OPTIONS, CR_STATUSES, toOptions, pickColumns, validateDates } from '@/lib/stageRules'
 import { calculateNameClearance, assessTiming } from '@/lib/utils'
@@ -26,6 +29,7 @@ export default function EditEntryModal({ stageId, entry, companies, employees, o
   const supabase = createClient()
   const { askDelete, dialog } = useSecureDelete()
   const [loading, setLoading] = useState(false)
+  const [portals, setPortals] = useState<PortalAccount[]>(() => (Array.isArray((entry as any).portal_accounts) ? (entry as any).portal_accounts : []))
   const [deleting, setDeleting] = useState(false)
   const [form, setForm] = useState<Record<string, string>>(() => (stageId === '7' ? { ...entry, ...statutoryFrom(companies.find(c => c.company_id === entry.company_id)) } : entry))
   const set = (k: string, v: string) => setForm(prev => ({ ...prev, [k]: v }))
@@ -40,7 +44,7 @@ export default function EditEntryModal({ stageId, entry, companies, employees, o
     const dateError = validateDates(form)
     if (dateError) { alert(dateError); return }
     setLoading(true)
-    let payload: Record<string, any> = { ...form, client_name: clientInfo.name || form.client_name, client_phone: clientInfo.phone || form.client_phone, category: comp?.entity_type || form.category, ...(stageId !== '1' ? { priority: comp?.stage1_priority || form.priority } : {}) }
+    let payload: Record<string, any> = { ...form, ...(stageId === '6' ? { portal_accounts: portals.filter(p => p.portal) } : {}), client_name: clientInfo.name || form.client_name, client_phone: clientInfo.phone || form.client_phone, category: comp?.entity_type || form.category, ...(stageId !== '1' ? { priority: comp?.stage1_priority || form.priority } : {}) }
     if (!isUSACanada && !isNameClearance && stageId !== '6') {
       const t = assessTiming(form.submit_date, form.target_date, form.complete_date)
       payload = { ...payload, days_taken: t.days, status: t.status, completion_percent: t.completion, overdue_status: t.overdue }
@@ -129,6 +133,12 @@ export default function EditEntryModal({ stageId, entry, companies, employees, o
                 )}
               </div>
               <Sel label="Workflow Phase Status" name="current_stage" options={toOptions(PHASE_OPTIONS[stageId] || [])} />
+              {stageId === '6' && (
+                <>
+                  <PortalAccountsEditor value={portals} onChange={setPortals} />
+                  <Link href={`/dashboard/portal-accounts/${entry.id}`} className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 hover:text-blue-800">Open the client PDF (save this record first)</Link>
+                </>
+              )}
             </>
           )}
 

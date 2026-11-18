@@ -1,5 +1,7 @@
 'use client'
+import Link from 'next/link'
 import { matchesQuery } from '@/lib/search'
+import PortalLogo from './PortalLogo'
 import { useState } from 'react'
 import { ExternalLink, Lock, Edit2, Search, CheckCircle2, Clock, AlertTriangle, AlertCircle, FileText } from 'lucide-react'
 import { cn, formatDate } from '@/lib/utils'
@@ -135,7 +137,8 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
                 <th className="py-3 px-4">Remaining Validity</th>
                 <th className="py-3 px-4">Status</th>
                 <th className="py-3 px-4">CR Association</th>
-                <th className="py-3 px-4">Notes</th>
+                {noDates && <th className="py-3 px-4">Portal Accounts</th>}
+              <th className="py-3 px-4">Notes</th>
                 <th className="py-3 px-4 text-right">Actions</th>
               </tr>
             </thead>
@@ -403,6 +406,15 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
                   </span>
                 </td>)}
                                 <td className="py-3 px-4 whitespace-nowrap">{e.employees?.name || '—'}</td>
+                {noDates && (
+                  <td className="py-3 px-4">
+                    <div className="flex items-center gap-2">
+                      <div className="flex -space-x-1.5">{((e.portal_accounts || []) as any[]).slice(0, 4).map((p, i) => <PortalLogo key={i} portal={p.portal} size={22} />)}</div>
+                      <span className="text-[11px] text-slate-500">{(e.portal_accounts || []).length || 'None'}</span>
+                      {(e.portal_accounts || []).length > 0 && <Link href={`/dashboard/portal-accounts/${e.id}`} title="Client PDF" className="p-1 rounded text-blue-600 hover:bg-blue-50"><FileText className="w-3.5 h-3.5" /></Link>}
+                    </div>
+                  </td>
+                )}
                 <td className="py-3 px-4 text-slate-400 max-w-28 truncate">{e.remarks || '—'}</td>
                 <td className="py-3 px-4">
                   {e.drive_link ? (

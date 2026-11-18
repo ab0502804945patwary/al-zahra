@@ -110,7 +110,7 @@ export const ELIGIBILITY_HINT: Record<string, string> = {
 const COMMON = ['company_id', 'client_name', 'client_phone', 'category', 'priority', 'current_stage', 'submit_date', 'target_date', 'complete_date', 'payment_status', 'remarks', 'employee_id', 'drive_link', 'overdue_status', 'days_taken', 'status', 'completion_percent']
 export const TABLE_COLUMNS: Record<string, string[]> = {
   '9': [...COMMON, 'bd_company_name', 'country', 'rjsc_reg_no', 'issue_no', 'incorporation_date', 'auditor_firm', 'rjsc_return_due_date'],
-  '1': COMMON, '2': COMMON, '4': COMMON, '5': COMMON, '6': COMMON, '7': COMMON,
+  '1': COMMON, '2': COMMON, '4': COMMON, '5': COMMON, '6': [...COMMON, 'portal_accounts'], '7': COMMON,
   '3': ['company_id', 'client_name', 'client_phone', 'category', 'priority', 'current_stage',
     'usa_type', 'usa_submit_date', 'usa_target_date', 'usa_complete_date', 'usa_overdue_status', 'usa_days_taken', 'usa_status', 'usa_completion_percent', 'usa_payment_status',
     'canada_type', 'canada_submit_date', 'canada_target_date', 'canada_complete_date', 'canada_overdue_status', 'canada_days_taken', 'canada_status', 'canada_completion_percent', 'canada_payment_status',

@@ -4,6 +4,8 @@ import { X, Loader2, Globe, Building2, User, FileText, CheckCircle2, Sparkles } 
 import { createClient, isSupabaseConfigured } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import BdFields from './BdFields'
+import PortalAccountsEditor from './PortalAccountsEditor'
+import type { PortalAccount } from '@/lib/portals'
 import StatutoryFields, { STATUTORY_KEYS, statutoryFrom } from './StatutoryFields'
 import { FormCtx, Field, Select } from './formFields'
 import { COUNTRIES, CATEGORIES, PAYMENT_STATUSES, PRIORITIES, PHASE_OPTIONS, FOREIGN_FILING_OPTIONS, CANADA_OPTIONS, CR_STATUSES, toOptions, pickColumns, validateDates } from '@/lib/stageRules'
@@ -39,6 +41,7 @@ export default function AddEntryModal({ stageId, companies, employees, onClose, 
   const router = useRouter()
   const supabase = createClient()
   const [loading, setLoading] = useState(false)
+  const [portals, setPortals] = useState<PortalAccount[]>([])
   const [form, setForm] = useState<Record<string, string>>({
     submit_date: new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10), // today (local)
     current_stage: (PHASE_OPTIONS[stageId] || [])[0] || '',
@@ -75,6 +78,7 @@ export default function AddEntryModal({ stageId, companies, employees, onClose, 
     setLoading(true)
 
     let payload: Record<string, any> = { ...form }
+    if (stageId === '6') payload.portal_accounts = portals.filter(p => p.portal)
 
     if (!isUSACanada && !isNameClearance && stageId !== '6') {
       const t = assessTiming(form.submit_date, form.target_date, form.complete_date)
@@ -163,6 +167,7 @@ export default function AddEntryModal({ stageId, companies, employees, onClose, 
                 )}
               </div>
               <Select label="Workflow Phase Status" name="current_stage" options={toOptions(PHASE_OPTIONS[stageId] || [])} />
+              {stageId === '6' && <PortalAccountsEditor value={portals} onChange={setPortals} />}
             </>
           )}
 
