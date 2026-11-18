@@ -5,6 +5,7 @@ import { Plus, Edit2, Building2, Search, ExternalLink, Sparkles, LayoutGrid, Lis
 import { Company } from '@/lib/types'
 import CompanyModal, { computeNextCompanyId } from './CompanyModal'
 import { matchesQuery } from '@/lib/search'
+import ExpiryAlerts from '@/components/dashboard/ExpiryAlerts'
 
 interface Props { companies: Company[]; mode?: 'new' | 'renewal' }
 
@@ -112,6 +113,8 @@ export default function CompaniesClient({ companies: initialCompanies, mode = 'n
       </div>
 
       {/* Search and filters */}
+      {renewalMode && <ExpiryAlerts companies={modeList} />}
+
       <div className="flex items-center justify-between gap-4">
         <div className="relative max-w-md w-full">
           <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />

@@ -4,7 +4,6 @@ import { getSessionInfo } from '@/lib/session'
 import { homeFor } from '@/lib/access'
 import MasterMatrixDashboard from '@/components/dashboard/MasterMatrixDashboard'
 import { Company } from '@/lib/types'
-import ExpiryAlerts from '@/components/dashboard/ExpiryAlerts'
 import AccountsSummary from '@/components/dashboard/AccountsSummary'
 import StageSummaryTable from '@/components/dashboard/StageSummaryTable'
 import { STAGE_CONFIG, MENU_ORDER, phaseOf } from '@/lib/stageData'
@@ -104,7 +103,6 @@ export default async function DashboardPage() {
     <div className="space-y-6">
       <AccountsSummary invoices={invoices} />
       <MasterMatrixDashboard initialCompanies={companies.filter(c => c.service_type !== 'renewal')} kpiStats={{ ...kpiStats, totalCompanies: companies.filter(c => c.service_type !== 'renewal').length }} stageMap={stageMap} />
-      <ExpiryAlerts companies={companies} />
       <StageSummaryTable rows={summary} />
     </div>
   )
