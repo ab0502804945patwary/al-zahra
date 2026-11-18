@@ -4,7 +4,7 @@ import { Download, X, Share, PlusSquare, MoreVertical } from 'lucide-react'
 
 interface InstallEvent extends Event { prompt: () => Promise<void>; userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }> }
 
-/** Registers the service worker and offers an "Install App" button (PC + phone). */
+/** "Install App" button (PC + phone). The service worker and the browser's install offer are handled by PwaListener. */
 export default function InstallApp({ className = '' }: { className?: string }) {
   const [deferred, setDeferred] = useState<InstallEvent | null>(null)
   const [installed, setInstalled] = useState(false)
@@ -12,17 +12,17 @@ export default function InstallApp({ className = '' }: { className?: string }) {
   const [platform, setPlatform] = useState<'ios' | 'android' | 'desktop'>('desktop')
 
   useEffect(() => {
-    if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(() => {})
     const standalone = window.matchMedia('(display-mode: standalone)').matches || (navigator as any).standalone === true
     setInstalled(standalone)
     const ua = navigator.userAgent
     setPlatform(/iPad|iPhone|iPod/.test(ua) ? 'ios' : /Android/.test(ua) ? 'android' : 'desktop')
 
-    const onPrompt = (e: Event) => { e.preventDefault(); setDeferred(e as InstallEvent) }
+    if (window.__pwaPrompt) setDeferred(window.__pwaPrompt as InstallEvent)
+    const onPrompt = () => setDeferred((window.__pwaPrompt as InstallEvent) || null)
     const onInstalled = () => { setInstalled(true); setDeferred(null); setHelp(false) }
-    window.addEventListener('beforeinstallprompt', onPrompt)
-    window.addEventListener('appinstalled', onInstalled)
-    return () => { window.removeEventListener('beforeinstallprompt', onPrompt); window.removeEventListener('appinstalled', onInstalled) }
+    window.addEventListener('pwa-prompt', onPrompt)
+    window.addEventListener('pwa-installed', onInstalled)
+    return () => { window.removeEventListener('pwa-prompt', onPrompt); window.removeEventListener('pwa-installed', onInstalled) }
   }, [])
 
   if (installed) return null

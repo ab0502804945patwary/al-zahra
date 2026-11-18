@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react'
 import { createClient, isSupabaseConfigured } from '@/lib/supabase/client'
 import { QUICK_ACCOUNTS } from '@/lib/quickAccounts'
 import { phaseOf } from '@/lib/stageData'
-import InstallApp from '@/components/pwa/InstallApp'
 import { useRouter } from 'next/navigation'
 import { Eye, EyeOff, Loader2, Lock, Mail, Sparkles } from 'lucide-react'
 
@@ -162,9 +161,7 @@ export default function LoginPage() {
           </div>
         </div>
 
-        <div className="flex justify-center mt-5"><InstallApp /></div>
-
-        <p className="text-center text-slate-400 text-xs mt-4">
+        <p className="text-center text-slate-400 text-xs mt-6">
           © 2026 AL ZAHRA Investor Services • Confidential Enterprise System
         </p>
       </div>
