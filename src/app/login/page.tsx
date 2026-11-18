@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { createClient, isSupabaseConfigured } from '@/lib/supabase/client'
 import { QUICK_ACCOUNTS } from '@/lib/quickAccounts'
 import { phaseOf } from '@/lib/stageData'
@@ -10,6 +10,8 @@ import { Eye, EyeOff, Loader2, Lock, Mail, Sparkles } from 'lucide-react'
 export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [denied, setDenied] = useState(false)
+  useEffect(() => { setDenied(new URLSearchParams(window.location.search).has('denied')) }, [])
   const [showPass, setShowPass] = useState(false)
   const [loading, setLoading] = useState(false)
   const [demoLoading, setDemoLoading] = useState(false)
@@ -77,6 +79,12 @@ export default function LoginPage() {
             </div>
             <h2 className="text-base font-bold text-slate-900">Sign In</h2>
           </div>
+
+          {denied && !error && (
+            <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg text-amber-800 text-xs">
+              Your session ended or this account has no access. Please sign in again, or ask the admin if the problem continues.
+            </div>
+          )}
 
           {error && (
             <div className="mb-4 p-3 bg-rose-50 border border-rose-200 rounded-lg text-rose-700 text-xs">

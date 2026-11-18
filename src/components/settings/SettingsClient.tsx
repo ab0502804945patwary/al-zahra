@@ -1,7 +1,8 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Camera, KeyRound, Loader2, Lock, Trash2, User, Volume2 } from 'lucide-react'
+import { Camera, Download, KeyRound, Loader2, Lock, Trash2, User, Volume2 } from 'lucide-react'
+import InstallApp from '@/components/pwa/InstallApp'
 import { createClient } from '@/lib/supabase/client'
 
 interface Profile { name: string; email: string; phone?: string | null; role: string; avatar_url?: string | null }
@@ -220,6 +221,11 @@ export default function SettingsClient({ profile }: { profile: Profile }) {
           </form>
         </Card>
       )}
+
+      <Card icon={Download} title="Install the app" hint="Use AL ZAHRA like a normal app on your PC or phone. It opens in its own window and always shows your latest data.">
+        <InstallApp />
+        <p className="text-[11px] text-slate-400">If the button is missing, the app is already installed on this device or your browser does not support installing.</p>
+      </Card>
 
       <Card icon={Volume2} title="Notification sound" hint="Play a sound when new work reaches your stage">
         <button type="button" onClick={toggleSound} className={`relative w-11 h-6 rounded-full transition ${sound ? 'bg-blue-600' : 'bg-slate-300'}`} aria-pressed={sound}>

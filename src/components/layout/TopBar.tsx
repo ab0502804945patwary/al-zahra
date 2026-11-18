@@ -6,7 +6,6 @@ import { Bell, LogOut, Search, ShieldCheck, PanelLeft, PanelLeftOpen, Menu, Sett
 import { useState, useRef, useEffect } from 'react'
 import { useSidebar } from './DashboardShell'
 import NotificationBell from './NotificationBell'
-import InstallApp from '@/components/pwa/InstallApp'
 
 interface TopBarProps { employee: Employee | null }
 
@@ -76,7 +75,6 @@ export default function TopBar({ employee }: TopBarProps) {
       </div>
 
       <div className="flex items-center gap-3 ml-auto">
-        <InstallApp />
         <NotificationBell />
 
         <div className="h-6 w-px bg-slate-200" />

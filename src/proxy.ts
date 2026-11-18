@@ -54,7 +54,8 @@ export async function proxy(request: NextRequest) {
       return NextResponse.redirect(url)
     }
 
-    if (user && request.nextUrl.pathname === '/login') {
+    // (not after a denied/expired session: that is what ends the redirect loop)
+    if (user && request.nextUrl.pathname === '/login' && !request.nextUrl.searchParams.has('denied')) {
       const url = request.nextUrl.clone()
       url.pathname = '/dashboard'
       return NextResponse.redirect(url)
