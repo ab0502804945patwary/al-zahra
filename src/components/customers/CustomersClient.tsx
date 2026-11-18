@@ -11,7 +11,7 @@ const statusTone = (s?: string) =>
   : s === 'Inactive' ? 'bg-slate-100 text-slate-500 border-slate-300'
   : 'bg-emerald-50 text-emerald-700 border-emerald-200'
 
-export default function CustomersClient({ customers, staffNames }: { customers: Customer[]; staffNames: string[] }) {
+export default function CustomersClient({ customers, staffNames, agentNames }: { customers: Customer[]; staffNames: string[]; agentNames: string[] }) {
   const [search, setSearch] = useState('')
   const [editing, setEditing] = useState<Customer | 'new' | null>(null)
 
@@ -21,6 +21,7 @@ export default function CustomersClient({ customers, staffNames }: { customers: 
         customer={editing === 'new' ? undefined : editing}
         nextCode={nextCustomerCode(customers)}
         staffNames={staffNames}
+        agentNames={agentNames}
         onClose={() => setEditing(null)}
       />
     )

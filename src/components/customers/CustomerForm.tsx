@@ -20,7 +20,7 @@ const STATUSES = ['Active', 'Inactive', 'Blocked']
 const inputCls = 'w-full px-3 py-2.5 text-sm text-slate-900 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white placeholder:text-slate-400'
 const DATE_FIELDS = ['date_of_birth', 'platform_registered_on', 'passport_issue_date', 'passport_expiry_date']
 
-export default function CustomerForm({ customer, nextCode, staffNames, onClose }: { customer?: Customer; nextCode: string; staffNames: string[]; onClose: () => void }) {
+export default function CustomerForm({ customer, nextCode, staffNames, agentNames, onClose }: { customer?: Customer; nextCode: string; staffNames: string[]; agentNames: string[]; onClose: () => void }) {
   const router = useRouter()
   const supabase = createClient()
   const [loading, setLoading] = useState(false)
@@ -129,7 +129,7 @@ export default function CustomerForm({ customer, nextCode, staffNames, onClose }
               {card('Status & Assignment', <>
                 {radios('Status', 'status', STATUSES)}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {select('Agent', 'agent', staffNames)}
+                  {select('Agent', 'agent', agentNames)}
                   {select('Assigned To', 'assigned_to', staffNames, true)}
                 </div>
               </>)}

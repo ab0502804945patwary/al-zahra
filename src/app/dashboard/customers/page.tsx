@@ -11,9 +11,10 @@ export default async function CustomersPage() {
   const { employee } = await getSessionInfo()
   if (employee && employee.role !== 'admin') redirect(homeFor(employee))
   const supabase = await createClient()
-  const [cRes, eRes] = await Promise.all([
+  const [cRes, eRes, aRes] = await Promise.all([
     supabase.from('customers').select('*').order('created_at', { ascending: false }),
     supabase.from('employees').select('name').eq('is_active', true).order('name'),
+    supabase.from('agents').select('agent_name, company_name').order('agent_name'),
   ])
-  return <CustomersClient customers={(cRes.data as any[]) || []} staffNames={((eRes.data as any[]) || []).map(e => e.name)} />
+  return <CustomersClient customers={(cRes.data as any[]) || []} staffNames={((eRes.data as any[]) || []).map(e => e.name)} agentNames={((aRes.data as any[]) || []).map(a => (a.company_name ? `${a.agent_name} (${a.company_name})` : a.agent_name))} />
 }
