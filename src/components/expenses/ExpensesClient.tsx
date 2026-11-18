@@ -3,6 +3,7 @@ import { useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Plus, Search, X, Loader2, Save, UploadCloud, Paperclip, Trash2, Check, Ban } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import ComboInput from '@/components/ui/ComboInput'
 import { matchesQuery } from '@/lib/search'
 import {
   EXPENSE_CATEGORIES, PAYMENT_METHODS, EXPENSE_STATUSES, EXPENSE_CURRENCY,
@@ -107,7 +108,7 @@ export default function ExpensesClient({ expenses }: { expenses: Expense[] }) {
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>{label('Expense Number')}<input readOnly value={previewNumber(form.expense_date || today(), expenses)} className={`${inputCls} bg-slate-50 font-mono font-bold text-blue-700`} /></div>
           <div>{label('Date')}<input type="date" value={form.expense_date} onChange={e => set('expense_date', e.target.value)} className={inputCls} /></div>
-          <div>{label('Category')}<input list="expense-categories" value={form.category} onChange={e => set('category', e.target.value)} className={inputCls} placeholder="Type a category or pick one" /><datalist id="expense-categories">{categoryOptions.map(c => <option key={c} value={c} />)}</datalist></div>
+          <div>{label('Category')}<ComboInput value={form.category} onChange={v => set('category', v)} options={categoryOptions} className={inputCls} placeholder="Type a category or pick one" /></div>
           <div>{label(`Amount (${EXPENSE_CURRENCY})`)}<input type="number" min="0" step="0.01" value={form.amount} onChange={e => set('amount', e.target.value)} className={inputCls} placeholder="0.00" /></div>
           <div>{label('Reference Number', false)}<input value={form.reference_no} onChange={e => set('reference_no', e.target.value)} className={inputCls} placeholder="Bill no, receipt no, etc." /></div>
           <div>{label('Payment Method')}<select value={form.payment_method} onChange={e => set('payment_method', e.target.value)} className={inputCls}><option value="">Select Payment Method</option>{PAYMENT_METHODS.map(c => <option key={c}>{c}</option>)}</select></div>
