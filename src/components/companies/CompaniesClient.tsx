@@ -6,26 +6,26 @@ import { Company } from '@/lib/types'
 import CompanyModal, { computeNextCompanyId } from './CompanyModal'
 import { matchesQuery } from '@/lib/search'
 
-interface Props { companies: Company[] }
+interface Props { companies: Company[]; mode?: 'new' | 'renewal' }
 
-export default function CompaniesClient({ companies: initialCompanies }: Props) {
+export default function CompaniesClient({ companies: initialCompanies, mode = 'new' }: Props) {
+  const renewalMode = mode === 'renewal'
   const [companiesList, setCompaniesList] = useState<Company[]>(initialCompanies)
   const [search, setSearch] = useState('')
   const [selected, setSelected] = useState<Company | null>(null)
   const [showAdd, setShowAdd] = useState(false)
-  const [view, setView] = useState<'grid' | 'list'>('grid')
-  const [typeFilter, setTypeFilter] = useState<'all' | 'a2z' | 'renewal'>('all')
+  const [view, setView] = useState<'grid' | 'list'>(mode === 'renewal' ? 'list' : 'grid')
 
   useEffect(() => {
     try {
-      const v = localStorage.getItem('alzahra_companies_view')
+      const v = localStorage.getItem(`alzahra_companies_view_${mode}`)
       if (v === 'grid' || v === 'list') setView(v)
     } catch {}
   }, [])
 
   function changeView(v: 'grid' | 'list') {
     setView(v)
-    try { localStorage.setItem('alzahra_companies_view', v) } catch {}
+    try { localStorage.setItem(`alzahra_companies_view_${mode}`, v) } catch {}
   }
 
   const isRenewal = (c: Company) => c.service_type === 'renewal'
@@ -60,23 +60,33 @@ export default function CompaniesClient({ companies: initialCompanies }: Props) 
 
   const nextAutoId = computeNextCompanyId(companiesList)
 
-  const serialOf = (c: Company) => companiesList.indexOf(c) + 1
-  const filtered = companiesList.filter(c =>
-    (typeFilter === 'all' || (typeFilter === 'renewal' ? isRenewal(c) : !isRenewal(c))) &&
+  // New and renewal companies live on separate pages
+  const modeList = companiesList.filter(c => (renewalMode ? isRenewal(c) : !isRenewal(c)))
+  const serialOf = (c: Company) => modeList.indexOf(c) + 1
+  const filtered = modeList.filter(c =>
     matchesQuery(search, serialOf(c), [
       c.company_id, c.company_name, c.country_of_origin, c.entity_type, c.client_name, c.client_phone,
       c.whatsapp_number, c.official_email, c.cr_number, c.misa_license_no, c.tin_number, c.vat_number,
       c.ceo_gm_name, c.iqama_no, c.shareholders_name, c.shareholder_phone, c.bank_name, c.account_number,
+      c.rjsc_reg_no,
     ])
   )
-  const renewalCount = companiesList.filter(isRenewal).length
+
+  // soonest upcoming (or already passed) due date of a renewal company
+  const nextExpiry = (c: Company) => {
+    const dates = [c.cr_expire_date, c.misa_expire_date, c.rjsc_annual_return_due, c.bd_next_audit_due, c.sa_next_audit_due].filter(Boolean) as string[]
+    if (!dates.length) return null
+    const d = dates.sort()[0]
+    const days = Math.round((new Date(d).getTime() - new Date(new Date().toDateString()).getTime()) / 86400000)
+    return { date: d, days }
+  }
 
   // Form opens inside the page area (sidebar stays visible)
   if (showAdd) {
-    return <CompanyModal existingCompanies={companiesList} onClose={() => setShowAdd(false)} onSave={handleSave} />
+    return <CompanyModal lockedType={renewalMode ? 'renewal' : 'a2z'} existingCompanies={companiesList} onClose={() => setShowAdd(false)} onSave={handleSave} />
   }
   if (selected) {
-    return <CompanyModal company={selected} existingCompanies={companiesList} onClose={() => setSelected(null)} onSave={handleSave} onDelete={handleDelete} />
+    return <CompanyModal lockedType={renewalMode ? 'renewal' : 'a2z'} company={selected} existingCompanies={companiesList} onClose={() => setSelected(null)} onSave={handleSave} onDelete={handleDelete} />
   }
 
   return (
@@ -84,7 +94,7 @@ export default function CompaniesClient({ companies: initialCompanies }: Props) 
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3 border-b border-slate-200">
         <div>
-          <h1 className="text-xl font-bold text-slate-900 tracking-tight">Corporate Directory & Master Data</h1>
+          <h1 className="text-xl font-bold text-slate-900 tracking-tight">{renewalMode ? 'Renewal / Other Service Companies' : 'Corporate Directory & Master Data'}</h1>
           <p className="text-xs text-slate-500 mt-0.5">Central repository for statutory entity profiles, identifiers, and compliance dossiers</p>
         </div>
         <div className="flex items-center gap-2">
@@ -96,7 +106,7 @@ export default function CompaniesClient({ companies: initialCompanies }: Props) 
             onClick={() => setShowAdd(true)}
             className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg shadow-sm transition"
           >
-            <Plus className="w-4 h-4" /> Register Corporate Entity
+            <Plus className="w-4 h-4" /> {renewalMode ? 'Add Renewal Company' : 'Register Corporate Entity'}
           </button>
         </div>
       </div>
@@ -108,26 +118,13 @@ export default function CompaniesClient({ companies: initialCompanies }: Props) 
           <input
             value={search}
             onChange={e => setSearch(e.target.value)}
-            placeholder="Search name, ID, serial no., phone, country, CR, MISA..."
+            placeholder={renewalMode ? 'Search name, ID, serial no., phone, country, CR, RJSC...' : 'Search name, ID, serial no., phone, country, CR, MISA...'}
             className="w-full pl-9 pr-4 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
           />
         </div>
         <div className="flex items-center gap-3">
           <div className="hidden md:block text-xs text-slate-500 font-medium">
-            Showing <span className="font-bold text-slate-800">{filtered.length}</span> of {companiesList.length}
-          </div>
-          <div className="inline-flex rounded-lg border border-slate-200 bg-white p-0.5 text-xs font-semibold">
-            {([
-              ['all', `All (${companiesList.length})`],
-              ['a2z', `New Company (${companiesList.length - renewalCount})`],
-              ['renewal', `Renewal / Other (${renewalCount})`],
-            ] as const).map(([k, label]) => (
-              <button
-                key={k}
-                onClick={() => setTypeFilter(k)}
-                className={`px-2.5 py-1.5 rounded-md transition ${typeFilter === k ? 'bg-blue-600 text-white' : 'text-slate-600 hover:bg-slate-50'}`}
-              >{label}</button>
-            ))}
+            Showing <span className="font-bold text-slate-800">{filtered.length}</span> of {modeList.length}
           </div>
           <div className="inline-flex rounded-lg border border-slate-200 bg-white p-0.5">
             <button onClick={() => changeView('grid')} title="Grid view" className={`p-1.5 rounded-md transition ${view === 'grid' ? 'bg-blue-600 text-white' : 'text-slate-500 hover:bg-slate-50'}`}><LayoutGrid className="w-4 h-4" /></button>
@@ -142,7 +139,7 @@ export default function CompaniesClient({ companies: initialCompanies }: Props) 
           <table className="w-full text-xs min-w-[900px]">
             <thead className="bg-slate-50 text-slate-500 uppercase text-[10px] tracking-wide">
               <tr>
-                {['SL', 'ID', 'Company', 'Country', 'Service Type', 'License', 'CR No.', 'MISA No.', 'CR Expiry', 'Status', 'Folder', ''].map(h => (
+                {['SL', 'ID', 'Company', 'Country', 'Service Type', 'License', 'CR No.', 'MISA No.', renewalMode ? 'Next Due' : 'CR Expiry', 'Status', 'Folder', ''].map(h => (
                   <th key={h} className="text-left font-semibold px-3 py-2.5 whitespace-nowrap">{h}</th>
                 ))}
               </tr>
@@ -158,7 +155,7 @@ export default function CompaniesClient({ companies: initialCompanies }: Props) 
                   <td className="px-3 py-2.5 text-slate-600">{c.entity_type || '—'}</td>
                   <td className="px-3 py-2.5 font-mono text-slate-600">{c.cr_number || '—'}</td>
                   <td className="px-3 py-2.5 font-mono text-slate-600">{c.misa_license_no || '—'}</td>
-                  <td className="px-3 py-2.5 font-mono text-slate-600">{c.cr_expire_date || '—'}</td>
+                  <td className="px-3 py-2.5 font-mono text-slate-600">{renewalMode ? (() => { const n = nextExpiry(c); return n ? <span className={`px-2 py-0.5 rounded-full border text-[10px] font-semibold ${n.days < 0 ? 'bg-rose-50 text-rose-700 border-rose-200' : n.days <= 30 ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-emerald-50 text-emerald-700 border-emerald-200'}`}>{n.date} · {n.days < 0 ? `${-n.days}d overdue` : `${n.days}d`}</span> : '—' })() : (c.cr_expire_date || '—')}</td>
                   <td className={`px-3 py-2.5 font-semibold ${c.account_status === 'Inactive' ? 'text-slate-400' : 'text-emerald-700'}`}>{c.account_status || 'Active'}</td>
                   <td className="px-3 py-2.5">
                     {c.drive_link ? <a href={c.drive_link} target="_blank" rel="noreferrer" className="text-blue-600 hover:text-blue-800 inline-flex items-center gap-1"><ExternalLink className="w-3 h-3" />Open</a> : <span className="text-slate-300">—</span>}

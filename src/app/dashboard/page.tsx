@@ -103,7 +103,7 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-6">
       <AccountsSummary invoices={invoices} />
-      <MasterMatrixDashboard initialCompanies={companies} kpiStats={kpiStats} stageMap={stageMap} />
+      <MasterMatrixDashboard initialCompanies={companies.filter(c => c.service_type !== 'renewal')} kpiStats={{ ...kpiStats, totalCompanies: companies.filter(c => c.service_type !== 'renewal').length }} stageMap={stageMap} />
       <ExpiryAlerts companies={companies} />
       <StageSummaryTable rows={summary} />
     </div>

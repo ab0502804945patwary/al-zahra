@@ -44,6 +44,8 @@ interface Props {
   company?: Company
   existingCompanies?: Company[]
   onClose: () => void
+  /** When set, the service type is fixed by the page (New Companies / Renewal Companies) */
+  lockedType?: 'a2z' | 'renewal'
   onSave?: (savedCompany: Company) => void
   onDelete?: (id: string) => void
 }
@@ -66,7 +68,7 @@ export function computeNextCompanyId(companies: Company[] = []): string {
 }
 
 import { useSecureDelete } from '@/components/ui/useSecureDelete'
-export default function CompanyModal({ company, existingCompanies = [], onClose, onSave, onDelete }: Props) {
+export default function CompanyModal({ company, existingCompanies = [], onClose, onSave, onDelete, lockedType }: Props) {
   const router = useRouter()
   const supabase = createClient()
   const { askDelete, dialog } = useSecureDelete()
@@ -83,7 +85,7 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
       country_of_origin: 'Saudi Arabia',
       entity_type: 'Trading License',
       account_status: 'Active',
-      service_type: 'a2z',
+      service_type: lockedType ?? 'a2z',
     }
   })
 
@@ -267,7 +269,7 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
         <input type="text" value={form.client_phone || ''} onChange={e => set('client_phone', e.target.value)} placeholder="e.g. 05xxxxxxxx" className={inputCls} />
       </div>
 
-      <div className={SPAN[12]}>
+      {!lockedType && <div className={SPAN[12]}>
         <Lbl name="service_type">Service Type</Lbl>
         <div className="grid grid-cols-2 gap-2 sm:gap-3">
           {[
@@ -288,7 +290,7 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
             )
           })}
         </div>
-      </div>
+      </div>}
     </>
   )
 
