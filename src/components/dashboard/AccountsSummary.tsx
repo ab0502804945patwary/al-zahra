@@ -1,10 +1,12 @@
 import Link from 'next/link'
-import { Wallet, HandCoins, Hourglass, FileText } from 'lucide-react'
+import { Scale, HandCoins, Hourglass, FileText, ReceiptText } from 'lucide-react'
 import { bdt, payStatus } from '@/lib/money'
 
 interface InvoiceRow { id: string; invoice_no: string; customer_id: string | null; customer_name: string | null; total: number; status: string; payments: { amount: number; paid_on: string }[] }
 
-export default function AccountsSummary({ invoices }: { invoices: InvoiceRow[] }) {
+interface ExpenseRow { expense_date: string; amount: number; status: string }
+
+export default function AccountsSummary({ invoices, expenses = [] }: { invoices: InvoiceRow[]; expenses?: ExpenseRow[] }) {
   const live = invoices.filter(i => i.status !== 'Cancelled')
   const rows = live.map(i => {
     const paid = (i.payments || []).reduce((s, p) => s + Number(p.amount), 0)
@@ -15,6 +17,11 @@ export default function AccountsSummary({ invoices }: { invoices: InvoiceRow[] }
   const due = invoiced - received
   const month = new Date().toISOString().slice(0, 7)
   const receivedThisMonth = live.flatMap(i => i.payments || []).filter(p => String(p.paid_on).startsWith(month)).reduce((s, p) => s + Number(p.amount), 0)
+  // expenses reduce the money received (rejected expenses are ignored)
+  const liveExpenses = expenses.filter(e => e.status !== 'Rejected')
+  const expenseTotal = liveExpenses.reduce((s, e) => s + Number(e.amount), 0)
+  const expenseThisMonth = liveExpenses.filter(e => String(e.expense_date).startsWith(month)).reduce((s, e) => s + Number(e.amount), 0)
+  const net = received - expenseTotal
   const count = (st: string) => rows.filter(r => payStatus(r.total, r.paid) === st).length
 
   // customers who owe the most
@@ -29,10 +36,11 @@ export default function AccountsSummary({ invoices }: { invoices: InvoiceRow[] }
   const topDue = [...byCustomer.values()].sort((a, b) => b.due - a.due).slice(0, 5)
 
   const cards = [
-    { label: 'Total Invoiced', value: bdt(invoiced), sub: `${rows.length} invoices`, icon: FileText, tone: 'text-blue-600 bg-blue-50' },
+    { label: 'Total Invoiced', value: bdt(invoiced), sub: `${rows.length} invoices · ${count('Paid')} fully paid`, icon: FileText, tone: 'text-blue-600 bg-blue-50' },
     { label: 'Received', value: bdt(received), sub: `This month: ${bdt(receivedThisMonth)}`, icon: HandCoins, tone: 'text-emerald-600 bg-emerald-50' },
+    { label: 'Expenses', value: bdt(expenseTotal), sub: `This month: ${bdt(expenseThisMonth)}`, icon: ReceiptText, tone: 'text-amber-600 bg-amber-50' },
+    { label: 'Net (Received − Expenses)', value: bdt(net), sub: net < 0 ? 'Expenses are more than received' : 'Money left after expenses', icon: Scale, tone: net < 0 ? 'text-rose-600 bg-rose-50' : 'text-teal-600 bg-teal-50' },
     { label: 'Total Due', value: bdt(due), sub: `${count('Unpaid')} unpaid · ${count('Partial')} partial`, icon: Hourglass, tone: 'text-rose-600 bg-rose-50' },
-    { label: 'Fully Paid', value: String(count('Paid')), sub: 'invoices', icon: Wallet, tone: 'text-teal-600 bg-teal-50' },
   ]
 
   return (
@@ -40,12 +48,12 @@ export default function AccountsSummary({ invoices }: { invoices: InvoiceRow[] }
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-bold text-slate-900 tracking-tight">Accounts Summary</h2>
-          <p className="text-xs text-slate-500">Invoices, money received and what customers still owe (BDT)</p>
+          <p className="text-xs text-slate-500">Invoices, money received, expenses and what customers still owe (BDT)</p>
         </div>
         <Link href="/dashboard/invoices" className="text-xs font-semibold text-blue-600 hover:text-blue-800">All invoices →</Link>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
         {cards.map(c => {
           const Icon = c.icon
           return (

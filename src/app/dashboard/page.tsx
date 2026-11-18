@@ -18,6 +18,7 @@ export default async function DashboardPage() {
 
   let companies: Company[] = []
   let invoices: any[] = []
+  let expenses: any[] = []
   const kpiStats = { totalCompanies: 0, compliant: 0, overdue: 0, expiring: 0 }
   const stageRows: Record<string, any[]> = {}
 
@@ -26,6 +27,8 @@ export default async function DashboardPage() {
     try {
       const inv = await supabase.from('invoices').select('id, invoice_no, customer_id, customer_name, total, status, payments(amount, paid_on)')
       invoices = (inv.data as any[]) || []
+      const exp = await supabase.from('expenses').select('expense_date, amount, status')
+      expenses = (exp.data as any[]) || []
     } catch {}
     try {
       const ids = MENU_ORDER.filter(id => STAGE_CONFIG[id])
@@ -101,7 +104,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <AccountsSummary invoices={invoices} />
+      <AccountsSummary invoices={invoices} expenses={expenses} />
       <MasterMatrixDashboard initialCompanies={companies.filter(c => c.service_type !== 'renewal')} kpiStats={{ ...kpiStats, totalCompanies: companies.filter(c => c.service_type !== 'renewal').length }} stageMap={stageMap} />
       <StageSummaryTable rows={summary} />
     </div>

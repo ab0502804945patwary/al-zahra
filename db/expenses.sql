@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS expenses (
   account TEXT,                                    -- no longer used
   payment_method TEXT NOT NULL,
   amount NUMERIC(12,2) NOT NULL CHECK (amount > 0),
-  currency TEXT NOT NULL DEFAULT 'SAR',
+  currency TEXT NOT NULL DEFAULT 'BDT',
   reference_no TEXT,
   notes TEXT,
   status TEXT NOT NULL DEFAULT 'Pending',          -- Pending, Approved, Rejected
