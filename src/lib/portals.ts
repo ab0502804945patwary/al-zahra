@@ -8,6 +8,7 @@ export const PORTALS: PortalDef[] = [
   { key: 'QIWA', name: 'QIWA', short: 'Q', color: '#6b3fa0', logo: '/portals/qiwa.svg' },
   { key: 'MUQEEM', name: 'MUQEEM', short: 'M', color: '#b4541a', logo: '/portals/muqeem.svg' },
   { key: 'GOSI CERTIFICATE', name: 'GOSI Certificate', short: 'G', color: '#1b6fb5', logo: '/portals/gosi.svg' },
+  { key: 'MOC', name: 'Ministry of Commerce', short: 'MC', color: '#03534c', logo: '/portals/moc.svg' },
   { key: 'Chamber Of Commerce', name: 'Chamber of Commerce', short: 'CC', color: '#8a6d1a' },
   { key: 'VAT', name: 'VAT (ZATCA)', short: 'VAT', color: '#a3263c', logo: '/portals/zatca.svg' },
 ]
