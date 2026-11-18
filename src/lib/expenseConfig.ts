@@ -8,4 +8,5 @@ export const EXPENSE_STATUSES = ['Pending', 'Approved', 'Rejected'] as const
 export const EXPENSE_CURRENCY = 'BDT'
 export const MAX_FILES = 5
 export const MAX_FILE_BYTES = 5 * 1024 * 1024
-export const ALLOWED_EXT = ['png', 'jpg', 'jpeg', 'pdf', 'doc', 'docx']
+// any photo/screenshot (phones also give webp, heic, jfif) plus PDF and Word files
+export const ALLOWED_EXT = ['png', 'jpg', 'jpeg', 'jfif', 'webp', 'heic', 'heif', 'gif', 'bmp', 'pdf', 'doc', 'docx']

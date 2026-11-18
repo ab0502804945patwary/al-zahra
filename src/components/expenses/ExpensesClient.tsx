@@ -54,7 +54,7 @@ export default function ExpensesClient({ expenses }: { expenses: Expense[] }) {
     const next = [...files]
     for (const f of Array.from(list)) {
       const ext = f.name.split('.').pop()?.toLowerCase() || ''
-      if (!ALLOWED_EXT.includes(ext)) { setError(`${f.name}: only PNG, JPG, PDF or DOC files are allowed`); continue }
+      if (!ALLOWED_EXT.includes(ext) && !f.type.startsWith('image/')) { setError(`${f.name}: only photos, PDF or DOC files are allowed`); continue }
       if (f.size > MAX_FILE_BYTES) { setError(`${f.name}: file is bigger than 5MB`); continue }
       if (next.length >= MAX_FILES) { setError(`You can attach at most ${MAX_FILES} files`); break }
       next.push(f)
@@ -75,7 +75,7 @@ export default function ExpensesClient({ expenses }: { expenses: Expense[] }) {
     for (const f of files) {
       const safe = f.name.replace(/[^\w.\-]+/g, '_')
       const path = `${folder}/${safe}`
-      const { error: upErr } = await supabase.storage.from('expense-files').upload(path, f, { upsert: false })
+      const { error: upErr } = await supabase.storage.from('expense-files').upload(path, f, { upsert: false, contentType: f.type || undefined })
       if (upErr) { setLoading(false); return setError(`Could not upload ${f.name}: ${upErr.message}`) }
       uploaded.push({ path, name: f.name, size: f.size })
     }
@@ -122,9 +122,10 @@ export default function ExpensesClient({ expenses }: { expenses: Expense[] }) {
             >
               <UploadCloud className="w-8 h-8 mx-auto text-slate-400" />
               <div className="mt-1 text-sm"><span className="font-semibold text-blue-600">Upload files</span> <span className="text-slate-500">or drag and drop</span></div>
-              <div className="text-[11px] text-slate-400 mt-0.5">PNG, JPG, PDF, DOC up to 5MB (max {MAX_FILES})</div>
-              <input ref={fileRef} type="file" multiple accept=".png,.jpg,.jpeg,.pdf,.doc,.docx" className="hidden" onChange={e => { addFiles(e.target.files); e.target.value = '' }} />
+              <div className="text-[11px] text-slate-400 mt-0.5">Photos, PDF, DOC up to 5MB (max {MAX_FILES})</div>
+              <input ref={fileRef} type="file" multiple accept="image/*,.pdf,.doc,.docx" className="hidden" onClick={e => e.stopPropagation()} onChange={e => { setError(''); addFiles(e.target.files); e.target.value = '' }} />
             </div>
+            {error && <p className="mt-2 text-[11px] font-medium text-rose-600">{error}</p>}
             {files.length > 0 && (
               <ul className="mt-2 space-y-1">
                 {files.map((f, i) => (

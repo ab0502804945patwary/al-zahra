@@ -5,6 +5,7 @@ import { createClient, isSupabaseConfigured } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import BdFields from './BdFields'
 import { FormCtx, Field, Select as Sel } from './formFields'
+import StatutoryFields, { STATUTORY_KEYS, statutoryFrom } from './StatutoryFields'
 import { COUNTRIES, CATEGORIES, PAYMENT_STATUSES, PRIORITIES, PHASE_OPTIONS, FOREIGN_FILING_OPTIONS, CANADA_OPTIONS, CR_STATUSES, toOptions, pickColumns, validateDates } from '@/lib/stageRules'
 import { calculateNameClearance, assessTiming } from '@/lib/utils'
 
@@ -26,7 +27,7 @@ export default function EditEntryModal({ stageId, entry, companies, employees, o
   const { askDelete, dialog } = useSecureDelete()
   const [loading, setLoading] = useState(false)
   const [deleting, setDeleting] = useState(false)
-  const [form, setForm] = useState<Record<string, string>>(entry)
+  const [form, setForm] = useState<Record<string, string>>(() => (stageId === '7' ? { ...entry, ...statutoryFrom(companies.find(c => c.company_id === entry.company_id)) } : entry))
   const set = (k: string, v: string) => setForm(prev => ({ ...prev, [k]: v }))
   const comp = companies.find(c => c.company_id === form.company_id)
   const clientInfo = {
@@ -57,6 +58,12 @@ export default function EditEntryModal({ stageId, entry, companies, employees, o
     if (isSupabaseConfigured) {
       const { error } = await supabase.from(STAGE_TABLES[stageId]).update(pickColumns(stageId, payload)).eq('id', entry.id)
       if (error) { alert('Could not save: ' + error.message); setLoading(false); return }
+      if (stageId === '7' && form.company_id) {
+        const st: Record<string, string> = {}
+        for (const k of STATUTORY_KEYS) st[k] = form[k] || ''
+        const { error: stErr } = await supabase.rpc('update_company_statutory', { p_company_id: form.company_id, p: st })
+        if (stErr) alert('The record was saved, but the legal identifiers could not be saved to the company: ' + stErr.message)
+      }
     }
 
     router.refresh()
@@ -202,6 +209,8 @@ export default function EditEntryModal({ stageId, entry, companies, employees, o
               <Field label="Operational Remarks" name="remarks" />
             </>
           )}
+
+          {stageId === '7' && <StatutoryFields />}
 
           <div className="flex gap-3 pt-3 border-t border-slate-100">
             <button

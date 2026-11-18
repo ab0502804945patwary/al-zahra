@@ -57,7 +57,7 @@ export default function InvoiceView({ invoice, items, payments }: { invoice: any
       </div>
 
       {/* A4 sheet */}
-      <div id="invoice-sheet" className="relative bg-white shadow-md border border-slate-200 flex flex-col min-h-[297mm] print:shadow-none print:border-0">
+      <div id="invoice-sheet" className="print-area relative bg-white shadow-md border border-slate-200 flex flex-col min-h-[297mm] print:shadow-none print:border-0">
         <div className="h-2 bg-blue-600" />
         {cancelled && <div className="absolute inset-0 flex items-center justify-center pointer-events-none"><span className="text-8xl font-black text-rose-500/15 -rotate-12 tracking-widest">CANCELLED</span></div>}
 

@@ -390,7 +390,7 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
       </div>
 
       <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-5">
-        {sections.filter(section => form.service_type === 'renewal' ? !section.title.startsWith('Headquarters') : !section.renewalOnly).map(section => {
+        {sections.filter(section => form.service_type === 'renewal' ? !section.title.startsWith('Headquarters') : (!section.renewalOnly && !section.title.startsWith('Statutory'))).map(section => {
           const SectionIcon = section.icon
           return (
             <div key={section.title} className="bg-slate-50/60 border border-slate-200/80 rounded-xl p-5">

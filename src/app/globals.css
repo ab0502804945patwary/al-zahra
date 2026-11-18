@@ -135,7 +135,8 @@
   * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   aside, header, nav.fixed { display: none !important; }
   html, body { background: #fff !important; height: auto !important; }
-  body * { visibility: hidden; }
-  #invoice-sheet, #invoice-sheet * { visibility: visible; }
-  #invoice-sheet { position: absolute; left: 0; top: 0; width: 210mm; min-height: 296mm; }
+  body:has(.print-area) * { visibility: hidden; }
+  .print-area, .print-area * { visibility: visible; }
+  .print-area { position: absolute; left: 0; top: 0; width: 100%; padding: 10mm; }
+  #invoice-sheet { width: 210mm; min-height: 296mm; padding: 0; }
 }
