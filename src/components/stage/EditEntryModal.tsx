@@ -218,7 +218,6 @@ export default function EditEntryModal({ stageId, entry, companies, employees, o
               </div>
                 </>
               )}
-              <Sel label="Assigned Employee" name="employee_id" options={employees.map(e => ({ value: e.id, label: e.name }))} />
               <Field label="Electronic Dossier Link (Google Drive)" name="drive_link" />
               <Field label="Operational Remarks" name="remarks" />
             </>

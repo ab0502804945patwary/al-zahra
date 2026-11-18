@@ -233,7 +233,6 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
                 <th className="py-3 px-4 bg-red-50/40">CAN Days</th>
                 <th className="py-3 px-4 bg-red-50/40">CAN %</th>
                 <th className="py-3 px-4 bg-red-50/40">Payment</th>
-                <th className="py-3 px-4">Employee</th>
                 <th className="py-3 px-4 text-right">Actions</th>
               </tr>
             </thead>
@@ -272,7 +271,6 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
                       {e.canada_payment_status || '—'}
                     </span>
                   </td>
-                  <td className="py-3 px-4 whitespace-nowrap">{e.employees?.name || '—'}</td>
                   <td className="py-3 px-4 text-right">
                     {canEdit && isLocked(e) ? (<span title="Submitted — locked. Only an admin can edit." className="p-1.5 text-slate-300 inline-block"><Lock className="w-3.5 h-3.5" /></span>) : canEdit && (<button onClick={() => setEditEntry(e)} className="p-1.5 hover:bg-slate-100 rounded-md transition text-slate-400 hover:text-slate-600">
                       <Edit2 className="w-3.5 h-3.5" />
@@ -334,7 +332,6 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
               {!noDates && <th className="py-3 px-4">SLA Compliance</th>}
               {!noDates && <th className="py-3 px-4">Fulfillment %</th>}
               {!noDates && <th className="py-3 px-4">Payment</th>}
-                            <th className="py-3 px-4">Employee</th>
               <th className="py-3 px-4">Notes</th>
               <th className="py-3 px-4">Dossier</th>
               <th className="py-3 px-4 text-right">Actions</th>
@@ -405,7 +402,6 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
                     {e.payment_status || '—'}
                   </span>
                 </td>)}
-                                <td className="py-3 px-4 whitespace-nowrap">{e.employees?.name || '—'}</td>
                 {noDates && (
                   <td className="py-3 px-4">
                     <div className="flex items-center gap-2">
