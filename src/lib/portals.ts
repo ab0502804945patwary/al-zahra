@@ -4,11 +4,11 @@ export interface PortalDef { key: string; name: string; short: string; color: st
 
 export const PORTALS: PortalDef[] = [
   { key: 'SPL', name: 'SPL (National Address)', short: 'SPL', color: '#0d7a5f' },
-  { key: 'QIWA', name: 'QIWA', short: 'Q', color: '#6b3fa0' },
-  { key: 'MUQEEM', name: 'MUQEEM', short: 'M', color: '#b4541a' },
-  { key: 'GOSI CERTIFICATE', name: 'GOSI Certificate', short: 'G', color: '#1b6fb5' },
+  { key: 'QIWA', name: 'QIWA', short: 'Q', color: '#6b3fa0', logo: '/portals/qiwa.svg' },
+  { key: 'MUQEEM', name: 'MUQEEM', short: 'M', color: '#b4541a', logo: '/portals/muqeem.svg' },
+  { key: 'GOSI CERTIFICATE', name: 'GOSI Certificate', short: 'G', color: '#1b6fb5', logo: '/portals/gosi.svg' },
   { key: 'Chamber Of Commerce', name: 'Chamber of Commerce', short: 'CC', color: '#8a6d1a' },
-  { key: 'VAT', name: 'VAT (ZATCA)', short: 'VAT', color: '#a3263c' },
+  { key: 'VAT', name: 'VAT (ZATCA)', short: 'VAT', color: '#a3263c', logo: '/portals/zatca.svg' },
 ]
 
 export interface PortalAccount { portal: string; username: string; password: string; note?: string }

@@ -1,8 +1,8 @@
 'use client'
 import { useState } from 'react'
 import { Plus, Trash2, Eye, EyeOff, KeyRound } from 'lucide-react'
-import { PORTALS, type PortalAccount } from '@/lib/portals'
-import PortalLogo from './PortalLogo'
+import type { PortalAccount } from '@/lib/portals'
+import PortalSelect from './PortalSelect'
 
 const cls = 'w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white'
 
@@ -21,12 +21,8 @@ export default function PortalAccountsEditor({ value, onChange }: { value: Porta
       </div>
 
       {value.map((r, i) => (
-        <div key={i} className="grid grid-cols-1 sm:grid-cols-[auto_1.2fr_1fr_1fr_auto] gap-2 items-start bg-white border border-slate-200 rounded-lg p-2.5">
-          <div className="hidden sm:flex pt-0.5"><PortalLogo portal={r.portal} size={34} /></div>
-          <select value={r.portal} onChange={e => update(i, { portal: e.target.value })} className={cls}>
-            <option value="">Select portal...</option>
-            {PORTALS.map(p => <option key={p.key} value={p.key}>{p.name}</option>)}
-          </select>
+        <div key={i} className="grid grid-cols-1 sm:grid-cols-[1.4fr_1fr_1fr_auto] gap-2 items-start bg-white border border-slate-200 rounded-lg p-2.5">
+          <PortalSelect value={r.portal} onChange={v => update(i, { portal: v })} />
           <input value={r.username} onChange={e => update(i, { username: e.target.value })} placeholder="User name / ID" autoComplete="off" className={cls} />
           <div className="relative">
             <input type={shown[i] ? 'text' : 'password'} value={r.password} onChange={e => update(i, { password: e.target.value })} placeholder="Password" autoComplete="new-password" className={`${cls} pr-9`} />
