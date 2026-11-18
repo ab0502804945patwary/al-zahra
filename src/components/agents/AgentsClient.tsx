@@ -8,6 +8,7 @@ import { matchesQuery } from '@/lib/search'
 interface Agent { id: string; agent_code: string; company_name?: string | null; agent_name: string; mobile?: string | null; address?: string | null; category?: string | null; remarks?: string | null }
 
 const inputCls = 'w-full px-3 py-2.5 text-sm text-slate-900 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white placeholder:text-slate-400'
+const CATEGORY_OPTIONS = ['Travel Agency', 'Consultancy', 'Maktab Al Khadamat']
 const EMPTY = { company_name: '', agent_name: '', mobile: '', address: '', category: '', remarks: '' }
 
 function nextCode(agents: Agent[]) {
@@ -26,7 +27,8 @@ export default function AgentsClient({ agents }: { agents: Agent[] }) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  const categories = useMemo(() => [...new Set(agents.map(a => a.category).filter(Boolean) as string[])].sort(), [agents])
+  // fixed options first; any older custom value already saved is kept so nothing is lost
+  const categories = useMemo(() => [...CATEGORY_OPTIONS, ...new Set(agents.map(a => a.category).filter((c): c is string => !!c && !CATEGORY_OPTIONS.includes(c)))], [agents])
 
   function open(a: Agent | 'new') {
     setError('')
@@ -78,8 +80,10 @@ export default function AgentsClient({ agents }: { agents: Agent[] }) {
           </div>
           <div>
             <label className="text-xs font-semibold text-slate-700 mb-1.5 block">Agent Category</label>
-            <input list="agent-categories" value={form.category} onChange={e => setForm(p => ({ ...p, category: e.target.value }))} className={inputCls} placeholder="Type or pick a category" />
-            <datalist id="agent-categories">{categories.map(c => <option key={c} value={c} />)}</datalist>
+            <select value={form.category} onChange={e => setForm(p => ({ ...p, category: e.target.value }))} className={inputCls}>
+              <option value="">Select category...</option>
+              {categories.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
           </div>
           <div className="sm:col-span-2">
             <label className="text-xs font-semibold text-slate-700 mb-1.5 block">Address / Location</label>
@@ -116,7 +120,7 @@ export default function AgentsClient({ agents }: { agents: Agent[] }) {
           <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
           <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search agent name, ID, company, mobile, location..." className="w-full pl-9 pr-4 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" />
         </div>
-        {categories.length > 0 && (
+        {(
           <select value={catFilter} onChange={e => setCatFilter(e.target.value)} className="px-3 py-2 text-xs border border-slate-200 rounded-lg bg-white">
             <option>All</option>{categories.map(c => <option key={c}>{c}</option>)}
           </select>
