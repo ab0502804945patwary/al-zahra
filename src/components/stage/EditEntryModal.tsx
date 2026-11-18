@@ -41,7 +41,7 @@ export default function EditEntryModal({ stageId, entry, companies, employees, o
     if (dateError) { alert(dateError); return }
     setLoading(true)
     let payload: Record<string, any> = { ...form, client_name: clientInfo.name || form.client_name, client_phone: clientInfo.phone || form.client_phone, category: comp?.entity_type || form.category, ...(stageId !== '1' ? { priority: comp?.stage1_priority || form.priority } : {}) }
-    if (!isUSACanada && !isNameClearance) {
+    if (!isUSACanada && !isNameClearance && stageId !== '6') {
       const t = assessTiming(form.submit_date, form.target_date, form.complete_date)
       payload = { ...payload, days_taken: t.days, status: t.status, completion_percent: t.completion, overdue_status: t.overdue }
     }
@@ -192,6 +192,8 @@ export default function EditEntryModal({ stageId, entry, companies, employees, o
             </>
           ) : (
             <>
+              {stageId !== '6' && (
+                <>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <Field label="Submission Date" name="submit_date" type="date" disabled={!isAdmin} hint={!isAdmin ? "Fixed — only an admin can change it" : undefined} />
                 <Field label="Target SLA Date" name="target_date" type="date" />
@@ -204,6 +206,8 @@ export default function EditEntryModal({ stageId, entry, companies, employees, o
                   options={toOptions(PAYMENT_STATUSES)}
                 />
               </div>
+                </>
+              )}
               <Sel label="Assigned Employee" name="employee_id" options={employees.map(e => ({ value: e.id, label: e.name }))} />
               <Field label="Electronic Dossier Link (Google Drive)" name="drive_link" />
               <Field label="Operational Remarks" name="remarks" />

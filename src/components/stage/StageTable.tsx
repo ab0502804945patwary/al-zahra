@@ -88,6 +88,7 @@ interface Props {
 }
 
 export default function StageTable({ stageId, entries: serverEntries, companies, employees, isUSACanada, isNameClearance, canEdit = true, isAdmin = false }: Props) {
+  const noDates = stageId === '6' // Portals & Compliance is a checklist: no dates, timing or payment
   const [editEntry, setEditEntry] = useState<any>(null)
   // Staff cannot change a record once it is completed; admins always can
   const isLocked = (e: any) => !isAdmin && Boolean(e.complete_date || e.usa_complete_date || e.approval_date)
@@ -322,14 +323,14 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
               <th className="py-3 px-4">Classification</th>
               <th className="py-3 px-4">Priority Tier</th>
               <th className="py-3 px-4">Workflow Status</th>
-              <th className="py-3 px-4">Submission</th>
-              <th className="py-3 px-4">Target Date</th>
-              <th className="py-3 px-4">Completion</th>
-              <th className="py-3 px-4">Milestone</th>
-              <th className="py-3 px-4">Elapsed</th>
-              <th className="py-3 px-4">SLA Compliance</th>
-              <th className="py-3 px-4">Fulfillment %</th>
-              <th className="py-3 px-4">Payment</th>
+              {!noDates && <th className="py-3 px-4">Submission</th>}
+              {!noDates && <th className="py-3 px-4">Target Date</th>}
+              {!noDates && <th className="py-3 px-4">Completion</th>}
+              {!noDates && <th className="py-3 px-4">Milestone</th>}
+              {!noDates && <th className="py-3 px-4">Elapsed</th>}
+              {!noDates && <th className="py-3 px-4">SLA Compliance</th>}
+              {!noDates && <th className="py-3 px-4">Fulfillment %</th>}
+              {!noDates && <th className="py-3 px-4">Payment</th>}
                             <th className="py-3 px-4">Employee</th>
               <th className="py-3 px-4">Notes</th>
               <th className="py-3 px-4">Dossier</th>
@@ -367,15 +368,15 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
                     {e.current_stage || '—'}
                   </span>
                 </td>
-                <td className="py-3 px-4">{formatDate(e.submit_date)}</td>
-                <td className="py-3 px-4">{formatDate(e.target_date)}</td>
-                <td className="py-3 px-4">{formatDate(e.complete_date)}</td>
-                <td className="py-3 px-4"><MilestoneBadge status={e.overdue_status} /></td>
-                <td className="py-3 px-4 font-mono font-medium text-slate-800">
+                {!noDates && <td className="py-3 px-4">{formatDate(e.submit_date)}</td>}
+                {!noDates && <td className="py-3 px-4">{formatDate(e.target_date)}</td>}
+                {!noDates && <td className="py-3 px-4">{formatDate(e.complete_date)}</td>}
+                {!noDates && <td className="py-3 px-4"><MilestoneBadge status={e.overdue_status} /></td>}
+                {!noDates && (<td className="py-3 px-4 font-mono font-medium text-slate-800">
                   {e.days_taken != null ? `${e.days_taken}d` : '—'}
-                </td>
-                <td className="py-3 px-4"><StatusBadge status={e.status} /></td>
-                <td className="py-3 px-4">
+                </td>)}
+                {!noDates && <td className="py-3 px-4"><StatusBadge status={e.status} /></td>}
+                {!noDates && (<td className="py-3 px-4">
                   <div className="flex items-center gap-2">
                     <div className="w-16 bg-slate-100 rounded-full h-1.5">
                       <div
@@ -388,8 +389,8 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
                     </div>
                     <span className="text-[11px] font-semibold text-slate-600">{e.completion_percent || 0}%</span>
                   </div>
-                </td>
-                <td className="py-3 px-4">
+                </td>)}
+                {!noDates && (<td className="py-3 px-4">
                   <span
                     className={cn(
                       'px-2 py-0.5 rounded text-[11px] font-medium',
@@ -400,7 +401,7 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
                   >
                     {e.payment_status || '—'}
                   </span>
-                </td>
+                </td>)}
                                 <td className="py-3 px-4 whitespace-nowrap">{e.employees?.name || '—'}</td>
                 <td className="py-3 px-4 text-slate-400 max-w-28 truncate">{e.remarks || '—'}</td>
                 <td className="py-3 px-4">

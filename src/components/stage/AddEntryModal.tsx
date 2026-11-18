@@ -76,7 +76,7 @@ export default function AddEntryModal({ stageId, companies, employees, onClose, 
 
     let payload: Record<string, any> = { ...form }
 
-    if (!isUSACanada && !isNameClearance) {
+    if (!isUSACanada && !isNameClearance && stageId !== '6') {
       const t = assessTiming(form.submit_date, form.target_date, form.complete_date)
       payload = { ...payload, days_taken: t.days, status: t.status, completion_percent: t.completion, overdue_status: t.overdue }
     }
@@ -234,6 +234,8 @@ export default function AddEntryModal({ stageId, companies, employees, onClose, 
             </>
           ) : (
             <>
+              {stageId !== '6' && (
+                <>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <Field label="Submission Date" name="submit_date" type="date" disabled={!isAdmin} hint={!isAdmin ? "Set automatically to today" : undefined} />
                 <Field label="Target SLA Date" name="target_date" type="date" />
@@ -246,6 +248,8 @@ export default function AddEntryModal({ stageId, companies, employees, onClose, 
                   options={toOptions(PAYMENT_STATUSES)}
                 />
               </div>
+                </>
+              )}
               <Select label="Assigned Employee" name="employee_id" options={employees.map(e => ({ value: e.id, label: e.name }))} />
               <Field label="Electronic Dossier Link (Google Drive)" name="drive_link" />
               <Field label="Operational Remarks" name="remarks" />

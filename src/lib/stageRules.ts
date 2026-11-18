@@ -92,7 +92,7 @@ export function isEligibleForStage(stageId: string, company: { company_id: strin
       return needsForeign(category)
     case '5': return submittedAndDone(all['4'], id)
     case '6': return submittedAndDone(all['5'], id)
-    case '7': return submittedAndDone(all['6'], id)
+    case '7': return (all['6'] || []).some(e => e.company_id === id) // Portals & Compliance has no dates: a record there is enough
     default: return true
   }
 }
@@ -103,7 +103,7 @@ export const ELIGIBILITY_HINT: Record<string, string> = {
   '4': 'Opens when every earlier step is complete: Parent Entity, Bangladesh Company, Activity Classification, Trade Name Clearance (and Foreign Entity for Trading License).',
   '5': 'Requires Stage 4 (MISA) submit and complete dates.',
   '6': 'Requires Stage 5 (Commercial Registration) submit and complete dates.',
-  '7': 'Requires Stage 6 (Other Websites) submit and complete dates.',
+  '7': 'Opens once the company has a Portals & Compliance (Stage 6) record.',
 }
 
 // ---- Columns that really exist in each Supabase stage table (see supabase-schema.sql) ----
