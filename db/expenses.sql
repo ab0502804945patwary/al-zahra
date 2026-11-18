@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS expenses (
   expense_no TEXT UNIQUE NOT NULL,
   expense_date DATE NOT NULL DEFAULT CURRENT_DATE,
   category TEXT NOT NULL,
-  account TEXT NOT NULL,
+  account TEXT,                                    -- no longer used
   payment_method TEXT NOT NULL,
   amount NUMERIC(12,2) NOT NULL CHECK (amount > 0),
   currency TEXT NOT NULL DEFAULT 'SAR',
@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS expenses (
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
+ALTER TABLE expenses ALTER COLUMN account DROP NOT NULL;
 CREATE INDEX IF NOT EXISTS expenses_date_idx ON expenses (expense_date DESC);
 
 ALTER TABLE expenses ENABLE ROW LEVEL SECURITY;
@@ -34,7 +35,6 @@ DECLARE d DATE; prefix TEXT; n INT; new_id UUID;
 BEGIN
   IF get_user_role() IS DISTINCT FROM 'admin' THEN RAISE EXCEPTION 'Admins only'; END IF;
   IF COALESCE(NULLIF(p->>'category', ''), '') = '' THEN RAISE EXCEPTION 'Select a category'; END IF;
-  IF COALESCE(NULLIF(p->>'account', ''), '') = '' THEN RAISE EXCEPTION 'Select an account'; END IF;
   IF COALESCE(NULLIF(p->>'payment_method', ''), '') = '' THEN RAISE EXCEPTION 'Select a payment method'; END IF;
   IF COALESCE((p->>'amount')::NUMERIC, 0) <= 0 THEN RAISE EXCEPTION 'Enter the amount'; END IF;
   IF jsonb_array_length(COALESCE(p->'attachments', '[]'::jsonb)) = 0 THEN RAISE EXCEPTION 'Attach at least one file (bill or receipt)'; END IF;
@@ -43,8 +43,8 @@ BEGIN
   prefix := 'EXP' || TO_CHAR(d, 'DDMMYY');
   PERFORM pg_advisory_xact_lock(7002);
   SELECT COALESCE(MAX(RIGHT(expense_no, 4)::INT), 0) + 1 INTO n FROM expenses WHERE expense_no LIKE prefix || '%';
-  INSERT INTO expenses (expense_no, expense_date, category, account, payment_method, amount, reference_no, notes, attachments)
-  VALUES (prefix || LPAD(n::TEXT, 4, '0'), d, p->>'category', p->>'account', p->>'payment_method',
+  INSERT INTO expenses (expense_no, expense_date, category, payment_method, amount, reference_no, notes, attachments)
+  VALUES (prefix || LPAD(n::TEXT, 4, '0'), d, BTRIM(p->>'category'), p->>'payment_method',
           (p->>'amount')::NUMERIC, NULLIF(p->>'reference_no', ''), NULLIF(p->>'notes', ''), COALESCE(p->'attachments', '[]'::jsonb))
   RETURNING id INTO new_id;
   RETURN new_id;

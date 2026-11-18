@@ -5,11 +5,11 @@ import { Plus, Search, X, Loader2, Save, UploadCloud, Paperclip, Trash2, Check, 
 import { createClient } from '@/lib/supabase/client'
 import { matchesQuery } from '@/lib/search'
 import {
-  EXPENSE_CATEGORIES, EXPENSE_ACCOUNTS, PAYMENT_METHODS, EXPENSE_STATUSES, EXPENSE_CURRENCY,
+  EXPENSE_CATEGORIES, PAYMENT_METHODS, EXPENSE_STATUSES, EXPENSE_CURRENCY,
   MAX_FILES, MAX_FILE_BYTES, ALLOWED_EXT,
 } from '@/lib/expenseConfig'
 
-interface Expense { id: string; expense_no: string; expense_date: string; category: string; account: string; payment_method: string; amount: number; reference_no?: string | null; notes?: string | null; status: string; attachments: { path: string; name: string; size: number }[] }
+interface Expense { id: string; expense_no: string; expense_date: string; category: string; payment_method: string; amount: number; reference_no?: string | null; notes?: string | null; status: string; attachments: { path: string; name: string; size: number }[] }
 
 const inputCls = 'w-full px-3 py-2.5 text-sm text-slate-900 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white placeholder:text-slate-400'
 const money = (n: number) => `${EXPENSE_CURRENCY} ${new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number(n) || 0)}`
@@ -30,12 +30,14 @@ export default function ExpensesClient({ expenses }: { expenses: Expense[] }) {
   const [adding, setAdding] = useState(false)
   const [search, setSearch] = useState('')
   const [status, setStatus] = useState('All')
-  const [form, setForm] = useState({ expense_date: today(), category: '', account: '', payment_method: '', amount: '', reference_no: '', notes: '' })
+  const [form, setForm] = useState({ expense_date: today(), category: '', payment_method: '', amount: '', reference_no: '', notes: '' })
   const [files, setFiles] = useState<File[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const set = (k: string, v: string) => setForm(p => ({ ...p, [k]: v }))
 
+  // suggestions: categories already used (so a typed one is offered next time) plus the defaults
+  const categoryOptions = useMemo(() => [...new Set([...expenses.map(e => e.category), ...EXPENSE_CATEGORIES])].sort((a, b) => a.localeCompare(b)), [expenses])
   const month = new Date().toISOString().slice(0, 7)
   const stats = useMemo(() => {
     const live = expenses.filter(e => e.status !== 'Rejected')
@@ -62,8 +64,7 @@ export default function ExpensesClient({ expenses }: { expenses: Expense[] }) {
   async function save(e: React.FormEvent) {
     e.preventDefault()
     setError('')
-    if (!form.category) return setError('Select a category')
-    if (!form.account) return setError('Select an account')
+    if (!form.category.trim()) return setError('Enter the category')
     if (!form.payment_method) return setError('Select a payment method')
     if (!(Number(form.amount) > 0)) return setError('Enter the amount')
     if (files.length === 0) return setError('Attach at least one file (bill or receipt)')
@@ -77,11 +78,11 @@ export default function ExpensesClient({ expenses }: { expenses: Expense[] }) {
       if (upErr) { setLoading(false); return setError(`Could not upload ${f.name}: ${upErr.message}`) }
       uploaded.push({ path, name: f.name, size: f.size })
     }
-    const { error: err } = await supabase.rpc('create_expense', { p: { ...form, amount: Number(form.amount), attachments: uploaded } })
+    const { error: err } = await supabase.rpc('create_expense', { p: { ...form, category: form.category.trim(), amount: Number(form.amount), attachments: uploaded } })
     setLoading(false)
     if (err) return setError(err.message)
     setAdding(false); setFiles([])
-    setForm({ expense_date: today(), category: '', account: '', payment_method: '', amount: '', reference_no: '', notes: '' })
+    setForm({ expense_date: today(), category: '', payment_method: '', amount: '', reference_no: '', notes: '' })
     router.refresh()
   }
 
@@ -106,9 +107,8 @@ export default function ExpensesClient({ expenses }: { expenses: Expense[] }) {
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>{label('Expense Number')}<input readOnly value={previewNumber(form.expense_date || today(), expenses)} className={`${inputCls} bg-slate-50 font-mono font-bold text-blue-700`} /></div>
           <div>{label('Date')}<input type="date" value={form.expense_date} onChange={e => set('expense_date', e.target.value)} className={inputCls} /></div>
-          <div>{label('Category')}<select value={form.category} onChange={e => set('category', e.target.value)} className={inputCls}><option value="">Select Category</option>{EXPENSE_CATEGORIES.map(c => <option key={c}>{c}</option>)}</select></div>
+          <div>{label('Category')}<input list="expense-categories" value={form.category} onChange={e => set('category', e.target.value)} className={inputCls} placeholder="Type a category or pick one" /><datalist id="expense-categories">{categoryOptions.map(c => <option key={c} value={c} />)}</datalist></div>
           <div>{label(`Amount (${EXPENSE_CURRENCY})`)}<input type="number" min="0" step="0.01" value={form.amount} onChange={e => set('amount', e.target.value)} className={inputCls} placeholder="0.00" /></div>
-          <div>{label('Account')}<select value={form.account} onChange={e => set('account', e.target.value)} className={inputCls}><option value="">Select Account</option>{EXPENSE_ACCOUNTS.map(c => <option key={c}>{c}</option>)}</select></div>
           <div>{label('Reference Number', false)}<input value={form.reference_no} onChange={e => set('reference_no', e.target.value)} className={inputCls} placeholder="Bill no, receipt no, etc." /></div>
           <div>{label('Payment Method')}<select value={form.payment_method} onChange={e => set('payment_method', e.target.value)} className={inputCls}><option value="">Select Payment Method</option>{PAYMENT_METHODS.map(c => <option key={c}>{c}</option>)}</select></div>
           <div className="sm:row-span-2">
@@ -148,7 +148,7 @@ export default function ExpensesClient({ expenses }: { expenses: Expense[] }) {
     )
   }
 
-  const filtered = expenses.filter((e, i) => (status === 'All' || e.status === status) && matchesQuery(search, expenses.length - i, [e.expense_no, e.category, e.account, e.payment_method, e.reference_no, e.notes, e.expense_date]))
+  const filtered = expenses.filter((e, i) => (status === 'All' || e.status === status) && matchesQuery(search, expenses.length - i, [e.expense_no, e.category, e.payment_method, e.reference_no, e.notes, e.expense_date]))
 
   return (
     <div className="space-y-5 w-full max-w-[1600px] mx-auto">
@@ -169,7 +169,7 @@ export default function ExpensesClient({ expenses }: { expenses: Expense[] }) {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="relative max-w-md w-full">
           <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search number, category, account, reference..." className="w-full pl-9 pr-4 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" />
+          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search number, category, reference..." className="w-full pl-9 pr-4 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" />
         </div>
         <div className="inline-flex rounded-lg border border-slate-200 bg-white p-0.5 text-xs font-semibold">
           {['All', ...EXPENSE_STATUSES].map(s => <button key={s} onClick={() => setStatus(s)} className={`px-3 py-1.5 rounded-md transition ${status === s ? 'bg-blue-600 text-white' : 'text-slate-600 hover:bg-slate-50'}`}>{s}</button>)}
@@ -177,9 +177,9 @@ export default function ExpensesClient({ expenses }: { expenses: Expense[] }) {
       </div>
 
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-x-auto">
-        <table className="w-full text-xs min-w-[1000px]">
+        <table className="w-full text-xs min-w-[900px]">
           <thead className="bg-slate-50 text-slate-500 uppercase text-[10px] tracking-wide">
-            <tr>{['Expense No.', 'Date', 'Category', 'Account', 'Method', 'Amount', 'Reference', 'Files', 'Status', ''].map(h => <th key={h} className="text-left font-semibold px-3 py-2.5 whitespace-nowrap">{h}</th>)}</tr>
+            <tr>{['Expense No.', 'Date', 'Category', 'Method', 'Amount', 'Reference', 'Files', 'Status', ''].map(h => <th key={h} className="text-left font-semibold px-3 py-2.5 whitespace-nowrap">{h}</th>)}</tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
             {filtered.map(e => (
@@ -187,7 +187,6 @@ export default function ExpensesClient({ expenses }: { expenses: Expense[] }) {
                 <td className="px-3 py-2.5 font-mono font-bold text-blue-700">{e.expense_no}</td>
                 <td className="px-3 py-2.5 text-slate-600">{e.expense_date}</td>
                 <td className="px-3 py-2.5 text-slate-800 font-medium">{e.category}</td>
-                <td className="px-3 py-2.5 text-slate-600">{e.account}</td>
                 <td className="px-3 py-2.5 text-slate-600">{e.payment_method}</td>
                 <td className="px-3 py-2.5 font-mono font-semibold text-slate-900">{money(e.amount)}</td>
                 <td className="px-3 py-2.5 text-slate-500">{e.reference_no || '—'}</td>
@@ -201,7 +200,7 @@ export default function ExpensesClient({ expenses }: { expenses: Expense[] }) {
                 </td>
               </tr>
             ))}
-            {filtered.length === 0 && <tr><td colSpan={10} className="text-center py-14 text-slate-400">No expenses yet. Click “Add Expense”.</td></tr>}
+            {filtered.length === 0 && <tr><td colSpan={9} className="text-center py-14 text-slate-400">No expenses yet. Click “Add Expense”.</td></tr>}
           </tbody>
         </table>
       </div>
