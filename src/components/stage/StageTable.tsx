@@ -323,7 +323,7 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
               <th className="py-3 px-4">Authorized Contact</th>
               <th className="py-3 px-4">Classification</th>
               <th className="py-3 px-4">Priority Tier</th>
-              <th className="py-3 px-4">Workflow Status</th>
+              {!noDates && <th className="py-3 px-4">Workflow Status</th>}
               {!noDates && <th className="py-3 px-4">Submission</th>}
               {!noDates && <th className="py-3 px-4">Target Date</th>}
               {!noDates && <th className="py-3 px-4">Completion</th>}
@@ -363,11 +363,11 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
                 </td>
                 <td className="py-3 px-4">{e.category || '—'}</td>
                 <td className="py-3 px-4 text-slate-500">{e.priority || '—'}</td>
-                <td className="py-3 px-4">
+                {!noDates && (                <td className="py-3 px-4">
                   <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-slate-100 text-slate-700 border border-slate-200">
                     {e.current_stage || '—'}
                   </span>
-                </td>
+                </td>)}
                 {!noDates && <td className="py-3 px-4">{formatDate(e.submit_date)}</td>}
                 {!noDates && <td className="py-3 px-4">{formatDate(e.target_date)}</td>}
                 {!noDates && <td className="py-3 px-4">{formatDate(e.complete_date)}</td>}

@@ -132,7 +132,7 @@ export default function EditEntryModal({ stageId, entry, companies, employees, o
                 </div>
                 )}
               </div>
-              <Sel label="Workflow Phase Status" name="current_stage" options={toOptions(PHASE_OPTIONS[stageId] || [])} />
+              {stageId !== '6' && <Sel label="Workflow Phase Status" name="current_stage" options={toOptions(PHASE_OPTIONS[stageId] || [])} />}
               {stageId === '6' && (
                 <>
                   <PortalAccountsEditor value={portals} onChange={setPortals} />

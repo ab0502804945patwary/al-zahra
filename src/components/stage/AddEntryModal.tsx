@@ -44,7 +44,7 @@ export default function AddEntryModal({ stageId, companies, employees, onClose, 
   const [portals, setPortals] = useState<PortalAccount[]>([])
   const [form, setForm] = useState<Record<string, string>>({
     submit_date: new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10), // today (local)
-    current_stage: (PHASE_OPTIONS[stageId] || [])[0] || '',
+    current_stage: stageId === '6' ? '' : (PHASE_OPTIONS[stageId] || [])[0] || '',
     ...(stageId === '9' ? { country: 'Bangladesh' } : {}),
     employee_id: employees.find(e => String(e.assigned_stage) === stageId)?.id || '',
   })
@@ -166,7 +166,7 @@ export default function AddEntryModal({ stageId, companies, employees, onClose, 
                 </div>
                 )}
               </div>
-              <Select label="Workflow Phase Status" name="current_stage" options={toOptions(PHASE_OPTIONS[stageId] || [])} />
+              {stageId !== '6' && <Select label="Workflow Phase Status" name="current_stage" options={toOptions(PHASE_OPTIONS[stageId] || [])} />}
               {stageId === '6' && <PortalAccountsEditor value={portals} onChange={setPortals} />}
             </>
           )}
