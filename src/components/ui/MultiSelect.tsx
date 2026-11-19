@@ -50,7 +50,7 @@ export default function MultiSelect({ options, value, onChange, placeholder = 'S
       </button>
 
       {open && (
-        <div className="absolute z-50 mt-1 w-full bg-white border border-slate-200 rounded-lg shadow-lg max-h-56 overflow-y-auto py-1">
+        <div className="mt-1 w-full bg-white border border-slate-200 rounded-lg max-h-56 overflow-y-auto py-1">
           {options.map(o => {
             const on = value.includes(o.value)
             return (
