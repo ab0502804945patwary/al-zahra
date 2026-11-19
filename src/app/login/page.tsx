@@ -1,10 +1,8 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { createClient, isSupabaseConfigured } from '@/lib/supabase/client'
-import { QUICK_ACCOUNTS } from '@/lib/quickAccounts'
-import { phaseOf } from '@/lib/stageData'
 import { useRouter } from 'next/navigation'
-import { Eye, EyeOff, Loader2, Lock, Mail, Sparkles } from 'lucide-react'
+import { Eye, EyeOff, Loader2, Lock, Mail } from 'lucide-react'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -13,7 +11,6 @@ export default function LoginPage() {
   useEffect(() => { setDenied(new URLSearchParams(window.location.search).has('denied')) }, [])
   const [showPass, setShowPass] = useState(false)
   const [loading, setLoading] = useState(false)
-  const [demoLoading, setDemoLoading] = useState(false)
   const [error, setError] = useState('')
   const router = useRouter()
   const supabase = createClient()
@@ -33,21 +30,6 @@ export default function LoginPage() {
       setLoading(false)
     } else {
       window.location.href = '/dashboard'
-    }
-  }
-
-  async function quickLogin(key: string) {
-    if (!key) return
-    setDemoLoading(true)
-    setError('')
-    try {
-      const res = await fetch('/api/quick-login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ key }) })
-      const data = await res.json().catch(() => ({}))
-      if (!res.ok) { setError(data.error || 'Quick login failed.'); setDemoLoading(false); return }
-      window.location.href = '/dashboard'
-    } catch {
-      setError('Cannot reach the server.')
-      setDemoLoading(false)
     }
   }
 
@@ -129,36 +111,12 @@ export default function LoginPage() {
 
             <button
               type="submit"
-              disabled={loading || demoLoading}
+              disabled={loading}
               className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white font-semibold rounded-lg transition-all duration-150 flex items-center justify-center gap-2 shadow-sm text-xs"
             >
               {loading ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Signing In...</> : 'Sign In'}
             </button>
           </form>
-
-          {/* Instant Demo Preview */}
-          <div className="mt-5 pt-4 border-t border-slate-100">
-            <button
-              type="button"
-              onClick={() => quickLogin('admin')}
-              disabled={demoLoading || loading}
-              className="w-full py-2 px-3 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 rounded-lg font-medium text-xs transition flex items-center justify-center gap-2"
-            >
-              {demoLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5 text-blue-600" />}
-              One-Click Admin Login
-            </button>
-            <select
-              defaultValue=""
-              onChange={e => quickLogin(e.target.value)}
-              disabled={demoLoading || loading}
-              className="mt-2 w-full py-2 px-3 bg-white border border-slate-200 text-slate-700 rounded-lg text-xs"
-            >
-              <option value="">One-Click Staff Login — choose employee...</option>
-              {QUICK_ACCOUNTS.filter(a => a.role === 'employee').map(a => (
-                <option key={a.key} value={a.key}>{a.name} ({a.stages.map(n => `Phase ${phaseOf(n)}`).join(', ')})</option>
-              ))}
-            </select>
-          </div>
         </div>
 
         <p className="text-center text-slate-400 text-xs mt-6">
