@@ -73,6 +73,13 @@ export default function EmployeesClient({ employees: initialEmployees }: Props) 
     router.refresh()
   }
 
+  if (showAdd) {
+    return <EmployeeModal onClose={() => setShowAdd(false)} onSave={handleSave} />
+  }
+  if (selected) {
+    return <EmployeeModal employee={selected} onClose={() => setSelected(null)} onSave={handleSave} onDelete={handleDelete} />
+  }
+
   return (
     <div className="space-y-6 w-full max-w-[2000px] mx-auto">
       {/* Header */}
@@ -265,21 +272,6 @@ export default function EmployeesClient({ employees: initialEmployees }: Props) 
           )
         })}
       </div>
-
-      {showAdd && (
-        <EmployeeModal
-          onClose={() => setShowAdd(false)}
-          onSave={handleSave}
-        />
-      )}
-      {selected && (
-        <EmployeeModal
-          employee={selected}
-          onClose={() => setSelected(null)}
-          onSave={handleSave}
-          onDelete={handleDelete}
-        />
-      )}
     </div>
   )
 }

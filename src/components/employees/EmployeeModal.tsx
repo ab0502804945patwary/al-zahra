@@ -302,9 +302,9 @@ export default function EmployeeModal({ employee, onClose, onSave, onDelete }: P
   }
 
   return (
-    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div className="w-full max-w-3xl mx-auto">
       {dialog}
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg border border-slate-100 max-h-[92vh] flex flex-col overflow-hidden">
+      <div className="bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-slate-100 shrink-0">
           <div>
@@ -322,7 +322,7 @@ export default function EmployeeModal({ employee, onClose, onSave, onDelete }: P
         </div>
 
         {/* Form Body */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4 overflow-y-auto flex-1">
+        <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {/* Profile Photo Upload Section */}
           <div className="bg-slate-50/80 rounded-xl p-4 border border-slate-200/80">
             <div className="flex items-center justify-between mb-3">
