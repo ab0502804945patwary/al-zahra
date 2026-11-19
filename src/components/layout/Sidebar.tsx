@@ -112,7 +112,7 @@ export default function Sidebar({ employee }: SidebarProps) {
   return (
     <aside
       className={cn(
-        'bg-[#eef2fa] border-r border-blue-100 flex flex-col text-slate-600 select-none shadow-[1px_0_4px_rgba(0,0,0,0.02)] transition-all duration-300 ease-in-out shrink-0',
+        'bg-blue-600 border-r border-blue-700/40 flex flex-col text-white select-none shadow-[1px_0_6px_rgba(0,0,0,0.08)] transition-all duration-300 ease-in-out shrink-0',
         'fixed inset-y-0 left-0 z-50 w-60 max-w-[85vw] lg:static lg:z-30 lg:translate-x-0',
         mobileOpen ? 'translate-x-0' : '-translate-x-full',
         !mobileOpen && collapsed ? 'lg:w-16' : 'lg:w-56'
@@ -121,7 +121,7 @@ export default function Sidebar({ employee }: SidebarProps) {
       {/* Brand Header */}
       <div
         className={cn(
-          'h-16 border-b border-blue-100 bg-white flex items-center transition-all duration-300',
+          'h-16 border-b border-blue-700/30 bg-white flex items-center transition-all duration-300',
           collapsed ? 'justify-center px-2' : 'justify-between px-4'
         )}
       >
@@ -181,18 +181,18 @@ export default function Sidebar({ employee }: SidebarProps) {
                 group.title === 'INVESTOR WORKFLOW' ? (
                   <button
                     onClick={() => setWorkflowOpen(o => !o)}
-                    className="w-full flex items-center justify-between px-3 pb-1.5 text-[10px] font-bold tracking-wider text-slate-400 hover:text-slate-600 uppercase"
+                    className="w-full flex items-center justify-between px-3 pb-1.5 text-[10px] font-bold tracking-wider text-blue-100 hover:text-white uppercase"
                   >
                     {group.title}
                     <ChevronDown className={cn('w-3.5 h-3.5 transition-transform', workflowOpen ? 'rotate-180' : '')} />
                   </button>
                 ) : (
-                  <div className="px-3 pb-1.5 text-[10px] font-bold tracking-wider text-blue-700/60 uppercase">
+                  <div className="px-3 pb-1.5 text-[10px] font-bold tracking-wider text-blue-100 uppercase">
                     {group.title}
                   </div>
                 )
               ) : groupIdx > 0 ? (
-                <div className="my-2 border-t border-slate-100" />
+                <div className="my-2 border-t border-white/20" />
               ) : null}
 
               {(collapsed || group.title !== 'INVESTOR WORKFLOW' || workflowOpen) && visibleItems.map(item => {
@@ -208,20 +208,20 @@ export default function Sidebar({ employee }: SidebarProps) {
                       className={cn(
                         'group flex items-center justify-center w-full h-10 rounded-xl transition-all duration-150 relative',
                         isActive
-                          ? 'bg-blue-600 text-white font-semibold shadow-sm'
-                          : 'text-slate-600 hover:text-blue-700 hover:bg-white'
+                          ? 'bg-white text-blue-700 font-semibold shadow-sm'
+                          : 'text-blue-50 hover:text-white hover:bg-white/15'
                       )}
                     >
                       <Icon
                         className={cn(
                           'w-4 h-4 shrink-0 transition-colors',
-                          isActive ? 'text-white' : 'text-blue-400 group-hover:text-blue-600'
+                          isActive ? 'text-blue-600' : 'text-blue-200 group-hover:text-white'
                         )}
                       />
                       {isActive && (
-                        <span className="absolute left-1 top-2.5 bottom-2.5 w-1 bg-white rounded-full" />
+                        <span className="absolute left-1 top-2.5 bottom-2.5 w-1 bg-blue-600 rounded-full" />
                       )}
-                      {item.stage && waiting[item.stage] ? <span className="absolute top-1 right-1 w-2.5 h-2.5 rounded-full bg-rose-500 ring-2 ring-white" /> : null}
+                      {item.stage && waiting[item.stage] ? <span className="absolute top-1 right-1 w-2.5 h-2.5 rounded-full bg-rose-500 ring-2 ring-blue-600" /> : null}
                     </Link>
                   )
                 }
@@ -233,15 +233,15 @@ export default function Sidebar({ employee }: SidebarProps) {
                     className={cn(
                       'group flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all duration-150',
                       isActive
-                        ? 'bg-blue-600 text-white font-semibold shadow-sm'
-                        : 'text-slate-700 hover:text-blue-700 hover:bg-white'
+                        ? 'bg-white text-blue-700 font-semibold shadow-sm'
+                        : 'text-blue-50 hover:text-white hover:bg-white/15'
                     )}
                   >
                     <div className="flex items-center gap-2.5 min-w-0">
                       <Icon
                         className={cn(
                           'w-4 h-4 shrink-0 transition-colors',
-                          isActive ? 'text-white' : 'text-blue-400 group-hover:text-blue-600'
+                          isActive ? 'text-blue-600' : 'text-blue-200 group-hover:text-white'
                         )}
                       />
                       <span className="truncate">{item.label}</span>
@@ -249,7 +249,7 @@ export default function Sidebar({ employee }: SidebarProps) {
 
                     {item.stage && waiting[item.stage] ? (
                       <span className="ml-1 min-w-5 h-5 px-1.5 bg-rose-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center shrink-0">{waiting[item.stage]}</span>
-                    ) : isActive ? <ChevronRight className="w-3.5 h-3.5 text-white shrink-0" /> : null}
+                    ) : isActive ? <ChevronRight className="w-3.5 h-3.5 text-blue-600 shrink-0" /> : null}
                   </Link>
                 )
               })}
@@ -261,24 +261,24 @@ export default function Sidebar({ employee }: SidebarProps) {
       {/* Footer Toggle Button */}
       <div
         className={cn(
-          'p-2 border-t border-blue-100 bg-white/60 flex items-center transition-all duration-300',
+          'p-2 border-t border-white/20 bg-blue-700/40 flex items-center transition-all duration-300',
           collapsed ? 'justify-center' : 'justify-between px-3'
         )}
       >
         <button
           onClick={toggleOrClose}
           className={cn(
-            'flex items-center gap-2 p-2 rounded-lg text-xs text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition w-full',
+            'flex items-center gap-2 p-2 rounded-lg text-xs text-blue-100 hover:text-white hover:bg-white/15 transition w-full',
             collapsed ? 'justify-center' : ''
           )}
           title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
           {collapsed ? (
-            <PanelLeftOpen className="w-4 h-4 text-slate-500" />
+            <PanelLeftOpen className="w-4 h-4 text-blue-100" />
           ) : (
             <>
-              <PanelLeftClose className="w-4 h-4 text-slate-400" />
-              <span className="text-xs font-medium text-slate-500">Collapse category list</span>
+              <PanelLeftClose className="w-4 h-4 text-blue-200" />
+              <span className="text-xs font-medium text-blue-100">Collapse category list</span>
             </>
           )}
         </button>
