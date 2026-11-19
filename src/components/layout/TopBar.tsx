@@ -34,7 +34,7 @@ export default function TopBar({ employee }: TopBarProps) {
 
   async function handleLogout() {
     try {
-      await supabase.auth.signOut()
+      await supabase.auth.signOut({ scope: 'local' })
     } catch {}
     window.location.href = '/login'
   }

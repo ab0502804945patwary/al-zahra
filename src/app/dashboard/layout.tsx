@@ -9,12 +9,17 @@ export const dynamic = 'force-dynamic'
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   if (!isSupabaseConfigured) redirect('/login')
 
-  const { user, employee: emp } = await getSessionInfo()
-  // A cookie that no longer matches a real user must be cleared, otherwise /login and /dashboard redirect to each other forever
-  if (!user) redirect('/api/signout')
+  const { employee: emp, status } = await getSessionInfo()
 
-  // Signed in but no staff profile: not allowed in
-  if (!emp || emp.is_active === false) redirect('/api/signout')
+  // Could not check right now (slow network, database busy): show the retry page, never log out
+  if (status === 'error') throw new Error('Temporary connection problem')
+
+  // A cookie that no longer matches a real user must be cleared, otherwise /login and /dashboard redirect to each other forever.
+  // /api/signout clears only this device.
+  if (status === 'anon') redirect('/api/signout')
+
+  // Signed in but no staff profile, or the account was switched off: not allowed in
+  if (status === 'no-profile' || !emp || emp.is_active === false) redirect('/api/signout')
 
   // salary, tasks, national id etc. never go to the browser from the layout
   const safeEmployee = {
