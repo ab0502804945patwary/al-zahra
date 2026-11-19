@@ -22,6 +22,7 @@ import { Employee, SalaryType } from '@/lib/types'
 import EmployeeModal from './EmployeeModal'
 import { cn } from '@/lib/utils'
 import { phaseOf } from '@/lib/stageData'
+import { MODULES } from '@/lib/access'
 import { useRouter } from 'next/navigation'
 
 interface Props { employees: Employee[] }
@@ -255,6 +256,15 @@ export default function EmployeesClient({ employees: initialEmployees }: Props) 
                       ))}
                     </div>
                   ) : null}
+                  {(emp.modules?.length ?? 0) > 0 && (
+                    <div className="mt-1 flex flex-wrap gap-1">
+                      {MODULES.filter(m => emp.modules!.includes(m.key)).map(m => (
+                        <span key={m.key} className="inline-flex items-center gap-1.5 bg-blue-50 text-blue-700 border border-blue-200 px-2 py-0.5 rounded-md text-[10px] font-medium truncate max-w-full">
+                          {m.label}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
 

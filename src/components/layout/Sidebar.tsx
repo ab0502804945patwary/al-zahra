@@ -6,7 +6,7 @@ import { fetchNotifications } from '@/lib/notifClient'
 import { cn } from '@/lib/utils'
 import { Employee } from '@/lib/types'
 import { useSidebar } from './DashboardShell'
-import { canAccessStage } from '@/lib/access'
+import { canAccessStage, canAccessModule } from '@/lib/access'
 import {
   BarChart3,
   Wallet,
@@ -38,6 +38,7 @@ interface NavItem {
   label: string
   icon: any
   stage?: number
+  module?: string
   adminOnly?: boolean
 }
 
@@ -50,15 +51,15 @@ const navGroups: NavGroup[] = [
   {
     title: 'OVERVIEW',
     items: [
-      { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, adminOnly: true },
-      { href: '/dashboard/companies', label: 'Company Directory', icon: Building2, adminOnly: true },
-      { href: '/dashboard/renewals', label: 'Renewal Companies', icon: RefreshCw, adminOnly: true },
-      { href: '/dashboard/customers', label: 'Customers', icon: UserRound, adminOnly: true },
-      { href: '/dashboard/agents', label: 'Agents', icon: Handshake, adminOnly: true },
-      { href: '/dashboard/services', label: 'Services', icon: ListChecks, adminOnly: true },
-      { href: '/dashboard/expenses', label: 'Expenses', icon: Wallet, adminOnly: true },
-      { href: '/dashboard/reports', label: 'Reports', icon: BarChart3, adminOnly: true },
-      { href: '/dashboard/invoices', label: 'Invoices', icon: Receipt, adminOnly: true },
+      { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, module: 'dashboard' },
+      { href: '/dashboard/companies', label: 'Company Directory', icon: Building2, module: 'companies' },
+      { href: '/dashboard/renewals', label: 'Renewal Companies', icon: RefreshCw, module: 'renewals' },
+      { href: '/dashboard/customers', label: 'Customers', icon: UserRound, module: 'customers' },
+      { href: '/dashboard/agents', label: 'Agents', icon: Handshake, module: 'agents' },
+      { href: '/dashboard/services', label: 'Services', icon: ListChecks, module: 'services' },
+      { href: '/dashboard/expenses', label: 'Expenses', icon: Wallet, module: 'expenses' },
+      { href: '/dashboard/reports', label: 'Reports', icon: BarChart3, module: 'reports' },
+      { href: '/dashboard/invoices', label: 'Invoices', icon: Receipt, module: 'invoices' },
     ]
   },
   {
@@ -169,6 +170,7 @@ export default function Sidebar({ employee }: SidebarProps) {
         {navGroups.map((group, groupIdx) => {
           const visibleItems = group.items.filter(item => {
             if (item.adminOnly && !isAdmin) return false
+            if (item.module && !canAccessModule(employee, item.module)) return false
             if (item.stage && !canAccessStage(employee, item.stage)) return false
             return true
           })

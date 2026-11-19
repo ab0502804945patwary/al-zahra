@@ -4,13 +4,13 @@ import { usePathname } from 'next/navigation'
 import { LayoutDashboard, Building2, Briefcase, Layers, Globe2, Flag, Menu } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useSidebar } from './DashboardShell'
-import { canAccessStage } from '@/lib/access'
+import { canAccessStage, canAccessModule } from '@/lib/access'
 import { Employee } from '@/lib/types'
 
 // Same order as the sidebar; the rest (Name Clearance, MISA, CR, Portals, Final) are under More.
-const ITEMS: { href: string; label: string; icon: any; stage?: number; adminOnly?: boolean }[] = [
-  { href: '/dashboard', label: 'Home', icon: LayoutDashboard, adminOnly: true },
-  { href: '/dashboard/companies', label: 'Companies', icon: Building2, adminOnly: true },
+const ITEMS: { href: string; label: string; icon: any; stage?: number; module?: string }[] = [
+  { href: '/dashboard', label: 'Home', icon: LayoutDashboard, module: 'dashboard' },
+  { href: '/dashboard/companies', label: 'Companies', icon: Building2, module: 'companies' },
   { href: '/dashboard/stage/1', label: 'Parent', icon: Briefcase, stage: 1 },
   { href: '/dashboard/stage/9', label: 'BD Co.', icon: Flag, stage: 9 },
   { href: '/dashboard/stage/2', label: 'Activity', icon: Layers, stage: 2 },
@@ -24,7 +24,7 @@ export default function BottomNav({ employee }: { employee?: Employee | null }) 
   return (
     <nav className="lg:hidden fixed bottom-0 inset-x-0 z-30 bg-white border-t border-slate-200 shadow-[0_-2px_8px_rgba(0,0,0,0.04)] pb-[env(safe-area-inset-bottom)]">
       <ul className="flex">
-        {ITEMS.filter(i => (!i.stage || canAccessStage(employee, i.stage)) && (!i.adminOnly || employee?.role === 'admin')).map(item => {
+        {ITEMS.filter(i => (!i.stage || canAccessStage(employee, i.stage)) && (!i.module || canAccessModule(employee, i.module))).map(item => {
           const Icon = item.icon
           const active = item.href === '/dashboard' ? pathname === item.href : pathname.startsWith(item.href)
           return (

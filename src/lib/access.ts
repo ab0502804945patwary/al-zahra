@@ -1,6 +1,19 @@
 import { MENU_ORDER } from '@/lib/stageData'
-// Which workflow stages a user may open / edit.
-type StaffLike = { role?: string; assigned_stage?: number | null; assigned_stages?: number[] | null } | null | undefined
+// Who may open what: workflow stages (employees.assigned_stages) and the other modules (employees.modules).
+type StaffLike = { role?: string; assigned_stage?: number | null; assigned_stages?: number[] | null; modules?: string[] | null } | null | undefined
+
+/** The non-workflow modules an admin can give to a staff member. Order = sidebar order. */
+export const MODULES: { key: string; label: string; href: string }[] = [
+  { key: 'dashboard', label: 'Dashboard', href: '/dashboard' },
+  { key: 'companies', label: 'Company Directory', href: '/dashboard/companies' },
+  { key: 'renewals', label: 'Renewal Companies', href: '/dashboard/renewals' },
+  { key: 'customers', label: 'Customers', href: '/dashboard/customers' },
+  { key: 'agents', label: 'Agents', href: '/dashboard/agents' },
+  { key: 'services', label: 'Services', href: '/dashboard/services' },
+  { key: 'expenses', label: 'Expenses', href: '/dashboard/expenses' },
+  { key: 'reports', label: 'Reports', href: '/dashboard/reports' },
+  { key: 'invoices', label: 'Invoices', href: '/dashboard/invoices' },
+]
 
 /** Stage numbers a staff member is assigned to. Returns null for admins (= every stage). */
 export function stagesOf(emp: StaffLike): number[] | null {
@@ -15,11 +28,21 @@ export function canAccessStage(emp: StaffLike, stage: number): boolean {
   return s === null || s.includes(stage)
 }
 
-/** Where a user lands after login: admins get the dashboard, staff their first assigned stage. */
+/** Admins have every module; staff only the ones ticked for them. */
+export function canAccessModule(emp: StaffLike, key: string): boolean {
+  if (!emp) return false
+  if (emp.role === 'admin') return true
+  return Array.isArray(emp.modules) && emp.modules.includes(key)
+}
+
+/** Where a user lands after login: admins get the dashboard, staff their first workflow stage, else their first module. */
 export function homeFor(emp: StaffLike): string {
   const s = stagesOf(emp)
   if (s === null) return '/dashboard'
-  if (!s.length) return '/dashboard/settings'
-  const first = MENU_ORDER.find(id => s.includes(Number(id))) ?? String(s[0])
-  return `/dashboard/stage/${first}`
+  if (s.length) {
+    const first = MENU_ORDER.find(id => s.includes(Number(id))) ?? String(s[0])
+    return `/dashboard/stage/${first}`
+  }
+  const mod = MODULES.find(m => canAccessModule(emp, m.key))
+  return mod ? mod.href : '/dashboard/settings'
 }

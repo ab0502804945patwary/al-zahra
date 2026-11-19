@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Check, ChevronDown, X } from 'lucide-react'
 
-export interface MultiOption { value: string; label: string }
+export interface MultiOption { value: string; label: string; group?: string }
 
 /** Dropdown where one or more options can be ticked. Shows the picked ones as small tags. */
 export default function MultiSelect({ options, value, onChange, placeholder = 'Select one or more...' }: {
@@ -51,12 +51,14 @@ export default function MultiSelect({ options, value, onChange, placeholder = 'S
 
       {open && (
         <div className="mt-1 w-full bg-white border border-slate-200 rounded-lg max-h-56 overflow-y-auto py-1">
-          {options.map(o => {
+          {options.map((o, i) => {
             const on = value.includes(o.value)
+            const heading = o.group && o.group !== options[i - 1]?.group
             return (
+              <div key={o.value}>
+              {heading && <div className="px-3 pt-2 pb-1 text-[10px] font-bold tracking-wider text-slate-400 uppercase">{o.group}</div>}
               <button
                 type="button"
-                key={o.value}
                 onClick={() => toggle(o.value)}
                 className={`w-full flex items-center gap-2 px-3 py-2 text-xs text-left ${on ? 'bg-blue-50 text-blue-700' : 'text-slate-700 hover:bg-slate-50'}`}
               >
@@ -65,6 +67,7 @@ export default function MultiSelect({ options, value, onChange, placeholder = 'S
                 </span>
                 {o.label}
               </button>
+              </div>
             )
           })}
         </div>

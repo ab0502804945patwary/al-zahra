@@ -1,7 +1,7 @@
 import { createClient, isSupabaseConfigured } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { getSessionInfo } from '@/lib/session'
-import { homeFor } from '@/lib/access'
+import { canAccessModule, homeFor } from '@/lib/access'
 import ReportsClient from '@/components/reports/ReportsClient'
 
 export const dynamic = 'force-dynamic'
@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic'
 export default async function ReportsPage() {
   if (!isSupabaseConfigured) redirect('/login')
   const { employee } = await getSessionInfo()
-  if (employee && employee.role !== 'admin') redirect(homeFor(employee))
+  if (!canAccessModule(employee, 'reports')) redirect(homeFor(employee))
   const supabase = await createClient()
   const [inv, exp, cus, com, agt] = await Promise.all([
     supabase.from('invoices').select('id, invoice_no, customer_id, customer_name, invoice_date, total, status, payments(amount, paid_on)'),

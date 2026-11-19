@@ -14,6 +14,7 @@ import { createClient, isSupabaseConfigured } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { Employee, SalaryType } from '@/lib/types'
 import MultiSelect from '@/components/ui/MultiSelect'
+import { MODULES } from '@/lib/access'
 
 interface Props {
   employee?: Employee
@@ -55,7 +56,10 @@ export default function EmployeeModal({ employee, onClose, onSave, onDelete }: P
     email: employee?.email || '',
     phone: employee?.phone || '',
     role: employee?.role || 'employee',
-    assigned_stages: (employee?.assigned_stages?.length ? employee.assigned_stages : (employee?.assigned_stage ? [employee.assigned_stage] : [])).map(String) as string[],
+    assigned_stages: [
+      ...(employee?.assigned_stages?.length ? employee.assigned_stages : (employee?.assigned_stage ? [employee.assigned_stage] : [])).map(String),
+      ...(employee?.modules || []).map(k => 'm:' + k),
+    ] as string[],
     designation: employee?.designation || '',
     department: employee?.department || '',
     office_location: employee?.office_location || 'Riyadh HQ - Al Olaya',
@@ -201,7 +205,8 @@ export default function EmployeeModal({ employee, onClose, onSave, onDelete }: P
     e.preventDefault()
     setLoading(true)
 
-    const stageList = form.role === 'admin' ? [] : [...form.assigned_stages].map(Number).sort((x, y) => x - y)
+    const stageList = form.role === 'admin' ? [] : form.assigned_stages.filter(v => !v.startsWith('m:')).map(Number).sort((x, y) => x - y)
+    const moduleList = form.role === 'admin' ? [] : form.assigned_stages.filter(v => v.startsWith('m:')).map(v => v.slice(2))
     const assignedStageNum = stageList.length ? stageList[0] : null
 
     const baseAmount = parseFloat(form.base_salary) || 0
@@ -215,6 +220,7 @@ export default function EmployeeModal({ employee, onClose, onSave, onDelete }: P
       role: form.role as any,
       assigned_stage: assignedStageNum || undefined,
       assigned_stages: stageList,
+      modules: moduleList,
       is_active: form.is_active,
       avatar_url: avatarUrl.trim() || undefined,
       designation: form.designation.trim() || undefined,
@@ -249,6 +255,7 @@ export default function EmployeeModal({ employee, onClose, onSave, onDelete }: P
             role: form.role,
             assigned_stage: assignedStageNum,
             assigned_stages: stageList,
+            modules: moduleList,
             is_active: form.is_active,
             avatar_url: avatarUrl || null,
             designation: form.designation.trim() || null,
@@ -270,8 +277,13 @@ export default function EmployeeModal({ employee, onClose, onSave, onDelete }: P
               role: form.role,
               assigned_stage: assignedStageNum,
               assigned_stages: stageList,
+              modules: moduleList,
               is_active: form.is_active,
               avatar_url: avatarUrl || null,
+              designation: form.designation.trim() || null,
+              department: form.department.trim() || null,
+              office_location: form.office_location || null,
+              salary: savedData.salary,
             }),
           })
           if (!res.ok) {
@@ -549,10 +561,13 @@ export default function EmployeeModal({ employee, onClose, onSave, onDelete }: P
               <div>
                 <label className="text-xs font-medium text-slate-700 mb-1 block">Assigned Modules (one or more)</label>
                 <MultiSelect
-                  options={MODULE_OPTIONS.map(m => ({ value: String(m.value), label: m.label }))}
+                  options={[
+                    ...MODULE_OPTIONS.map(m => ({ value: String(m.value), label: m.label, group: 'Workflow phases' })),
+                    ...MODULES.map(m => ({ value: 'm:' + m.key, label: m.label, group: 'Other modules' })),
+                  ]}
                   value={form.assigned_stages}
                   onChange={next => setForm(p => ({ ...p, assigned_stages: next }))}
-                  placeholder="Select the phases this person works on..."
+                  placeholder="Select what this person can open..."
                 />
               </div>
             )}
