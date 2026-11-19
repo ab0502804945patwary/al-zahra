@@ -13,6 +13,7 @@ import {
 import { createClient, isSupabaseConfigured } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { Employee, SalaryType } from '@/lib/types'
+import MultiSelect from '@/components/ui/MultiSelect'
 
 interface Props {
   employee?: Employee
@@ -59,7 +60,7 @@ export default function EmployeeModal({ employee, onClose, onSave, onDelete }: P
     department: employee?.department || '',
     office_location: employee?.office_location || 'Riyadh HQ - Al Olaya',
     salary_type: (employee?.salary?.salary_type || 'monthly_fixed') as SalaryType,
-    base_salary: (employee?.salary?.base_salary || 6500).toString(),
+    base_salary: employee?.salary?.base_salary ? String(employee.salary.base_salary) : '',
     is_active: employee?.is_active ?? true,
     password: '',
   })
@@ -547,23 +548,12 @@ export default function EmployeeModal({ employee, onClose, onSave, onDelete }: P
             {form.role === 'employee' && (
               <div>
                 <label className="text-xs font-medium text-slate-700 mb-1 block">Assigned Modules (one or more)</label>
-                <div className="grid grid-cols-1 gap-1.5 border border-slate-200 rounded-lg p-2 bg-white max-h-44 overflow-y-auto">
-                  {MODULE_OPTIONS.map((m) => {
-                    const v = String(m.value)
-                    const on = form.assigned_stages.includes(v)
-                    return (
-                      <label key={v} className={`flex items-center gap-2 px-2 py-1.5 rounded-md text-xs cursor-pointer ${on ? 'bg-blue-50 text-blue-700' : 'text-slate-700 hover:bg-slate-50'}`}>
-                        <input
-                          type="checkbox"
-                          checked={on}
-                          onChange={() => setForm((p) => ({ ...p, assigned_stages: on ? p.assigned_stages.filter((x) => x !== v) : [...p.assigned_stages, v] }))}
-                          className="accent-blue-600"
-                        />
-                        {m.label}
-                      </label>
-                    )
-                  })}
-                </div>
+                <MultiSelect
+                  options={MODULE_OPTIONS.map(m => ({ value: String(m.value), label: m.label }))}
+                  value={form.assigned_stages}
+                  onChange={next => setForm(p => ({ ...p, assigned_stages: next }))}
+                  placeholder="Select the phases this person works on..."
+                />
               </div>
             )}
           </div>
@@ -617,7 +607,7 @@ export default function EmployeeModal({ employee, onClose, onSave, onDelete }: P
                   type="number"
                   value={form.base_salary}
                   onChange={(e) => setForm((p) => ({ ...p, base_salary: e.target.value }))}
-                  placeholder="6500"
+                  placeholder="0"
                   className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
                 />
               </div>
