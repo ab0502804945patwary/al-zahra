@@ -11,6 +11,6 @@ export default async function EmployeesPage() {
   if (!user) redirect('/login')
   if (me?.role !== 'admin') redirect('/dashboard')
 
-  const { data: employees } = await supabase.from('employees').select('*').order('created_at')
+  const { data: employees } = await supabase.from('employees').select('*').neq('role', 'admin').order('created_at')
   return <EmployeesClient employees={employees || []} />
 }

@@ -541,7 +541,6 @@ export default function EmployeeModal({ employee, onClose, onSave, onDelete }: P
                 className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-slate-700"
               >
                 <option value="employee">Process Specialist</option>
-                <option value="admin">System Administrator</option>
               </select>
             </div>
 

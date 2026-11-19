@@ -92,9 +92,9 @@ export default function EmployeesClient({ employees: initialEmployees }: Props) 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4">
         {[
-          { label: 'Total Personnel', value: employeesList.length, icon: Users, color: 'text-blue-600', bg: 'bg-blue-50' },
-          { label: 'System Administrators', value: employeesList.filter(e => e.role === 'admin').length, icon: ShieldCheck, color: 'text-indigo-600', bg: 'bg-indigo-50' },
-          { label: 'Active Personnel', value: employeesList.filter(e => e.is_active).length, icon: CheckCircle2, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+          { label: 'Total Staff', value: employeesList.length, icon: Users, color: 'text-blue-600', bg: 'bg-blue-50' },
+          { label: 'Active', value: employeesList.filter(e => e.is_active).length, icon: CheckCircle2, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+          { label: 'Inactive', value: employeesList.filter(e => !e.is_active).length, icon: ShieldCheck, color: 'text-slate-500', bg: 'bg-slate-100' },
         ].map(s => {
           const Icon = s.icon
           return (
