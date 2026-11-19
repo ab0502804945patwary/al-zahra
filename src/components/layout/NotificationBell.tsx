@@ -8,11 +8,21 @@ import { fetchNotifications } from '@/lib/notifClient'
 const SEEN_KEY = 'alzahra_seen_notifications'
 const POLL_MS = 20000
 
+let audioCtx: AudioContext | null = null
+function getCtx() {
+  try {
+    const Ctx = window.AudioContext || (window as any).webkitAudioContext
+    if (!audioCtx) audioCtx = new Ctx()
+    if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {})
+    return audioCtx
+  } catch { return null }
+}
+
 function beep() {
   try {
     if (localStorage.getItem('alzahra_sound_on') === 'off') return
-    const Ctx = window.AudioContext || (window as any).webkitAudioContext
-    const ctx = new Ctx()
+    const ctx = getCtx()
+    if (!ctx) return
     const play = (freq: number, start: number) => {
       const o = ctx.createOscillator()
       const g = ctx.createGain()
@@ -27,7 +37,6 @@ function beep() {
     }
     play(880, 0)
     play(1175, 0.18)
-    setTimeout(() => ctx.close(), 800)
   } catch {}
 }
 
@@ -63,7 +72,12 @@ export default function NotificationBell() {
     const t = setInterval(load, POLL_MS)
     const onFocus = () => load()
     window.addEventListener('focus', onFocus)
+    const unlock = () => { getCtx() }
+    window.addEventListener('pointerdown', unlock, { once: true })
+    window.addEventListener('keydown', unlock, { once: true })
     return () => {
+      window.removeEventListener('pointerdown', unlock)
+      window.removeEventListener('keydown', unlock)
       clearInterval(t)
       window.removeEventListener('focus', onFocus)
     }

@@ -39,6 +39,7 @@ import { useRouter } from 'next/navigation'
 import { Company } from '@/lib/types'
 import CountrySelect from '@/components/ui/CountrySelect'
 import { regionsFor } from '@/lib/regions'
+import { triggerPush } from '@/lib/pushClient'
 
 interface Props {
   company?: Company
@@ -128,6 +129,7 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
       onSave(saved)
     }
 
+    triggerPush()
     router.refresh()
     onClose()
   }

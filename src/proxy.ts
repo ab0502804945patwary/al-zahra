@@ -4,7 +4,7 @@ export async function proxy(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
 
   // Sign-in endpoint must be reachable without a session (otherwise POST is redirected to /login -> 405)
-  if (request.nextUrl.pathname.startsWith('/api/quick-login')) return supabaseResponse
+  if (request.nextUrl.pathname.startsWith('/api/quick-login') || request.nextUrl.pathname === '/api/version') return supabaseResponse
 
   const rawUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const rawKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY

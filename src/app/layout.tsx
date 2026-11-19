@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import PwaListener from '@/components/pwa/PwaListener'
+import UpdateBanner from '@/components/pwa/UpdateBanner'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -25,6 +26,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className} suppressHydrationWarning>
         <PwaListener />
+        <UpdateBanner />
         {children}
       </body>
     </html>

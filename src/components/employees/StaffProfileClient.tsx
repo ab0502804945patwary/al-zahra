@@ -83,13 +83,13 @@ export default function StaffProfileClient({ initialEmployee }: Props) {
   const [salaryForm, setSalaryForm] = useState<SalaryDetails>(
     employee.salary || {
       salary_type: 'monthly_fixed',
-      base_salary: 6000,
+      base_salary: 0,
       currency: 'SAR',
-      housing_allowance: 1500,
-      transport_allowance: 500,
-      food_allowance: 300,
+      housing_allowance: 0,
+      transport_allowance: 0,
+      food_allowance: 0,
       commission_rate: '',
-      bank_name: 'Al Rajhi Bank',
+      bank_name: '',
       account_number: '',
       iban: '',
       payment_cycle: 'monthly',
@@ -769,7 +769,7 @@ export default function StaffProfileClient({ initialEmployee }: Props) {
                 <span className="text-slate-400 block text-[10px] uppercase font-bold mb-1">
                   Designated Bank
                 </span>
-                <span className="text-slate-800 text-sm font-semibold">{sal.bank_name || 'Al Rajhi Bank'}</span>
+                <span className="text-slate-800 text-sm font-semibold">{sal.bank_name || '—'}</span>
               </div>
 
               <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200">

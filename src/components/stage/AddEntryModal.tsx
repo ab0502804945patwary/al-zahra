@@ -4,6 +4,7 @@ import { X, Loader2, Globe, Building2, User, FileText, CheckCircle2, Sparkles } 
 import { createClient, isSupabaseConfigured } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import BdFields from './BdFields'
+import { triggerPush } from '@/lib/pushClient'
 import PortalAccountsEditor from './PortalAccountsEditor'
 import type { PortalAccount } from '@/lib/portals'
 import StatutoryFields, { STATUTORY_KEYS, statutoryFrom } from './StatutoryFields'
@@ -105,6 +106,7 @@ export default function AddEntryModal({ stageId, companies, employees, onClose, 
       if (stErr) alert('The record was saved, but the legal identifiers could not be saved to the company: ' + stErr.message)
     }
 
+    triggerPush()
     router.refresh()
     onClose()
     setLoading(false)

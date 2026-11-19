@@ -4,6 +4,7 @@ import { X, Loader2, Trash2 } from 'lucide-react'
 import { createClient, isSupabaseConfigured } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import BdFields from './BdFields'
+import { triggerPush } from '@/lib/pushClient'
 import { FormCtx, Field, Select as Sel } from './formFields'
 import PortalAccountsEditor from './PortalAccountsEditor'
 import type { PortalAccount } from '@/lib/portals'
@@ -70,6 +71,7 @@ export default function EditEntryModal({ stageId, entry, companies, employees, o
       }
     }
 
+    triggerPush()
     router.refresh()
     onClose()
     setLoading(false)

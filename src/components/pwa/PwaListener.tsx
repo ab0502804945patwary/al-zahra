@@ -10,6 +10,8 @@ declare global { interface Window { __pwaPrompt?: Event | null } }
  */
 export default function PwaListener() {
   useEffect(() => {
+    // old demo-mode leftovers in this browser: remove them
+    try { for (const k of ['alzahra_companies_data', 'alzahra_employees_data', 'alzahra_demo_entries', 'alzahra_seen_notifications']) localStorage.removeItem(k) } catch {}
     if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(() => {})
     const onPrompt = (e: Event) => { e.preventDefault(); window.__pwaPrompt = e; window.dispatchEvent(new Event('pwa-prompt')) }
     const onInstalled = () => { window.__pwaPrompt = null; window.dispatchEvent(new Event('pwa-installed')) }

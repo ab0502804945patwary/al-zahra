@@ -13,30 +13,28 @@ export interface AppNotification {
   href: string
 }
 
-/**
- * A company is "waiting" for a stage when it is eligible for that stage but has no entry there yet.
- * Staff see only their own stage; admin sees every stage.
- */
-export async function getNotifications(): Promise<AppNotification[]> {
-  if (!isSupabaseConfigured) return []
-  const ids = MENU_ORDER.filter(id => STAGE_CONFIG[id])
-  const all: StageEntriesMap = {}
+const stageIds = () => MENU_ORDER.filter(id => STAGE_CONFIG[id])
 
-  const supabase = await createClient()
+/** Loads every company and every stage's entries once (service key, read-only). */
+async function loadWorkData() {
+  const ids = stageIds()
   const lookup = await createServiceClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return []
-  const [empRes, cRes, ...sRes] = await Promise.all([
-    supabase.from('employees').select('role, assigned_stage, assigned_stages').eq('user_id', user.id).single(),
-    supabase.from('companies').select('company_id, company_name, entity_type, service_type'),
+  const [cRes, ...sRes] = await Promise.all([
+    lookup.from('companies').select('company_id, company_name, entity_type, service_type'),
     ...ids.map(sid => lookup.from(STAGE_CONFIG[sid].table).select(eligibilityColumns(sid))),
   ])
-  const myStages = stagesOf(empRes.data) // null = admin (all stages)
-  const companies: any[] = cRes.data || []
+  const all: StageEntriesMap = {}
   ids.forEach((sid, k) => { all[sid] = (sRes[k].data as any[]) || [] })
+  return { companies: (cRes.data as any[]) || [], all }
+}
 
+/**
+ * A company is "waiting" for a stage when it is eligible for that stage but has no entry there yet.
+ * `myStages` null = admin (every stage).
+ */
+function buildFor(companies: any[], all: StageEntriesMap, myStages: number[] | null): AppNotification[] {
   const out: AppNotification[] = []
-  for (const sid of ids) {
+  for (const sid of stageIds()) {
     const n = Number(sid)
     if (myStages !== null && !myStages.includes(n)) continue
     for (const c of companies) {
@@ -57,4 +55,30 @@ export async function getNotifications(): Promise<AppNotification[]> {
     }
   }
   return out
+}
+
+/** Work waiting for the signed-in user. Staff see only their own stages; admin sees every stage. */
+export async function getNotifications(): Promise<AppNotification[]> {
+  if (!isSupabaseConfigured) return []
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return []
+  const [empRes, work] = await Promise.all([
+    supabase.from('employees').select('role, assigned_stage, assigned_stages').eq('user_id', user.id).single(),
+    loadWorkData(),
+  ])
+  return buildFor(work.companies, work.all, stagesOf(empRes.data))
+}
+
+/** Work waiting for every active staff member (used to send push notifications). */
+export async function getAllStaffNotifications(): Promise<{ userId: string; items: AppNotification[] }[]> {
+  if (!isSupabaseConfigured) return []
+  const lookup = await createServiceClient()
+  const [{ data: staff }, work] = await Promise.all([
+    lookup.from('employees').select('user_id, role, assigned_stage, assigned_stages, is_active'),
+    loadWorkData(),
+  ])
+  return (staff || [])
+    .filter((e: any) => e.user_id && e.is_active !== false)
+    .map((e: any) => ({ userId: e.user_id as string, items: buildFor(work.companies, work.all, stagesOf(e)) }))
 }
