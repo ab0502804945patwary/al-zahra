@@ -8,7 +8,9 @@ import {
   UploadCloud,
   Link as LinkIcon,
   Check,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Eye,
+  EyeOff
 } from 'lucide-react'
 import { createClient, isSupabaseConfigured } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
@@ -49,6 +51,7 @@ export default function EmployeeModal({ employee, onClose, onSave, onDelete }: P
   const [imageError, setImageError] = useState('')
 
   const [avatarUrl, setAvatarUrl] = useState<string>(employee?.avatar_url || '')
+  const [showNewPw, setShowNewPw] = useState(false)
   const [urlInput, setUrlInput] = useState<string>(employee?.avatar_url || '')
 
   const [form, setForm] = useState({
@@ -249,6 +252,23 @@ export default function EmployeeModal({ employee, onClose, onSave, onDelete }: P
     if (isSupabaseConfigured) {
       try {
         if (employee) {
+          // login email / password go through the server (they live in the sign-in system, not just the profile)
+          const newEmail = form.email.trim()
+          const emailChanged = newEmail.toLowerCase() !== String(employee.email || '').toLowerCase()
+          if (emailChanged || form.password) {
+            if (form.password && form.password.length < 8) { alert('The new password must be at least 8 characters.'); setLoading(false); return }
+            const r = await fetch('/api/staff/credentials', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ employee_id: employee.id, email: emailChanged ? newEmail : undefined, password: form.password || undefined }),
+            })
+            if (!r.ok) {
+              const { error } = await r.json().catch(() => ({ error: 'Could not change the login.' }))
+              alert(error)
+              setLoading(false)
+              return
+            }
+          }
           const payload: any = {
             name: form.name,
             phone: form.phone,
@@ -508,13 +528,33 @@ export default function EmployeeModal({ employee, onClose, onSave, onDelete }: P
             <input
               type="email"
               required
-              disabled={!!employee}
               value={form.email}
               onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))}
               placeholder="staff@alzahra.com"
               className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-slate-50 disabled:text-slate-400 bg-white"
             />
+            {employee && <p className="text-[10px] text-slate-400 mt-1">This is also the sign-in email. Changing it changes how this person logs in.</p>}
           </div>
+
+          {/* New password (editing an existing member) */}
+          {employee && (
+            <div>
+              <label className="text-xs font-medium text-slate-700 mb-1 block">New Password <span className="text-slate-400 font-normal">(leave empty to keep the current one)</span></label>
+              <div className="relative">
+                <input
+                  type={showNewPw ? 'text' : 'password'}
+                  value={form.password}
+                  onChange={(e) => setForm((p) => ({ ...p, password: e.target.value }))}
+                  placeholder="Minimum 8 characters"
+                  autoComplete="new-password"
+                  className="w-full px-3 py-2 pr-10 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                />
+                <button type="button" onClick={() => setShowNewPw(v => !v)} title={showNewPw ? 'Hide' : 'Show'} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                  {showNewPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Initial Password (new staff only) */}
           {!employee && (
