@@ -1,6 +1,6 @@
 'use client'
 import { useRef, useState } from 'react'
-import { Loader2, Lock, Trash2, X } from 'lucide-react'
+import { Eye, EyeOff, Loader2, Lock, Trash2, X } from 'lucide-react'
 
 /**
  * Asks for the master password, then deletes through /api/delete.
@@ -12,6 +12,7 @@ export function useSecureDelete() {
   const [pw, setPw] = useState('')
   const [err, setErr] = useState('')
   const [busy, setBusy] = useState(false)
+  const [show, setShow] = useState(false)
   const [label, setLabel] = useState('')
   const job = useRef<{ table: string; id: string; resolve: (ok: boolean) => void } | null>(null)
 
@@ -21,6 +22,7 @@ export function useSecureDelete() {
       setLabel(what)
       setPw('')
       setErr('')
+      setShow(false)
       setOpen(true)
     })
   }
@@ -69,14 +71,18 @@ export function useSecureDelete() {
         <div className="relative">
           <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
           <input
-            type="password"
+            type={show ? 'text' : 'password'}
             autoFocus
             value={pw}
             onChange={e => setPw(e.target.value)}
             placeholder="Master password"
-            className="w-full pl-9 pr-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500"
+            className="w-full pl-9 pr-10 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500"
           />
+          <button type="button" onClick={() => setShow(v => !v)} title={show ? 'Hide' : 'Show what I typed'} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+            {show ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+          </button>
         </div>
+        <p className="text-[10px] text-slate-400 -mt-2">Forgot it? An admin can set a new one in Settings → Master password.</p>
         {err && <div className="text-xs text-rose-700 bg-rose-50 border border-rose-200 rounded-lg p-2">{err}</div>}
         <div className="flex gap-2">
           <button type="button" onClick={cancel} className="flex-1 py-2 text-xs font-semibold border border-slate-200 rounded-lg hover:bg-slate-50">Cancel</button>
