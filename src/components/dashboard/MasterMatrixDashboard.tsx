@@ -208,14 +208,6 @@ export default function MasterMatrixDashboard({ initialCompanies, kpiStats, stag
                 New Company ({matrixRows.filter(r => !r.isRenewal).length})
               </button>
               <button
-                onClick={() => setFilterType('renewal')}
-                className={`px-2.5 py-1 rounded-md font-medium transition ${
-                  filterType === 'renewal' ? 'bg-violet-600 text-white shadow-xs' : 'text-slate-600 hover:text-violet-700'
-                }`}
-              >
-                Renewal / Other ({matrixRows.filter(r => r.isRenewal).length})
-              </button>
-              <button
                 onClick={() => setFilterType('attention')}
                 className={`px-2.5 py-1 rounded-md font-medium transition ${
                   filterType === 'attention' ? 'bg-rose-600 text-white shadow-xs' : 'text-slate-600 hover:text-rose-600'
