@@ -8,6 +8,11 @@ import { matchesQuery } from '@/lib/search'
 interface Agent { id: string; agent_code: string; company_name?: string | null; agent_name: string; mobile?: string | null; address?: string | null; category?: string | null; remarks?: string | null }
 
 const inputCls = 'w-full px-3 py-2.5 text-sm text-slate-900 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white placeholder:text-slate-400'
+const SAUDI_LOCATIONS = [
+  'Riyadh', 'Jeddah', 'Makkah', 'Madinah', 'Dammam', 'Al Khobar', 'Dhahran', 'Jubail', 'Al Ahsa (Hofuf)', 'Qatif',
+  'Taif', 'Yanbu', 'Rabigh', 'Tabuk', 'Abha', 'Khamis Mushait', 'Najran', 'Jazan', 'Buraidah', 'Unaizah',
+  'Hail', 'Al Kharj', 'Al Majmaah', 'Sakaka', 'Arar', 'Al Bahah', 'Hafar Al Batin', 'Other',
+]
 const CATEGORY_OPTIONS = ['Travel Agency', 'Consultancy', 'Maktab Al Khadamat']
 const EMPTY = { company_name: '', agent_name: '', mobile: '', address: '', category: '', remarks: '' }
 
@@ -87,7 +92,10 @@ export default function AgentsClient({ agents }: { agents: Agent[] }) {
           </div>
           <div className="sm:col-span-2">
             <label className="text-xs font-semibold text-slate-700 mb-1.5 block">Address / Location</label>
-            <input value={form.address} onChange={e => setForm(p => ({ ...p, address: e.target.value }))} className={inputCls} />
+            <select value={form.address} onChange={e => setForm(p => ({ ...p, address: e.target.value }))} className={inputCls}>
+              <option value="">Select location (Saudi Arabia)...</option>
+              {[...new Set([...SAUDI_LOCATIONS, ...(form.address && !SAUDI_LOCATIONS.includes(form.address) ? [form.address] : [])])].map(l => <option key={l} value={l}>{l}</option>)}
+            </select>
           </div>
           <div className="sm:col-span-2">
             <label className="text-xs font-semibold text-slate-700 mb-1.5 block">Remarks</label>

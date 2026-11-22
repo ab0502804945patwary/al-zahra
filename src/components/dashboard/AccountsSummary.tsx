@@ -39,7 +39,7 @@ export default function AccountsSummary({ invoices, expenses = [] }: { invoices:
     { label: 'Total Invoiced', value: bdt(invoiced), sub: `${rows.length} invoices · ${count('Paid')} fully paid`, icon: FileText, tone: 'text-blue-600 bg-blue-50' },
     { label: 'Received', value: bdt(received), sub: `This month: ${bdt(receivedThisMonth)}`, icon: HandCoins, tone: 'text-emerald-600 bg-emerald-50' },
     { label: 'Expenses', value: bdt(expenseTotal), sub: `This month: ${bdt(expenseThisMonth)}`, icon: ReceiptText, tone: 'text-amber-600 bg-amber-50' },
-    { label: 'Net (Received − Expenses)', value: bdt(net), sub: net < 0 ? 'Expenses are more than received' : 'Money left after expenses', icon: Scale, tone: net < 0 ? 'text-rose-600 bg-rose-50' : 'text-teal-600 bg-teal-50' },
+    { label: 'Balance', value: bdt(net), sub: net < 0 ? 'Expenses are more than received' : 'Money left after expenses', icon: Scale, tone: net < 0 ? 'text-rose-600 bg-rose-50' : 'text-teal-600 bg-teal-50' },
     { label: 'Total Due', value: bdt(due), sub: `${count('Unpaid')} unpaid · ${count('Partial')} partial`, icon: Hourglass, tone: 'text-rose-600 bg-rose-50' },
   ]
 

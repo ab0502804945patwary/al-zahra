@@ -103,7 +103,7 @@ export default function ReportsClient({ invoices, expenses, customers, companies
     { label: 'Invoiced', value: bdt(data.invoiced), sub: `${data.invoiceCount} invoices`, icon: FileText, tone: 'text-blue-600 bg-blue-50' },
     { label: 'Received', value: bdt(data.received), sub: `${data.paymentCount} payments`, icon: HandCoins, tone: 'text-emerald-600 bg-emerald-50' },
     { label: 'Expenses', value: bdt(data.spent), sub: `${data.expenseCount} expenses`, icon: ReceiptText, tone: 'text-amber-600 bg-amber-50' },
-    { label: 'Net (Received − Expenses)', value: bdt(data.net), sub: data.net < 0 ? 'Loss in this period' : 'Profit in this period', icon: Scale, tone: data.net < 0 ? 'text-rose-600 bg-rose-50' : 'text-teal-600 bg-teal-50' },
+    { label: 'Balance', value: bdt(data.net), sub: data.net < 0 ? 'Loss in this period' : 'Profit in this period', icon: Scale, tone: data.net < 0 ? 'text-rose-600 bg-rose-50' : 'text-teal-600 bg-teal-50' },
   ]
 
   return (

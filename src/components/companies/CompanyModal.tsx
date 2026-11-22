@@ -181,15 +181,25 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
     misa_license_no: BadgeCheck, misa_issue_date: CalendarDays, misa_expire_date: CalendarX2,
     tin_number: Receipt, vat_number: Receipt, chamber_registration_no: Building2, gosi_qiwa_status: BadgeCheck,
     official_email: Mail, whatsapp_number: MessageCircle, national_address: MapPin,
-    ceo_gm_name: User, iqama_no: IdCard, shareholders_name: Users, shareholder_phone: Phone,
+    client_name: User, client_phone: Phone, ceo_gm_name: User, iqama_no: IdCard, shareholders_name: Users, shareholder_phone: Phone,
     bank_name: Landmark, account_name: User, account_number: CreditCard, iban_swift: Banknote,
     file_portal_login: KeyRound, account_status: Activity, assigned_office: MapPin, drive_link: FolderOpen, employee: User, remarks: StickyNote,
   }
+  // Mandatory fields. New company: basic contact + leadership. Renewal: contact, CR, MISA, RJSC and both audits.
+  const REQ_NEW = ['entity_type', 'company_name', 'client_name', 'client_phone', 'ceo_gm_name', 'iqama_no']
+  const REQ_RENEWAL = [
+    'entity_type', 'company_name', 'client_name', 'client_phone',
+    'cr_number', 'cr_issue_date', 'cr_expire_date', 'misa_license_no', 'misa_issue_date', 'misa_expire_date',
+    'rjsc_reg_no', 'rjsc_incorporation_date', 'rjsc_issue_no',
+    'bd_last_audit_date', 'bd_audit_status', 'bd_financial_year',
+    'sa_last_audit_date', 'sa_audit_status', 'sa_financial_year',
+  ]
+  const REQ = new Set(form.service_type === 'renewal' ? REQ_RENEWAL : REQ_NEW)
   const Lbl = ({ name, children }: { name: string; children: React.ReactNode }) => {
     const Ic = ICONS[name]
     return (
       <span className="text-xs font-semibold text-slate-700 mb-1.5 flex items-center gap-1.5 whitespace-nowrap min-w-0 overflow-hidden">
-        {Ic && <Ic className="w-3.5 h-3.5 text-blue-500 shrink-0" />}<span className="truncate">{children}</span>
+        {Ic && <Ic className="w-3.5 h-3.5 text-blue-500 shrink-0" />}<span className="truncate">{children}</span>{REQ.has(name) && <span className="text-rose-500 shrink-0">*</span>}
       </span>
     )
   }
@@ -200,15 +210,16 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
     <div key={f.name} className={`${WIDE.has(f.name) ? 'col-span-2 ' : ''}${SPAN[f.span]}`}>
       <label className="block"><Lbl name={f.name}>{f.label}</Lbl></label>
       {f.options ? (
-        <select value={form[f.name] || (f.name.endsWith('audit_status') ? '' : f.options[0])} onChange={e => set(f.name, e.target.value)} className={inputCls}>
+        <select required={REQ.has(f.name)} value={form[f.name] || (f.name.endsWith('audit_status') ? '' : f.options[0])} onChange={e => set(f.name, e.target.value)} className={inputCls}>
           {f.name.endsWith('audit_status') && <option value="">Select Status</option>}
           {f.options.map(o => <option key={o} value={o}>{o}</option>)}
         </select>
       ) : f.textarea ? (
-        <textarea rows={3} value={form[f.name] || ''} onChange={e => set(f.name, e.target.value)} className={inputCls} />
+        <textarea rows={3} required={REQ.has(f.name)} value={form[f.name] || ''} onChange={e => set(f.name, e.target.value)} className={inputCls} />
       ) : (
         <input
           type={f.type || 'text'}
+          required={REQ.has(f.name)}
           value={form[f.name] || ''}
           onChange={e => set(f.name, e.target.value)}
           className={inputCls}
@@ -264,7 +275,7 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
 
       <div className={`col-span-2 ${SPAN[3]}`}>
         <Lbl name="entity_type">License Type</Lbl>
-        <select value={form.entity_type || ''} onChange={e => set('entity_type', e.target.value)} className={inputCls}>
+        <select required value={form.entity_type || ''} onChange={e => set('entity_type', e.target.value)} className={inputCls}>
           <option value="">Select license type</option>
           <option value="Trading License">Trading License</option>
           <option value="Service License">Service License</option>
@@ -273,7 +284,7 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
       </div>
 
       <div className={SPAN[12]}>
-        <Lbl name="company_name">Company Name *</Lbl>
+        <Lbl name="company_name">Company Name</Lbl>
         <input
           type="text"
           required
@@ -285,12 +296,12 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
       </div>
 
       <div className={SPAN[6]}>
-        <label className="block"><Lbl name="ceo_gm_name">Client Contact Name</Lbl></label>
-        <input type="text" value={form.client_name || ''} onChange={e => set('client_name', e.target.value)} placeholder="Authorized contact person" className={inputCls} />
+        <label className="block"><Lbl name="client_name">Client Contact Name</Lbl></label>
+        <input type="text" required value={form.client_name || ''} onChange={e => set('client_name', e.target.value)} placeholder="Authorized contact person" className={inputCls} />
       </div>
       <div className={SPAN[6]}>
-        <label className="block"><Lbl name="shareholder_phone">Client Phone</Lbl></label>
-        <input type="text" value={form.client_phone || ''} onChange={e => set('client_phone', e.target.value)} placeholder="e.g. 05xxxxxxxx" className={inputCls} />
+        <label className="block"><Lbl name="client_phone">Client Phone</Lbl></label>
+        <input type="text" required value={form.client_phone || ''} onChange={e => set('client_phone', e.target.value)} placeholder="e.g. 05xxxxxxxx" className={inputCls} />
       </div>
 
       {!lockedType && <div className={SPAN[12]}>

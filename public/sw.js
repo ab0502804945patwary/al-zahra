@@ -3,7 +3,7 @@
 // - shows push notifications (new work for the staff member), even when the app is closed
 // It never stores pages or data: the ERP always shows live, signed-in information.
 const OFFLINE_URL = '/offline.html'
-const CACHE = 'alzahra-offline-v2'
+const CACHE = 'alzahra-offline-v3'
 
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(c => c.addAll([OFFLINE_URL, '/icons/icon-192.png'])))
@@ -17,8 +17,21 @@ self.addEventListener('activate', event => {
 })
 
 self.addEventListener('fetch', event => {
-  if (event.request.mode !== 'navigate') return
-  event.respondWith(fetch(event.request).catch(() => caches.match(OFFLINE_URL)))
+  const req = event.request
+  // the little logo on the offline page must still show when there is no network
+  if (req.method === 'GET' && new URL(req.url).pathname === '/icons/icon-192.png') {
+    event.respondWith(caches.match(req).then(hit => hit || fetch(req)))
+    return
+  }
+  if (req.mode !== 'navigate') return
+  // Try the network; on a failure wait a moment and try once more (a weak or briefly dropped connection)
+  // before showing the offline page, so a hiccup does not look like "you are offline".
+  event.respondWith((async () => {
+    try { return await fetch(req.clone()) } catch (e) {}
+    await new Promise(r => setTimeout(r, 800))
+    try { return await fetch(req.clone()) } catch (e) {}
+    return (await caches.match(OFFLINE_URL)) || Response.error()
+  })())
 })
 
 self.addEventListener('push', event => {

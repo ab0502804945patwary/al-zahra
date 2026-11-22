@@ -599,7 +599,13 @@ export default function EmployeeModal({ employee, onClose, onSave, onDelete }: P
 
             {form.role === 'employee' && (
               <div>
-                <label className="text-xs font-medium text-slate-700 mb-1 block">Assigned Modules (one or more)</label>
+                <div className="flex items-center justify-between gap-2 mb-1">
+                  <label className="text-xs font-medium text-slate-700">Assigned Modules (one or more)</label>
+                  <div className="flex items-center gap-3 text-[11px] font-semibold">
+                    <button type="button" onClick={() => setForm(p => ({ ...p, assigned_stages: [...new Set([...p.assigned_stages.filter(v => v.startsWith('m:')), ...MODULE_OPTIONS.map(m => String(m.value))])] }))} className="text-blue-600 hover:text-blue-800">All Investor Workflow phases</button>
+                    <button type="button" onClick={() => setForm(p => ({ ...p, assigned_stages: p.assigned_stages.filter(v => v.startsWith('m:')) }))} className="text-slate-500 hover:text-slate-700">Clear phases</button>
+                  </div>
+                </div>
                 <MultiSelect
                   options={[
                     ...MODULE_OPTIONS.map(m => ({ value: String(m.value), label: m.label, group: 'Workflow phases' })),

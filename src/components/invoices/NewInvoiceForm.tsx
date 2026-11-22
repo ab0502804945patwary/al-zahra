@@ -10,18 +10,18 @@ interface Line { key: string; service_id: string | null; description: string; qu
 const inputCls = 'w-full px-3 py-2.5 text-sm text-slate-900 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white placeholder:text-slate-400'
 const METHODS = ['Cash', 'Bank Transfer', 'bKash', 'Nagad', 'Cheque', 'Other']
 
-export default function NewInvoiceForm({ customers, services, onClose }: { customers: any[]; services: any[]; onClose: () => void }) {
+export default function NewInvoiceForm({ customers, services, onClose, editing }: { customers: any[]; services: any[]; onClose: () => void; editing?: { invoice: any; items: any[]; paid: number } }) {
   const router = useRouter()
   const supabase = createClient()
-  const [customerId, setCustomerId] = useState('')
-  const [date, setDate] = useState(new Date().toISOString().slice(0, 10))
-  const [lines, setLines] = useState<Line[]>([])
-  const [discount, setDiscount] = useState('')
+  const [customerId, setCustomerId] = useState(editing?.invoice.customer_id || '')
+  const [date, setDate] = useState(editing?.invoice.invoice_date || new Date().toISOString().slice(0, 10))
+  const [lines, setLines] = useState<Line[]>(() => (editing?.items || []).map((i: any) => ({ key: i.id, service_id: i.service_id, description: i.description, quantity: String(Number(i.quantity)), unit_price: String(Number(i.unit_price)) })))
+  const [discount, setDiscount] = useState(editing && Number(editing.invoice.discount) > 0 ? String(Number(editing.invoice.discount)) : '')
   const [mode, setMode] = useState<'later' | 'partial' | 'full'>('later')
   const [partial, setPartial] = useState('')
   const [method, setMethod] = useState('Cash')
   const [reference, setReference] = useState('')
-  const [notes, setNotes] = useState('')
+  const [notes, setNotes] = useState(editing?.invoice.notes || '')
   const [serviceSearch, setServiceSearch] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -47,8 +47,28 @@ export default function NewInvoiceForm({ customers, services, onClose }: { custo
     if (lines.length === 0) return setError('Select at least one service')
     if (lines.some(l => !l.description.trim() || !(Number(l.quantity) > 0) || l.unit_price === '' || Number(l.unit_price) < 0)) return setError('Check the service lines: name, quantity and price are required')
     if (disc < 0 || disc > subtotal) return setError('Discount cannot be more than the subtotal')
-    if (mode === 'partial' && !(payNow > 0 && payNow < total)) return setError('Partial payment must be more than 0 and less than the total')
+    if (editing && total < editing.paid) return setError(`The total cannot be less than the BDT ${editing.paid.toLocaleString()} already received.`)
+    if (!editing && mode === 'partial' && !(payNow > 0 && payNow < total)) return setError('Partial payment must be more than 0 and less than the total')
     setLoading(true)
+    if (editing) {
+      const { error: upErr } = await supabase.rpc('update_invoice', {
+        p_invoice: editing.invoice.id,
+        p: {
+          customer_id: customer.id,
+          customer_name: `${customer.given_name} ${customer.surname}`,
+          customer_phone: customer.phone,
+          invoice_date: date,
+          discount: disc,
+          notes,
+          items: lines.map(l => ({ service_id: l.service_id, description: l.description.trim(), quantity: Number(l.quantity), unit_price: Number(l.unit_price) })),
+        },
+      })
+      setLoading(false)
+      if (upErr) return setError(upErr.message)
+      router.push(`/dashboard/invoices/${editing.invoice.id}`)
+      router.refresh()
+      return
+    }
     const { data, error: err } = await supabase.rpc('create_invoice', {
       p: {
         customer_id: customer.id,
@@ -75,8 +95,8 @@ export default function NewInvoiceForm({ customers, services, onClose }: { custo
     <form onSubmit={submit} className="w-full max-w-[1400px] mx-auto space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold text-slate-900">New Invoice</h1>
-          <p className="text-xs text-slate-500">Choose the customer and services, then record the payment (or leave it for later).</p>
+          <h1 className="text-xl font-bold text-slate-900">{editing ? `Edit Invoice ${editing.invoice.invoice_no}` : 'New Invoice'}</h1>
+          <p className="text-xs text-slate-500">{editing ? `Change the customer, services, discount or notes. Payments already received (BDT ${editing.paid.toLocaleString()}) stay as they are.` : 'Choose the customer and services, then record the payment (or leave it for later).'}</p>
         </div>
         <button type="button" onClick={onClose} title="Back" className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-400"><X className="w-5 h-5" /></button>
       </div>
@@ -148,6 +168,7 @@ export default function NewInvoiceForm({ customers, services, onClose }: { custo
             <div className="flex justify-between text-base font-bold border-t border-slate-200 pt-3"><span>Total</span><span className="font-mono">{bdt(total)}</span></div>
           </div>
 
+          {!editing && (
           <div className="bg-white rounded-xl border border-slate-200 p-5 space-y-3">
             <h3 className="text-sm font-bold text-slate-800">Payment</h3>
             <div className="grid grid-cols-3 gap-2">
@@ -174,6 +195,7 @@ export default function NewInvoiceForm({ customers, services, onClose }: { custo
               <div className="flex justify-between"><span>Due after this</span><span className="font-mono text-rose-600">{bdt(Math.max(total - payNow, 0))}</span></div>
             </div>
           </div>
+          )}
         </div>
       </div>
 
@@ -181,7 +203,7 @@ export default function NewInvoiceForm({ customers, services, onClose }: { custo
       <div className="flex gap-3 pt-3 border-t border-slate-200">
         <button type="button" onClick={onClose} className="px-5 py-2.5 border border-slate-200 text-slate-600 text-xs font-medium rounded-lg hover:bg-slate-50">Cancel</button>
         <button type="submit" disabled={loading} className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white text-xs font-semibold rounded-lg">
-          {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />} Create Invoice
+          {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />} {editing ? 'Save Changes' : 'Create Invoice'}
         </button>
       </div>
     </form>

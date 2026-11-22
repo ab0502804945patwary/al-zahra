@@ -16,9 +16,19 @@
 <body>
   <div class="card">
     <img src="/icons/icon-192.png" alt="AL ZAHRA">
-    <h1>You are offline</h1>
-    <p>AL ZAHRA ERP needs an internet connection to show your latest data. Please check your connection and try again.</p>
+    <h1 id="t">You are offline</h1>
+    <p id="m">AL ZAHRA ERP needs an internet connection to show your latest data. Please check your connection and try again.</p>
     <button onclick="location.reload()">Try again</button>
+    <p style="margin:18px 0 0;font-size:12px"><a href="/api/signout" style="color:#3d5fab">Still stuck? Sign out and sign in again</a></p>
   </div>
+  <script>
+    // wording follows the real state: "offline" only when the device really has no network
+    if (navigator.onLine) {
+      document.getElementById('t').textContent = 'We could not reach the server'
+      document.getElementById('m').textContent = 'Your device looks online, but AL ZAHRA ERP did not answer. This is usually a weak connection. Please try again in a moment.'
+    }
+    // come back by itself when the connection returns
+    window.addEventListener('online', function () { location.reload() })
+  </script>
 </body>
 </html>
