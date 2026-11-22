@@ -29,14 +29,15 @@ Ask for one section at a time (shell → login → dashboard → company pages �
 | Role | Who | What they see |
 |---|---|---|
 | **Admin** ("System Administrator", shown as "Al Zahra") | Owner / manager | Everything: all modules, all 9 stages, Team & Access Control, Master password |
-| **Staff** ("Operations Staff") | Employees | Only what the admin ticks for them: **workflow stages** (one or more) and **modules** (Dashboard, Company Directory, Renewal Companies, Customers, Agents, Services, Expenses, Reports, Invoices). Settings is always available. |
+| **Staff** ("Operations Staff") | Employees | Only what the admin ticks for them: **workflow stages** (one or more) and **modules** (Dashboard, Company Directory, **Leads**, Renewal Companies, Customers, Agents, Services, Expenses, Reports, Invoices). Settings is always available. |
 
 Rules that affect the UI:
 - A staff member sees **only their ticked items** in the sidebar and cannot open other pages by URL.
 - Staff land on their **first assigned stage** (or first module, or Settings) after login. Admin lands on the Dashboard.
 - Inside a stage a staff member can add/edit only if the stage is theirs. Otherwise the page shows a "View only" label.
 - A staff member **cannot edit a record once it is completed**; the **submission date is automatic** (admins can change it).
-- **Delete** (company, record, staff) always asks for the **Master password** (set by admin in Settings; locks after 5 wrong tries).
+- **Delete** (company, record, staff, lead) always asks for the **Master password** (set by admin in Settings; locks after 5 wrong tries). The delete dialog has an eye icon to show what was typed and a hint "Forgot it? An admin can set a new one in Settings → Master password". The stored password can never be displayed (it is hashed).
+- The admin can give a staff member **all nine Investor Workflow phases with one click** ("All Investor Workflow phases" link in the team form).
 - Client **portal passwords** (Stage 6) are visible only to admins and the Stage 6 staff.
 
 ## 3. Brand and current design tokens
@@ -64,7 +65,7 @@ Common components (current look):
 **Desktop (≥1024px)**
 - **Left sidebar** (fixed, collapsible to icon-only):
   - Top: logo icon + wide logo, collapse button.
-  - Group **OVERVIEW**: Dashboard · Company Directory · Renewal Companies · Customers · Agents · Services · Expenses · Reports · Invoices.
+  - Group **OVERVIEW**: Dashboard · Company Directory · **New Lead** · **Leads** · Renewal Companies · Customers · Agents · Services · Expenses · Reports · Invoices.
   - Group **INVESTOR WORKFLOW** (click the group title to expand/collapse; opens automatically on a stage page): the 9 stages in order (see §8) with small count badges for "waiting for you".
   - Group **ADMINISTRATION** (admin only): Team & Access Control.
   - Footer: "Collapse category list".
@@ -79,7 +80,7 @@ Common components (current look):
 **Global overlays**
 - **Notification bell dropdown**: list of "company X is ready for Stage N" items, "Mark all read", empty text "No pending work", optional sound, optional phone push notification.
 - **Update banner** (bottom, dark): "New version available — Update".
-- **Offline page**: "You are offline — Try again".
+- **Offline page**: shows **"You are offline"** only when the device has no network; if the device is online but the server did not answer it says **"We could not reach the server"** (weak connection). Button **Try again**, link **Sign out and sign in again**, reloads by itself when the network returns. The app retries once automatically before showing it.
 - **Master-password dialog** for deletes.
 - Browser `alert()` / `confirm()` are used for some errors and confirmations (a design chance: replace with toasts and proper dialogs).
 
@@ -96,13 +97,15 @@ Common components (current look):
 
 ### 5.2 Dashboard — `/dashboard` (admin or staff with the Dashboard module)
 Top to bottom:
-1. **Accounts Summary** (title + link "All invoices →"): 5 stat cards — **Total Invoiced** (count, fully paid) · **Received** (this month) · **Expenses** (this month) · **Net (Received − Expenses)** (red if negative) · **Total Due** (unpaid/partial counts). Below: table **Customers with the highest due** (top 5).
+1. **Accounts Summary** (title + link "All invoices →"): 5 stat cards — **Total Invoiced** (count, fully paid) · **Received** (this month) · **Expenses** (this month) · **Balance** (Received − Expenses; red if negative) · **Total Due** (unpaid/partial counts). Below: table **Customers with the highest due** (top 5).
 2. **Master Investor Lifecycle Matrix** block:
    - Header with title, "Live 9-Stage Tracker" tag and short description.
-   - 4 stat cards: **Active Portfolios** (registered entities) · **Compliant & On Track** · **Action Needed (Overdue)** · **Trade Name Expiry Radar** (expiring within 60 days).
+   - Shows **both new and renewal companies** (renewal rows have "—" in the stage cells; the **Renewal / Other (N)** pill filters them).
+   - 4 stat cards: **Active Portfolios** (all registered entities) · **Compliant & On Track** · **Action Needed (Overdue)** · **Trade Name Expiry Radar** (expiring within 60 days).
    - Toolbar: search "Search AZC code, company…"; filter pills **All · New · Renewal · Needs Action**.
    - Table: one row per company (ID badge + name + country flag); **one column per stage** (Parent, BD Company, Activity, Foreign, Name, MISA, CR, Portals, Filing). Each cell is a coloured status badge with a short label (e.g. "Approved", "Delay 17d", "In Queue", "N/A") and days; clicking opens that stage.
    - Legend: Compliant (≤10d) green · Caution (11–13d) yellow · Overdue red · Queued grey.
+   - The **Upcoming Expiries — Contact List is NOT on the Dashboard** any more; it lives only on the Renewal Companies page (§5.4).
 3. **Stage summary table**: per stage → stage name, responsible employee, total files, green / yellow / red counts, average completion % (with bar).
 
 ### 5.3 Company Directory — `/dashboard/companies` (new companies only)
@@ -135,7 +138,7 @@ Shared layout:
 - Form: see §6.5.
 
 ### 5.8 Agents — `/dashboard/agents`
-- List: title, **Add Agent**, search, **category filter dropdown**; table Agent ID · Company Name · Agent Name · Mobile No. · Address/Location · Category pill · Remarks · edit. Form: §6.6.
+- List: title, **Add Agent**, search, **category filter dropdown**; table Agent ID · Company Name · Agent Name · Mobile No. · Address/Location · Category pill · Remarks · edit. Form: §6.6 (**Address / Location is a dropdown of Saudi places**).
 
 ### 5.9 Services — `/dashboard/services`
 - Title, **Add Service**; inline form card (name, price, description, active tick); table Service · Description · Price (BDT) · Status · edit.
@@ -144,7 +147,9 @@ Shared layout:
 - Title with **"Total due from customers"**, button **New Invoice**, search, status filter pills **All · Unpaid · Partial · Paid**.
 - Table: Invoice no. · Date · Customer (name + phone) · Total · Paid · Due · Status pill · view (eye).
 - **New Invoice form** (full page area): see §6.7.
-- **Invoice page `/dashboard/invoices/{id}`**: A4 invoice (see §9) + below it an **Add payment** card. Buttons: **All invoices**, **Cancel invoice**, **Print / Save as PDF**.
+- **Invoice page `/dashboard/invoices/{id}`**: A4 invoice (see §9) + below it an **Add payment** card. Buttons: **All invoices**, **Edit invoice**, **Cancel invoice**, **Print / Save as PDF**.
+- **Edit invoice** (`/dashboard/invoices/{id}/edit`): the same form as New Invoice, pre-filled, without the payment box, title "Edit Invoice INV-…", button **Save Changes**. Customer, date, services (qty/price), discount and notes can change. Payments already received stay; the new total can never be lower than the amount already received; a cancelled invoice cannot be edited.
+- **Collecting what is still due**: open the invoice → **Add payment** (amount, date, method, reference, "Pay full balance"), as many times as needed; status moves Unpaid → Partial → Paid. Tip for the redesign: a quick **Collect** button on each unpaid row of the list.
 
 ### 5.11 Expenses — `/dashboard/expenses`
 - Title, **Add Expense**, 3 stat cards (This month · All time · Pending approval), search, status pills **All · Pending · Approved · Rejected**.
@@ -153,7 +158,7 @@ Shared layout:
 
 ### 5.12 Reports — `/dashboard/reports`
 - Controls: **Monthly / Yearly** toggle, month dropdown, year dropdown, **CSV**, **Print / PDF**.
-- 4 stat cards (Invoiced, Received, Expenses, Net) → **bar chart** (green Received, amber Expenses; per day or per month) + table with totals → **Expenses by category** (progress bars with %) and **Top customers** (+ total due now) → 4 small cards (New customers, New companies, New renewal companies, Agents) → **Invoices in this period** table → **Renewals falling due in this period** table.
+- 4 stat cards (Invoiced, Received, Expenses, **Balance**) → **bar chart** (green Received, amber Expenses; per day or per month) + table with totals → **Expenses by category** (progress bars with %) and **Top customers** (+ total due now) → 4 small cards (New customers, New companies, New renewal companies, Agents) → **Invoices in this period** table → **Renewals falling due in this period** table.
 - Prints as a clean report.
 
 ### 5.13 Team & Access Control — `/dashboard/employees` (admin)
@@ -205,6 +210,11 @@ Sections as grey panels with icon + uppercase title; fields in a 12-column grid 
 | **Bangladesh Audit Information** (renewal) | Last Audit Date · Audit Status (dropdown: Not Started, In Progress, Completed, Overdue) · Next Audit Due Date · Financial Year · Auditor / Audit Firm Name · Audit Report (link) · Additional Information (text area) |
 | **Saudi Audit Information** (renewal) | same 7 fields |
 
+**Mandatory fields (red \*, the form will not save without them):**
+- **New Company**: License Type · Company Name · Client Contact Name · Client Phone · CEO / GM Name · National ID / Iqama.
+- **Renewal / Other Service**: License Type · Company Name · Client Contact Name · Client Phone · CR Number + Issue Date + Expiry Date · MISA License No. + Issue Date + Expiry Date · RJSC Registration No. · Incorporation Date · Issue No · (Bangladesh Audit) Last Audit Date · Audit Status · Financial Year · (Saudi Audit) Last Audit Date · Audit Status · Financial Year.
+- The company ID is suggested by the database (`AZC801…`); if someone else took it a moment earlier, the next free one is used automatically and the user is told.
+
 Buttons: **Cancel**, **Create Entity Record / Update Entity**, and (edit) red **Delete Entity** (asks master password). Each field label has a small icon.
 
 ### 6.2 Stage forms — shared pieces (modal "Add Workflow Record" / "Edit")
@@ -244,7 +254,7 @@ Two panels side by side on desktop, stacked on phone.
 - Buttons: Cancel, **Create Customer / Update Customer**. Error box if a required field is missing.
 
 ### 6.6 Agent form
-Agent Name * · Company Name · Mobile No. · **Agent Category** (dropdown: Travel Agency, Consultancy, Maktab Al Khadamat) · Address / Location · Remarks. Agent ID auto `AGT0001…`.
+Agent Name * · Company Name · Mobile No. · **Agent Category** (dropdown: Travel Agency, Consultancy, Maktab Al Khadamat) · **Address / Location (dropdown: Riyadh, Jeddah, Makkah, Madinah, Dammam, Al Khobar, Dhahran, Jubail, Al Ahsa (Hofuf), Qatif, Taif, Yanbu, Rabigh, Tabuk, Abha, Khamis Mushait, Najran, Jazan, Buraidah, Unaizah, Hail, Al Kharj, Al Majmaah, Sakaka, Arar, Al Bahah, Hafar Al Batin, Other)** · Remarks. Agent ID auto `AGT0001…`.
 
 ### 6.7 Invoice forms
 **New Invoice** (two columns on desktop):
@@ -259,9 +269,9 @@ Expense Number (auto `EXP` + DDMMYY + 4 digits, read-only) · Date * · **Catego
 
 ### 6.9 Team member form (full page area)
 - **Profile photo** (upload button, preview, remove; or paste a link).
-- Full Name * · Email * · (new staff) Initial Password * (min 8) · Contact Mobile.
+- Full Name * · **Email *** (this is also the sign-in email; **editable when editing**, with a note) · (new staff) Initial Password * (min 8) · **(editing) New Password — optional, leave empty to keep the current one, eye icon, min 8** · Contact Mobile. Only an admin can change another person's email or password; an email already used by someone else is refused.
 - **Access Role** (dropdown: Process Specialist, System Administrator).
-- **Assigned Modules** (for staff): a **multi-select dropdown with tags**, grouped **Workflow phases** (the 9 stages) and **Other modules** (Dashboard, Company Directory, Renewal Companies, Customers, Agents, Services, Expenses, Reports, Invoices); opens inline and pushes content down.
+- **Assigned Modules** (for staff): two small links above the box — **All Investor Workflow phases** (ticks all 9) and **Clear phases** — and a **multi-select dropdown with tags**, grouped **Workflow phases** (the 9 stages) and **Other modules** (Dashboard, Company Directory, Leads, Renewal Companies, Customers, Agents, Services, Expenses, Reports, Invoices); opens inline and pushes content down.
 - Job Title / Designation · Department.
 - **Salary & Compensation Structure**: Salary Type (Monthly Fixed, Commission Based, Hybrid: Base + Commission, Hourly Rate, Per File / Dossier) · Base Salary (SAR).
 - Checkbox **Active Operational Account**. Buttons: Cancel, **Save**, red **Delete** (master password).
@@ -323,3 +333,6 @@ App chrome (sidebar, top bar, buttons) is hidden when printing.
 Company (AZC801…, name, country, province, licence type, client contact, statutory numbers/dates, leadership, RJSC/audit data for renewals) · Stage record (per company per stage: dates, status, payment, links, remarks) · Customer (CUS0000001…) · Agent (AGT0001…) · Service (name, price) · Invoice (INV-000001…, items, payments) · Expense (EXP1911260001…, attachments) · Staff (name, email, role, stages, modules, salary) · Portal account lines (portal, user name, password).
 
 Sample companies in the app: *Steel Com* (AZC801, Afghanistan, Trading License), *Al Tamayyuz Sharikat Taj Trading* (AZC802, Bangladesh, Trading License).
+
+---
+_Last updated: 22 Nov 2026 — includes Leads, mandatory company fields, invoice edit, Saudi agent locations, Balance card, team email/password change, all-phases shortcut, Dashboard without the expiry list, and the new offline page wording._
