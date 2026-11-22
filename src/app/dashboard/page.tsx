@@ -5,6 +5,7 @@ import { canAccessModule, homeFor } from '@/lib/access'
 import MasterMatrixDashboard from '@/components/dashboard/MasterMatrixDashboard'
 import { Company } from '@/lib/types'
 import AccountsSummary from '@/components/dashboard/AccountsSummary'
+import ExpiryAlerts from '@/components/dashboard/ExpiryAlerts'
 import StageSummaryTable from '@/components/dashboard/StageSummaryTable'
 import { STAGE_CONFIG, MENU_ORDER, phaseOf } from '@/lib/stageData'
 import { enrichTiming } from '@/lib/utils'
@@ -105,7 +106,8 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-6">
       <AccountsSummary invoices={invoices} expenses={expenses} />
-      <MasterMatrixDashboard initialCompanies={companies.filter(c => c.service_type !== 'renewal')} kpiStats={{ ...kpiStats, totalCompanies: companies.filter(c => c.service_type !== 'renewal').length }} stageMap={stageMap} />
+      <MasterMatrixDashboard initialCompanies={companies} kpiStats={kpiStats} stageMap={stageMap} />
+      <ExpiryAlerts companies={companies} />
       <StageSummaryTable rows={summary} />
     </div>
   )
