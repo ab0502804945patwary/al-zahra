@@ -137,7 +137,6 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
                 <th className="py-3 px-4">Remaining Validity</th>
                 <th className="py-3 px-4">Status</th>
                 <th className="py-3 px-4">CR Association</th>
-                {noDates && <th className="py-3 px-4">Portal Accounts</th>}
               <th className="py-3 px-4">Notes</th>
                 <th className="py-3 px-4 text-right">Actions</th>
               </tr>
@@ -332,6 +331,7 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
               {!noDates && <th className="py-3 px-4">SLA Compliance</th>}
               {!noDates && <th className="py-3 px-4">Fulfillment %</th>}
               {!noDates && <th className="py-3 px-4">Payment</th>}
+              {noDates && <th className="py-3 px-4">Portal Accounts</th>}
               <th className="py-3 px-4">Notes</th>
               <th className="py-3 px-4">Dossier</th>
               <th className="py-3 px-4 text-right">Actions</th>
