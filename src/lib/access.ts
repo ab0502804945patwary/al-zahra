@@ -6,6 +6,7 @@ type StaffLike = { role?: string; assigned_stage?: number | null; assigned_stage
 export const MODULES: { key: string; label: string; href: string }[] = [
   { key: 'dashboard', label: 'Dashboard', href: '/dashboard' },
   { key: 'companies', label: 'Company Directory', href: '/dashboard/companies' },
+  { key: 'leads', label: 'Leads (New Lead & Leads list)', href: '/dashboard/leads' },
   { key: 'renewals', label: 'Renewal Companies', href: '/dashboard/renewals' },
   { key: 'customers', label: 'Customers', href: '/dashboard/customers' },
   { key: 'agents', label: 'Agents', href: '/dashboard/agents' },

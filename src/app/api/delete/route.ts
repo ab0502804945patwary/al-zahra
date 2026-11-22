@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { createClient, isSupabaseConfigured } from '@/lib/supabase/server'
 import { adminDb, verifyMasterPassword } from '@/lib/masterPassword'
 import { STAGE_CONFIG } from '@/lib/stageData'
-import { canAccessStage } from '@/lib/access'
+import { canAccessStage, canAccessModule } from '@/lib/access'
 
 export const dynamic = 'force-dynamic'
 
@@ -18,16 +18,18 @@ export async function POST(request: Request) {
 
   const { table, id, password } = await request.json().catch(() => ({}))
   const stageEntry = Object.entries(STAGE_CONFIG).find(([, c]) => c.table === table)
-  if ((!stageEntry && table !== 'companies' && table !== 'employees') || !id || typeof id !== 'string') {
+  if ((!stageEntry && table !== 'companies' && table !== 'employees' && table !== 'leads') || !id || typeof id !== 'string') {
     return NextResponse.json({ error: 'Invalid request.' }, { status: 400 })
   }
 
-  const { data: me } = await supabase.from('employees').select('role, assigned_stage, assigned_stages, is_active').eq('user_id', user.id).single()
+  const { data: me } = await supabase.from('employees').select('role, assigned_stage, assigned_stages, modules, is_active').eq('user_id', user.id).single()
   if (!me || me.is_active === false) return NextResponse.json({ error: 'Not allowed.' }, { status: 403 })
   const isAdmin = me.role === 'admin'
   if (!isAdmin) {
     // staff may only delete inside a stage they are assigned to
-    if (!stageEntry || !canAccessStage(me, Number(stageEntry[0]))) return NextResponse.json({ error: 'You cannot delete this.' }, { status: 403 })
+    const okStage = !!stageEntry && canAccessStage(me, Number(stageEntry[0]))
+    const okLead = table === 'leads' && canAccessModule(me, 'leads')
+    if (!okStage && !okLead) return NextResponse.json({ error: 'You cannot delete this.' }, { status: 403 })
   }
 
   const v = await verifyMasterPassword(String(password || ''), user.id)

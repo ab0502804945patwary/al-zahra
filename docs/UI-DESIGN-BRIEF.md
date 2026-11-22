@@ -176,6 +176,13 @@ Single column of cards (max ~768px):
 5. **Notifications on this device** — **Turn on**, **Send test**, **Turn off**; messages for unsupported/blocked.
 6. **Notification sound** — On/Off switch.
 
+### 5.16 Leads — `/dashboard/leads`, `/dashboard/leads/new`, `/dashboard/leads/{id}` (module "Leads")
+- Sidebar has two items: **New Lead** (opens the form) and **Leads** (the list).
+- **List**: title "Leads Management", button **Add New Lead**; 5 stat cards (Total Leads, Contacted, Interested, Quotation, Converted); filter bar: search "Search by name, mobile or company…", **All Countries / All Status / All Sources / All Employees**, **Follow-up date range**, **Reset**; table **# · Lead Name · Mobile · Country (flag) · Company Name · Service Required · Source (pill) · Assigned To · Status (dot pill) · Follow-up Date · Action (view / edit / delete)**; footer "Showing 1 to 10 of N entries" with page numbers.
+- **Status**: New · Contacted · Interested · Quotation · Negotiation · Payment · Completed (counted as Converted) · Lost; **Overdue** is shown automatically when the follow-up date has passed and the lead is still open.
+- **Source**: Website, Facebook, WhatsApp, Google Ads, Social Media, Referral, Agent, Walk-in, Email, Other.
+- **Form**: Lead Name * · Mobile * · Country (flag dropdown) · Company Name · Service Required (type or pick: services from the Services page + MISA License, CR + Labor, Investor License, Renewal, MISA + CR, Trade License, Company Setup, VAT & ZATCA) · Source · Assigned To (staff dropdown) · Status · Follow-up Date · Notes. The eye icon opens the same form read-only; delete asks the master password.
+
 ---
 
 ## 6. Forms — every field

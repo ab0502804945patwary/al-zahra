@@ -8,6 +8,8 @@ import { Employee } from '@/lib/types'
 import { useSidebar } from './DashboardShell'
 import { canAccessStage, canAccessModule } from '@/lib/access'
 import {
+  UserPlus,
+  Contact,
   BarChart3,
   Wallet,
   RefreshCw,
@@ -39,6 +41,7 @@ interface NavItem {
   icon: any
   stage?: number
   module?: string
+  notPath?: string // do not highlight on this path (e.g. Leads vs New Lead)
   adminOnly?: boolean
 }
 
@@ -53,6 +56,8 @@ const navGroups: NavGroup[] = [
     items: [
       { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, module: 'dashboard' },
       { href: '/dashboard/companies', label: 'Company Directory', icon: Building2, module: 'companies' },
+      { href: '/dashboard/leads/new', label: 'New Lead', icon: UserPlus, module: 'leads' },
+      { href: '/dashboard/leads', label: 'Leads', icon: Contact, module: 'leads', notPath: '/dashboard/leads/new' },
       { href: '/dashboard/renewals', label: 'Renewal Companies', icon: RefreshCw, module: 'renewals' },
       { href: '/dashboard/customers', label: 'Customers', icon: UserRound, module: 'customers' },
       { href: '/dashboard/agents', label: 'Agents', icon: Handshake, module: 'agents' },
@@ -199,7 +204,7 @@ export default function Sidebar({ employee }: SidebarProps) {
 
               {(collapsed || group.title !== 'INVESTOR WORKFLOW' || workflowOpen) && visibleItems.map(item => {
                 const Icon = item.icon
-                const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href))
+                const isActive = (pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href))) && !(item.notPath && pathname.startsWith(item.notPath))
 
                 if (collapsed) {
                   return (
