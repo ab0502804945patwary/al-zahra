@@ -13,5 +13,5 @@ export default async function RenewalCompaniesPage() {
   if (!canAccessModule(employee, 'renewals')) redirect(homeFor(employee))
   const supabase = await createClient()
   const { data } = await supabase.from('companies').select('*').order('company_id')
-  return <CompaniesClient companies={(data as Company[]) || []} mode="renewal" />
+  return <CompaniesClient companies={(data as Company[]) || []} mode="renewal" isAdmin={employee?.role === 'admin'} />
 }

@@ -7,9 +7,10 @@ import CompanyModal, { computeNextCompanyId } from './CompanyModal'
 import { matchesQuery } from '@/lib/search'
 import ExpiryAlerts from '@/components/dashboard/ExpiryAlerts'
 
-interface Props { companies: Company[]; mode?: 'new' | 'renewal' }
+interface Props { companies: Company[]; mode?: 'new' | 'renewal'; isAdmin?: boolean }
 
-export default function CompaniesClient({ companies: initialCompanies, mode = 'new' }: Props) {
+// Only an admin can edit or delete a company. Staff can look and register new ones.
+export default function CompaniesClient({ companies: initialCompanies, mode = 'new', isAdmin = false }: Props) {
   const renewalMode = mode === 'renewal'
   const [companiesList, setCompaniesList] = useState<Company[]>(initialCompanies)
   const [search, setSearch] = useState('')
@@ -86,7 +87,7 @@ export default function CompaniesClient({ companies: initialCompanies, mode = 'n
   if (showAdd) {
     return <CompanyModal lockedType={renewalMode ? 'renewal' : 'a2z'} existingCompanies={companiesList} onClose={() => setShowAdd(false)} onSave={handleSave} />
   }
-  if (selected) {
+  if (selected && isAdmin) {
     return <CompanyModal lockedType={renewalMode ? 'renewal' : 'a2z'} company={selected} existingCompanies={companiesList} onClose={() => setSelected(null)} onSave={handleSave} onDelete={handleDelete} />
   }
 
@@ -164,7 +165,7 @@ export default function CompaniesClient({ companies: initialCompanies, mode = 'n
                     {c.drive_link ? <a href={c.drive_link} target="_blank" rel="noreferrer" className="text-blue-600 hover:text-blue-800 inline-flex items-center gap-1"><ExternalLink className="w-3 h-3" />Open</a> : <span className="text-slate-300">—</span>}
                   </td>
                   <td className="px-3 py-2.5 text-right">
-                    <button onClick={() => setSelected(c)} className="p-1.5 hover:bg-slate-200/60 rounded-md text-slate-400 hover:text-slate-700"><Edit2 className="w-4 h-4" /></button>
+                    {isAdmin && <button onClick={() => setSelected(c)} className="p-1.5 hover:bg-slate-200/60 rounded-md text-slate-400 hover:text-slate-700"><Edit2 className="w-4 h-4" /></button>}
                   </td>
                 </tr>
               ))}
@@ -202,12 +203,14 @@ export default function CompaniesClient({ companies: initialCompanies, mode = 'n
                       </div>
                     </div>
                   </div>
-                  <button
-                    onClick={() => setSelected(company)}
-                    className="p-1.5 hover:bg-slate-200/60 rounded-md transition text-slate-400 hover:text-slate-700"
-                  >
-                    <Edit2 className="w-4 h-4" />
-                  </button>
+                  {isAdmin && (
+                    <button
+                      onClick={() => setSelected(company)}
+                      className="p-1.5 hover:bg-slate-200/60 rounded-md transition text-slate-400 hover:text-slate-700"
+                    >
+                      <Edit2 className="w-4 h-4" />
+                    </button>
+                  )}
                 </div>
               </div>
 

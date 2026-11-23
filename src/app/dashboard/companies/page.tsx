@@ -13,5 +13,5 @@ export default async function CompaniesPage() {
   if (!canAccessModule(employee, 'companies')) redirect(homeFor(employee))
   const supabase = await createClient()
   const { data } = await supabase.from('companies').select('*').order('company_id')
-  return <CompaniesClient companies={(data as Company[]) || []} />
+  return <CompaniesClient companies={(data as Company[]) || []} isAdmin={employee?.role === 'admin'} />
 }

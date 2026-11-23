@@ -36,6 +36,7 @@ Rules that affect the UI:
 - Staff land on their **first assigned stage** (or first module, or Settings) after login. Admin lands on the Dashboard.
 - Inside a stage a staff member can add/edit only if the stage is theirs. Otherwise the page shows a "View only" label.
 - A staff member **cannot edit a record once it is completed**; the **submission date is automatic** (admins can change it).
+- **Editing or deleting an existing company is admin-only.** Staff with the Company Directory / Renewal Companies module can look at companies and **register new ones**, but the edit pencil and the Delete button are not shown to them (and the database refuses it).
 - **Delete** (company, record, staff, lead) always asks for the **Master password** (set by admin in Settings; locks after 5 wrong tries). The delete dialog has an eye icon to show what was typed and a hint "Forgot it? An admin can set a new one in Settings → Master password". The stored password can never be displayed (it is hashed).
 - The admin can give a staff member **all nine Investor Workflow phases with one click** ("All Investor Workflow phases" link in the team form).
 - Client **portal passwords** (Stage 6) are visible only to admins and the Stage 6 staff.
