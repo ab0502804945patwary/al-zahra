@@ -24,3 +24,6 @@ END $$;
 
 -- MIGRATION: Bangladesh company type for renewal companies (Original / Fake)
 ALTER TABLE companies ADD COLUMN IF NOT EXISTS rjsc_company_type TEXT;
+
+-- MIGRATION: where the client is right now
+ALTER TABLE companies ADD COLUMN IF NOT EXISTS client_present_address TEXT;

@@ -108,6 +108,7 @@ export interface Company {
   sa_audit_notes?: string
   client_name?: string
   client_phone?: string
+  client_present_address?: string
   /** 'a2z' = A2Z handles the full setup flow; 'renewal' = existing company, renewal only */
   service_type?: 'a2z' | 'renewal' | string
   cr_number?: string
