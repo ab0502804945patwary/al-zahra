@@ -1,7 +1,9 @@
 'use client'
 import { useState } from 'react'
-import { Plus, Search, Edit2, UserRound } from 'lucide-react'
+import Link from 'next/link'
+import { Plus, Search, Edit2, UserRound, Eye } from 'lucide-react'
 import { matchesQuery } from '@/lib/search'
+import { bdt } from '@/lib/money'
 import CustomerForm, { nextCustomerCode } from './CustomerForm'
 
 export interface Customer { id: string; customer_code: string; [k: string]: any }
@@ -11,7 +13,7 @@ const statusTone = (s?: string) =>
   : s === 'Inactive' ? 'bg-slate-100 text-slate-500 border-slate-300'
   : 'bg-emerald-50 text-emerald-700 border-emerald-200'
 
-export default function CustomersClient({ customers, staffNames, agentNames }: { customers: Customer[]; staffNames: string[]; agentNames: string[] }) {
+export default function CustomersClient({ customers, staffNames, agentNames, dues = {} }: { customers: Customer[]; staffNames: string[]; agentNames: string[]; dues?: Record<string, number> }) {
   const [search, setSearch] = useState('')
   const [editing, setEditing] = useState<Customer | 'new' | null>(null)
 
@@ -57,7 +59,7 @@ export default function CustomersClient({ customers, staffNames, agentNames }: {
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-x-auto">
         <table className="w-full text-xs min-w-[900px]">
           <thead className="bg-slate-50 text-slate-500 uppercase text-[10px] tracking-wide">
-            <tr>{['Code', 'Customer', 'Type', 'Phone', 'Email', 'Nationality', 'Assigned To', 'Status', ''].map(h => <th key={h} className="text-left font-semibold px-3 py-2.5 whitespace-nowrap">{h}</th>)}</tr>
+            <tr>{['Code', 'Customer', 'Type', 'Phone', 'Email', 'Nationality', 'Assigned To', 'Due', 'Status', ''].map(h => <th key={h} className="text-left font-semibold px-3 py-2.5 whitespace-nowrap">{h}</th>)}</tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
             {filtered.map(c => (
@@ -72,14 +74,16 @@ export default function CustomersClient({ customers, staffNames, agentNames }: {
                 <td className="px-3 py-2.5 text-slate-600">{c.email || '—'}</td>
                 <td className="px-3 py-2.5 text-slate-600">{c.nationality || '—'}</td>
                 <td className="px-3 py-2.5 text-slate-600">{c.assigned_to || '—'}</td>
+                <td className={`px-3 py-2.5 font-mono font-semibold ${(dues[c.id] || 0) > 0 ? 'text-rose-600' : 'text-slate-400'}`}>{(dues[c.id] || 0) > 0 ? bdt(dues[c.id]) : '—'}</td>
                 <td className="px-3 py-2.5"><span className={`px-2 py-0.5 rounded-full border text-[10px] font-semibold ${statusTone(c.status)}`}>{c.status}</span></td>
-                <td className="px-3 py-2.5 text-right">
+                <td className="px-3 py-2.5 text-right whitespace-nowrap">
+                  <Link href={`/dashboard/customers/${c.id}`} title="Statement: what was paid and what is due" className="inline-flex p-1.5 hover:bg-slate-200/60 rounded-md text-slate-400 hover:text-blue-600"><Eye className="w-4 h-4" /></Link>
                   <button onClick={() => setEditing(c)} className="p-1.5 hover:bg-slate-200/60 rounded-md text-slate-400 hover:text-slate-700"><Edit2 className="w-4 h-4" /></button>
                 </td>
               </tr>
             ))}
             {filtered.length === 0 && (
-              <tr><td colSpan={9} className="text-center py-14 text-slate-400"><UserRound className="w-10 h-10 mx-auto mb-2 opacity-20" />No customers yet. Click “Add Customer” to create the first one.</td></tr>
+              <tr><td colSpan={10} className="text-center py-14 text-slate-400"><UserRound className="w-10 h-10 mx-auto mb-2 opacity-20" />No customers yet. Click “Add Customer” to create the first one.</td></tr>
             )}
           </tbody>
         </table>

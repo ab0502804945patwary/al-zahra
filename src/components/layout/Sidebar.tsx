@@ -8,6 +8,7 @@ import { Employee } from '@/lib/types'
 import { useSidebar } from './DashboardShell'
 import { canAccessStage, canAccessModule } from '@/lib/access'
 import {
+  HandCoins,
   UserPlus,
   Contact,
   BarChart3,
@@ -64,6 +65,7 @@ const navGroups: NavGroup[] = [
       { href: '/dashboard/services', label: 'Services', icon: ListChecks, module: 'services' },
       { href: '/dashboard/expenses', label: 'Expenses', icon: Wallet, module: 'expenses' },
       { href: '/dashboard/reports', label: 'Reports', icon: BarChart3, module: 'reports' },
+      { href: '/dashboard/receives', label: 'Receive Voucher', icon: HandCoins, module: 'invoices' },
       { href: '/dashboard/invoices', label: 'Invoices', icon: Receipt, module: 'invoices' },
     ]
   },

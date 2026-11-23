@@ -193,6 +193,14 @@ Single column of cards (max ~768px):
 - **Source**: type anything or pick a suggestion (Website, Facebook, WhatsApp, Google Ads, Social Media, Referral, Agent, Walk-in, Email, Other, plus anything typed on earlier leads); the list's Source filter shows the same values.
 - **Form**: Lead Name * · Mobile * · Country (flag dropdown) · Company Name · Service Required (type or pick: services from the Services page + MISA License, CR + Labor, Investor License, Renewal, MISA + CR, Trade License, Company Setup, VAT & ZATCA) · Source · Assigned To (staff dropdown) · Status · Follow-up Date · Notes. The eye icon opens the same form read-only; delete asks the master password.
 
+### 5.17 Receive Vouchers — `/dashboard/receives` (module "Invoices"), and Customer statement — `/dashboard/customers/{id}`
+- Sidebar item **Receive Voucher** (next to Invoices).
+- **List**: title, **Export** (CSV) and **Receive Voucher** buttons; 5 stat cards (Total Receive, Today's Receive, This Month, Completed, Still due from customers); search + status pills **All · Completed · Pending**; table **Voucher No. · Date · Customer · Invoice · Account · Amount · Received By · Reference · Note · Files · Status · (Mark received for Pending)**.
+- **Form "Receive New Voucher"**: Receive Number (auto `RCV` + DDMMYY + 3 digits) · **Customer** (searchable dropdown: name, mobile, code) with a live line "This customer owes BDT X in total" · Receive Date · **Invoice** (searchable dropdown: invoice no., mobile or name; empty = "All invoices (oldest first)") · Account Type * (Cash, Bank Transfer, bKash, Nagad, Cheque, Other) · **Amount (BDT) \*** with "Max receivable: N" (= the invoice's due, or the customer's total due) and "due after this" · Account (type or pick) · Reference Number · Status * (Completed / Pending) · Received By (staff dropdown, defaults to the signed-in user) · Attachments * (drag-and-drop, photos/PDF/DOC/XLS, 5MB, max 5) · Notes.
+- **Rules**: the amount is taken off the due automatically (added as a payment on the chosen invoice, or spread over the customer's oldest unpaid invoices); more than the due is refused; **Pending** is saved but not counted until **Mark received**.
+- **Customer statement** (eye icon in the Customers list, which also has a new **Due** column): cards Total invoiced / Paid so far / Still due; table **Payments received (when and how much)** with invoice, method, reference, voucher no., received by; table of the customer's invoices; Print / PDF.
+- All customer / invoice pickers (Receive form, New Invoice) are **searchable dropdowns**.
+
 ---
 
 ## 6. Forms — every field

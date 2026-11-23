@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import { X, Loader2, Save, Plus, Trash2, Check } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { bdt } from '@/lib/money'
+import SearchSelect from '@/components/ui/SearchSelect'
 
 interface Line { key: string; service_id: string | null; description: string; quantity: string; unit_price: string }
 
@@ -106,10 +107,13 @@ export default function NewInvoiceForm({ customers, services, onClose, editing }
           <div className="bg-white rounded-xl border border-slate-200 p-5 grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="sm:col-span-2">
               <label className="text-xs font-semibold text-slate-700 mb-1.5 block">Customer<span className="text-rose-500 ml-0.5">*</span></label>
-              <select value={customerId} onChange={e => setCustomerId(e.target.value)} className={inputCls}>
-                <option value="">Select customer...</option>
-                {customers.map(c => <option key={c.id} value={c.id}>{c.customer_code} — {c.given_name} {c.surname}{c.phone ? ` (${c.phone})` : ''}</option>)}
-              </select>
+              <SearchSelect
+                value={customerId}
+                onChange={setCustomerId}
+                placeholder="Select customer..."
+                className={inputCls}
+                options={customers.map(c => ({ value: c.id, label: `${c.customer_code} — ${c.given_name} ${c.surname}`, hint: c.phone ? `(${c.phone})` : '', keywords: c.phone }))}
+              />
               {customers.length === 0 && <p className="text-[11px] text-amber-600 mt-1">No customers yet. Add one in Customers first.</p>}
             </div>
             <div>
