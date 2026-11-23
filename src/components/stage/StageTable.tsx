@@ -150,14 +150,13 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
                 <th className="py-3 px-4">Expiration Date</th>
                 <th className="py-3 px-4">Remaining Validity</th>
                 <th className="py-3 px-4">Status</th>
-                <th className="py-3 px-4">CR Association</th>
               <th className="py-3 px-4">Notes</th>
                 <th className="py-3 px-4 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-slate-700">
               {filtered.length === 0 ? (
-                <tr><td colSpan={11} className="text-center py-12 text-slate-400">No records found</td></tr>
+                <tr><td colSpan={10} className="text-center py-12 text-slate-400">No records found</td></tr>
               ) : filtered.map(e => (
                 <tr key={e.id} className="hover:bg-slate-50/60 transition-colors">
                   <td className="py-3 px-4">
@@ -175,9 +174,9 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
                         {e.remaining_days < 0 ? `Expired ${-e.remaining_days} days ago` : `${e.remaining_days} days`}
                       </span>
                     ) : '—'}
+                    {e.expiry_stopped && <span title="CR Association is Complete: the countdown stopped on that day" className="ml-2 px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200 text-[10px] font-semibold">Stopped · CR complete</span>}
                   </td>
                   <td className="py-3 px-4">{e.expire_date ? <StatusBadge status={e.status} /> : '—'}</td>
-                  <td className="py-3 px-4"><MilestoneBadge status={e.cr_status} /></td>
                   <td className="py-3 px-4 text-slate-400 max-w-32 truncate">{e.notes || '—'}</td>
                   <td className="py-3 px-4 text-right">
                     {canEdit && isLocked(e) ? (<span title="Submitted — locked. Only an admin can edit." className="p-1.5 text-slate-300 inline-block"><Lock className="w-3.5 h-3.5" /></span>) : canEdit && (<button onClick={() => setEditEntry(e)} className="p-1.5 hover:bg-slate-100 rounded-md transition text-slate-400 hover:text-slate-600">
@@ -357,6 +356,7 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
               {!noDates && <th className="py-3 px-4">Fulfillment %</th>}
               {!noDates && <th className="py-3 px-4">Payment</th>}
               {noDates && <th className="py-3 px-4">Portal Accounts</th>}
+              {stageId === '5' && <th className="py-3 px-4">CR Association</th>}
               <th className="py-3 px-4">Notes</th>
               <th className="py-3 px-4">Dossier</th>
               <th className="py-3 px-4 text-right">Actions</th>
@@ -447,6 +447,7 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
                     </div>
                   </td>
                 )}
+                {stageId === '5' && <td className="py-3 px-4">{e.cr_status ? <span className={cn('px-2 py-0.5 rounded-full text-[11px] font-semibold border', e.cr_status === 'Complete' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-700 border-amber-200')}>{e.cr_status}</span> : '—'}</td>}
                 <td className="py-3 px-4 text-slate-400 max-w-28 truncate">{e.remarks || '—'}</td>
                 <td className="py-3 px-4">
                   {e.drive_link ? (

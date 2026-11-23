@@ -51,6 +51,10 @@ export default function EditEntryModal({ stageId, entry, companies, employees, o
       const t = assessTiming(form.submit_date, form.target_date, form.complete_date)
       payload = { ...payload, days_taken: t.days, status: t.status, completion_percent: t.completion, overdue_status: t.overdue }
     }
+    if (stageId === '5') {
+      const today = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10)
+      payload.cr_status_date = form.cr_status === 'Complete' ? (entry.cr_status === 'Complete' && entry.cr_status_date ? entry.cr_status_date : today) : null
+    }
     if (isNameClearance) {
       const nc = assessExpiry(form.expire_date)
       if (nc) payload = { ...payload, ...nc }
@@ -200,13 +204,6 @@ export default function EditEntryModal({ stageId, entry, companies, employees, o
                 <Field label="Expire Date" name="expire_date" type="date" required hint="Remaining days and status are calculated from this date" />
                 
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <Sel
-                  label="CR Association Status"
-                  name="cr_status"
-                  options={toOptions(CR_STATUSES)}
-                />
-              </div>
               <Field label="Regulatory Notes" name="notes" />
             </>
           ) : (
@@ -226,6 +223,12 @@ export default function EditEntryModal({ stageId, entry, companies, employees, o
                 />
               </div>
                 </>
+              )}
+              {stageId === '5' && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <Sel label="CR Association Status" name="cr_status" options={toOptions(['Pending', 'Complete'])} />
+                  <p className="text-[11px] text-slate-500 self-end pb-2">Complete stops the Company Name Clearance countdown of this company.</p>
+                </div>
               )}
               <Field label="Electronic Dossier Link (Google Drive)" name="drive_link" />
               <Field label="Operational Remarks" name="remarks" />

@@ -89,6 +89,9 @@ export default function AddEntryModal({ stageId, companies, employees, onClose, 
       payload = { ...payload, days_taken: t.days, status: t.status, completion_percent: t.completion, overdue_status: t.overdue }
     }
 
+    if (stageId === '5') {
+      payload.cr_status_date = form.cr_status === 'Complete' ? new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10) : null
+    }
     if (isNameClearance) {
       const nc = assessExpiry(form.expire_date)
       if (nc) payload = { ...payload, ...nc }
@@ -235,13 +238,6 @@ export default function AddEntryModal({ stageId, companies, employees, onClose, 
                 <Field label="Expire Date" name="expire_date" type="date" required hint="Remaining days and status are calculated from this date" />
                 
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <Select
-                  label="CR Association Status"
-                  name="cr_status"
-                  options={toOptions(CR_STATUSES)}
-                />
-              </div>
               <Field label="Regulatory Notes" name="notes" />
             </>
           ) : (
@@ -261,6 +257,12 @@ export default function AddEntryModal({ stageId, companies, employees, onClose, 
                 />
               </div>
                 </>
+              )}
+              {stageId === '5' && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <Select label="CR Association Status" name="cr_status" options={toOptions(['Pending', 'Complete'])} />
+                  <p className="text-[11px] text-slate-500 self-end pb-2">Complete stops the Company Name Clearance countdown of this company.</p>
+                </div>
               )}
               <Field label="Electronic Dossier Link (Google Drive)" name="drive_link" />
               <Field label="Operational Remarks" name="remarks" />

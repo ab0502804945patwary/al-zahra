@@ -46,7 +46,11 @@ export default async function DashboardPage() {
         ids.forEach((sid, k) => { sRes[k].data = ((sRes[k].data as any[]) || []).filter(r => mine.has(r.company_id)) })
       }
       kpiStats.totalCompanies = companies.length
-      ids.forEach((sid, k) => { stageRows[sid] = ((sRes[k].data as any[]) || []).map(r => (STAGE_CONFIG[sid].isNameClearance ? enrichExpiry(r) : enrichTiming(r))) })
+      // companies whose CR Association is Complete: their Company Name Clearance countdown stays on that day
+      const crIndex = ids.indexOf('5')
+      const stoppedOn = new Map<string, string>()
+      for (const r of ((crIndex >= 0 ? sRes[crIndex].data : []) as any[]) || []) if (r.cr_status === 'Complete') stoppedOn.set(r.company_id, r.cr_status_date || r.complete_date)
+      ids.forEach((sid, k) => { stageRows[sid] = ((sRes[k].data as any[]) || []).map(r => (STAGE_CONFIG[sid].isNameClearance ? enrichExpiry(r, stoppedOn.get(r.company_id) || null) : enrichTiming(r))) })
     } catch {}
   }
 
@@ -76,7 +80,7 @@ export default async function DashboardPage() {
       const st = [r.status]
       kpiStats.compliant += st.filter(x => x === 'Green' || x === 'Active').length
       kpiStats.overdue += st.filter(x => x === 'Red' || x === 'Expired').length
-      if (r.remaining_days != null && r.remaining_days >= 0 && r.remaining_days <= 40) kpiStats.expiring += 1
+      if (r.remaining_days != null && r.remaining_days >= 0 && r.remaining_days <= 40 && !r.expiry_stopped) kpiStats.expiring += 1
     }
   }
 

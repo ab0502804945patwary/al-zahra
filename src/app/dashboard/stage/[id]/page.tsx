@@ -42,19 +42,23 @@ export default async function StagePage({ params }: { params: Promise<{ id: stri
         : '*, companies(company_name, country_of_origin)')
       .order('created_at', { ascending: false })
 
-    const [eRes, cRes, empRes, ...upRes] = await Promise.all([
+    const [eRes, cRes, empRes, crRes, ...upRes] = await Promise.all([
       entriesQuery,
       supabase.from('companies').select('id, company_id, company_name, country_of_origin, entity_type, service_type, client_name, client_phone, cr_number, cr_issue_date, cr_expire_date, misa_license_no, misa_issue_date, misa_expire_date, tin_number, vat_number, chamber_registration_no, gosi_qiwa_status, account_status, selected_phases, skipped_phases').order('company_id'),
       // colleague names are read on the server: staff may only read their own staff row
       lookup.from('employees').select('id, name, assigned_stage, assigned_stages'),
+      // CR Association (stage 5): when it is Complete the Company Name Clearance countdown stops on that day
+      config.isNameClearance ? lookup.from('stage5_commercial_registration').select('company_id, cr_status, cr_status_date, complete_date') : Promise.resolve({ data: [] as any[] }),
       ...upstream.map(sid => lookup.from(STAGE_CONFIG[sid].table).select(eligibilityColumns(sid, ['priority', 'category']))),
     ])
     companies = cRes.data || []
     employees = empRes.data || []
     const nameOf = new Map<string, string>(employees.map((x: any) => [x.id, x.name]))
+    const stoppedOn = new Map<string, string>()
+    for (const r of (crRes.data as any[]) || []) if (r.cr_status === 'Complete') stoppedOn.set(r.company_id, r.cr_status_date || r.complete_date)
     entries = (eRes.data || []).map((e: any) => {
       const withName = { ...e, employees: e.employee_id && nameOf.get(e.employee_id) ? { name: nameOf.get(e.employee_id) } : null }
-      return config.isNameClearance ? enrichExpiry(withName) : enrichTiming(withName)
+      return config.isNameClearance ? enrichExpiry(withName, stoppedOn.get(e.company_id) || null) : enrichTiming(withName)
     })
     upstream.forEach((sid, k) => { dbEntries[sid] = (upRes[k]?.data as any[]) || [] })
   } catch (e) {

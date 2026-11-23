@@ -108,16 +108,17 @@ export function getDaysUntilExpiry(expireDate: string | null): number {
 }
 
 /** Company Name Clearance: remaining days and status are worked out from the Expire Date (entered by hand). */
-export function assessExpiry(expireDate?: string | null) {
+export function assessExpiry(expireDate?: string | null, stoppedOn?: string | null) {
   if (!expireDate) return null
-  const remaining = dayNum(expireDate) - todayNum()
+  // stoppedOn: the day CR Association became Complete; the countdown stays on that day
+  const remaining = dayNum(expireDate) - (stoppedOn ? dayNum(stoppedOn) : todayNum())
   if (Number.isNaN(remaining)) return null
   const status = remaining < 0 ? 'Expired' : remaining <= 30 ? 'Urgent' : remaining <= 40 ? 'Warning' : 'Active'
   return { expire_date: expireDate.slice(0, 10), remaining_days: remaining, status }
 }
 
 /** Fresh remaining days and status for a stored clearance record (they change every day). */
-export function enrichExpiry<T extends Record<string, any>>(e: T): T {
-  const x = assessExpiry(e.expire_date)
-  return x ? ({ ...e, remaining_days: x.remaining_days, status: x.status } as T) : e
+export function enrichExpiry<T extends Record<string, any>>(e: T, stoppedOn?: string | null): T {
+  const x = assessExpiry(e.expire_date, stoppedOn)
+  return x ? ({ ...e, remaining_days: x.remaining_days, status: x.status, expiry_stopped: Boolean(stoppedOn) } as T) : e
 }

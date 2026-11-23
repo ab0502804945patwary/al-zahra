@@ -136,7 +136,7 @@ export const TABLE_COLUMNS: Record<string, string[]> = {
   '10': [...COMMON, 'foreign_company_name', 'country', 'city', 'registration_no'],
   '11': [...COMMON, 'foreign_company_name', 'country', 'city', 'registration_no', 'account_email', 'account_username', 'account_password'],
   '9': [...COMMON, 'bd_company_name', 'country', 'rjsc_reg_no', 'issue_no', 'incorporation_date', 'auditor_firm', 'rjsc_return_due_date'],
-  '1': COMMON, '2': COMMON, '4': COMMON, '5': COMMON, '6': [...COMMON, 'portal_accounts'], '7': COMMON,
+  '1': COMMON, '2': COMMON, '4': COMMON, '5': [...COMMON, 'cr_status', 'cr_status_date'], '6': [...COMMON, 'portal_accounts'], '7': COMMON,
   '3': [...COMMON, 'foreign_company_name', 'country', 'city', 'registration_no', 'account_email', 'account_username', 'account_password'],
   '8': ['company_id', 'entity_type', 'company_name_english', 'arabic_name', 'name_clearance_number', 'submit_date', 'approval_date', 'expire_date', 'remaining_days', 'status', 'cr_status', 'notes'],
 }
