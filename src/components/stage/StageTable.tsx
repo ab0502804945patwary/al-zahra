@@ -172,11 +172,11 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
                   <td className="py-3 px-4">
                     {e.remaining_days != null ? (
                       <span className={cn('font-semibold', e.remaining_days <= 30 ? 'text-rose-600' : e.remaining_days <= 40 ? 'text-amber-600' : 'text-emerald-600')}>
-                        {e.remaining_days} days
+                        {e.remaining_days < 0 ? `Expired ${-e.remaining_days} days ago` : `${e.remaining_days} days`}
                       </span>
                     ) : '—'}
                   </td>
-                  <td className="py-3 px-4">{e.approval_date ? <StatusBadge status={e.status} /> : '—'}</td>
+                  <td className="py-3 px-4">{e.expire_date ? <StatusBadge status={e.status} /> : '—'}</td>
                   <td className="py-3 px-4"><MilestoneBadge status={e.cr_status} /></td>
                   <td className="py-3 px-4 text-slate-400 max-w-32 truncate">{e.notes || '—'}</td>
                   <td className="py-3 px-4 text-right">

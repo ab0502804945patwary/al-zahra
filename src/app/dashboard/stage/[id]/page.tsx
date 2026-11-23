@@ -3,7 +3,7 @@ import { notFound, redirect } from 'next/navigation'
 import StageTable from '@/components/stage/StageTable'
 import StageHeader from '@/components/stage/StageHeader'
 import StatusGuide from '@/components/ui/StatusGuide'
-import { enrichTiming } from '@/lib/utils'
+import { enrichTiming, enrichExpiry } from '@/lib/utils'
 import { STAGE_CONFIG } from '@/lib/stageData'
 import { getSessionInfo } from '@/lib/session'
 import { canAccessStage } from '@/lib/access'
@@ -54,7 +54,7 @@ export default async function StagePage({ params }: { params: Promise<{ id: stri
     const nameOf = new Map<string, string>(employees.map((x: any) => [x.id, x.name]))
     entries = (eRes.data || []).map((e: any) => {
       const withName = { ...e, employees: e.employee_id && nameOf.get(e.employee_id) ? { name: nameOf.get(e.employee_id) } : null }
-      return config.isNameClearance ? withName : enrichTiming(withName)
+      return config.isNameClearance ? enrichExpiry(withName) : enrichTiming(withName)
     })
     upstream.forEach((sid, k) => { dbEntries[sid] = (upRes[k]?.data as any[]) || [] })
   } catch (e) {

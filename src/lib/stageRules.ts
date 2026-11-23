@@ -166,6 +166,7 @@ export function validateDates(form: Record<string, any>): string | null {
     ['usa_submit_date', 'usa_complete_date', 'USA completion date'],
     ['canada_submit_date', 'canada_complete_date', 'Canada completion date'],
     ['submit_date', 'approval_date', 'Approval date'],
+    ['approval_date', 'expire_date', 'Expire date'],
   ]
   for (const [a, b, label] of pairs) {
     if (form[a] && form[b] && new Date(form[b]) < new Date(form[a])) return `${label} cannot be earlier than the submission date.`

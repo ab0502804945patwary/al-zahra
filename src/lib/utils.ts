@@ -107,12 +107,17 @@ export function getDaysUntilExpiry(expireDate: string | null): number {
   return Math.floor((expire.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
 }
 
-export function calculateNameClearance(approvalDate?: string | null) {
-  if (!approvalDate) return null
-  const approved = new Date(approvalDate)
-  if (isNaN(approved.getTime())) return null
-  const expire = new Date(approved.getTime() + 60 * 86400000)
-  const remaining = Math.ceil((expire.getTime() - Date.now()) / 86400000)
+/** Company Name Clearance: remaining days and status are worked out from the Expire Date (entered by hand). */
+export function assessExpiry(expireDate?: string | null) {
+  if (!expireDate) return null
+  const remaining = dayNum(expireDate) - todayNum()
+  if (Number.isNaN(remaining)) return null
   const status = remaining < 0 ? 'Expired' : remaining <= 30 ? 'Urgent' : remaining <= 40 ? 'Warning' : 'Active'
-  return { expire_date: expire.toISOString().slice(0, 10), remaining_days: remaining, status }
+  return { expire_date: expireDate.slice(0, 10), remaining_days: remaining, status }
+}
+
+/** Fresh remaining days and status for a stored clearance record (they change every day). */
+export function enrichExpiry<T extends Record<string, any>>(e: T): T {
+  const x = assessExpiry(e.expire_date)
+  return x ? ({ ...e, remaining_days: x.remaining_days, status: x.status } as T) : e
 }

@@ -7,7 +7,7 @@ import { Company } from '@/lib/types'
 import AccountsSummary from '@/components/dashboard/AccountsSummary'
 import StageSummaryTable from '@/components/dashboard/StageSummaryTable'
 import { STAGE_CONFIG, MENU_ORDER, phaseOf } from '@/lib/stageData'
-import { enrichTiming } from '@/lib/utils'
+import { enrichTiming, enrichExpiry } from '@/lib/utils'
 
 export const dynamic = 'force-dynamic'
 
@@ -46,7 +46,7 @@ export default async function DashboardPage() {
         ids.forEach((sid, k) => { sRes[k].data = ((sRes[k].data as any[]) || []).filter(r => mine.has(r.company_id)) })
       }
       kpiStats.totalCompanies = companies.length
-      ids.forEach((sid, k) => { stageRows[sid] = ((sRes[k].data as any[]) || []).map(r => (STAGE_CONFIG[sid].isNameClearance ? r : enrichTiming(r))) })
+      ids.forEach((sid, k) => { stageRows[sid] = ((sRes[k].data as any[]) || []).map(r => (STAGE_CONFIG[sid].isNameClearance ? enrichExpiry(r) : enrichTiming(r))) })
     } catch {}
   }
 
