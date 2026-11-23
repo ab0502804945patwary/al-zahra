@@ -203,7 +203,7 @@ Sections as grey panels with icon + uppercase title; fields in a 12-column grid 
 
 | Section | Fields (type) |
 |---|---|
-| **Company Profile & Identification** | Company ID * (auto `AZC801…`, reset button) · Country (flag dropdown, all countries) · **Province / State** (dropdown for known countries, else text) · License Type (dropdown: Trading License, Service License, Service to Trade) · **Client Contact Name** · **Client Phone** · Company Name * |
+| **Company Profile & Identification** | Company ID * (auto `AZC801…`, reset button) · Country (flag dropdown, all countries) · **Province / State** (dropdown for known countries, else text) · License Type (dropdown: Trading License, Service License, Service to Trade) · **Client Contact Name** · **Client Phone** · **Client Present Address** (full width, optional: where the client is right now) · Company Name * |
 | **Statutory & Legal Identifiers** (renewal only; for new companies these are filled later in Stage 7) | CR Number · CR Issue Date · CR Expiry Date · MISA License No. · MISA Issue Date · MISA Expiry Date · TIN Number · VAT Number · Chamber of Commerce · GOSI / Qiwa Status |
 | **Headquarters & Official Communication** (new only) | Corporate Email · WhatsApp · National Address |
 | **Executive Leadership & Shareholders** | CEO / GM Name · National ID / Iqama · Main Shareholder · Shareholder Mobile |
