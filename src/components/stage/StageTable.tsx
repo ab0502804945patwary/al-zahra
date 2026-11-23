@@ -114,7 +114,7 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
   const filtered = entries.filter((e, i) => {
     const comp = companies.find(c => c.company_id === e.company_id)
     return matchesQuery(search, i + 1, [
-      e.bd_company_name, e.foreign_company_name, e.city, e.registration_no, e.account_email, e.account_username, e.rjsc_reg_no, e.issue_no, e.auditor_firm, e.company_id, e.companies?.company_name, e.companies?.country_of_origin, comp?.client_name, comp?.client_phone,
+      e.bd_company_name, e.approval_status, e.foreign_company_name, e.city, e.registration_no, e.account_email, e.account_username, e.rjsc_reg_no, e.issue_no, e.auditor_firm, e.company_id, e.companies?.company_name, e.companies?.country_of_origin, comp?.client_name, comp?.client_phone,
       e.client_name, e.client_phone, e.category, e.priority, e.current_stage, e.name_clearance_number, e.entity_type,
     ])
   })
@@ -324,6 +324,7 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
               <th className="py-3 px-4">No.</th>
               {stageId === '9' && (<>
                 <th className="py-3 px-4">Bangladesh Company Name</th>
+                <th className="py-3 px-4">Status</th>
                 <th className="py-3 px-4">Country</th>
                 <th className="py-3 px-4">RJSC Reg. No.</th>
                 <th className="py-3 px-4">Issue No</th>
@@ -381,6 +382,7 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
                 </>)}
                 {stageId === '9' && (<>
                   <td className="py-3 px-4 font-semibold text-slate-900 whitespace-nowrap">{e.bd_company_name || '—'}</td>
+                  <td className="py-3 px-4"><span className={cn('px-2 py-0.5 rounded-full text-[11px] font-semibold border', e.approval_status === 'Approved' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-700 border-amber-200')}>{e.approval_status === 'Approved' ? 'Approved' : 'Pending'}</span></td>
                   <td className="py-3 px-4"><span className="inline-flex items-center gap-1.5 whitespace-nowrap"><Flag country={e.country} />{e.country || '—'}</span></td>
                   <td className="py-3 px-4 font-mono">{e.rjsc_reg_no || '—'}</td>
                   <td className="py-3 px-4 font-mono">{e.issue_no || '—'}</td>

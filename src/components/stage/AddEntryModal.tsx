@@ -49,7 +49,7 @@ export default function AddEntryModal({ stageId, companies, employees, onClose, 
   const [form, setForm] = useState<Record<string, string>>({
     submit_date: new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10), // today (local)
     current_stage: stageId === '6' ? '' : (PHASE_OPTIONS[stageId] || [])[0] || '',
-    ...(stageId === '9' ? { country: 'Bangladesh' } : {}),
+    ...(stageId === '9' ? { country: 'Bangladesh', approval_status: 'Pending' } : {}),
     employee_id: employees.find(e => String(e.assigned_stage) === stageId)?.id || '',
   })
 

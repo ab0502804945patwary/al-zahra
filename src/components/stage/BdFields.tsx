@@ -11,9 +11,18 @@ export default function BdFields({ form, set }: { form: Record<string, string>; 
   return (
     <div className="bg-emerald-50/40 border border-emerald-200 rounded-xl p-4 space-y-3">
       <h3 className="text-xs font-semibold text-slate-800">Bangladesh Company (RJSC)</h3>
-      <div>
-        <L req>Bangladesh Company Name</L>
-        <input required className={input} value={form.bd_company_name || ''} onChange={e => set('bd_company_name', e.target.value)} />
+      <div className="grid grid-cols-1 sm:grid-cols-[1fr_190px] gap-3">
+        <div>
+          <L req>Bangladesh Company Name</L>
+          <input required className={input} value={form.bd_company_name || ''} onChange={e => set('bd_company_name', e.target.value)} />
+        </div>
+        <div>
+          <L>Status</L>
+          <select className={input} value={form.approval_status || 'Pending'} onChange={e => set('approval_status', e.target.value)}>
+            <option value="Pending">Pending</option>
+            <option value="Approved">Approved</option>
+          </select>
+        </div>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
