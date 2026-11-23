@@ -47,7 +47,7 @@ interface DashboardProps {
 export default function MasterMatrixDashboard({ initialCompanies, kpiStats, stageMap }: DashboardProps) {
   const companiesList = initialCompanies
   const [search, setSearch] = useState('')
-  const [filterType, setFilterType] = useState<'all' | 'new' | 'renewal' | 'attention' | 'completed'>('all')
+  const [filterType, setFilterType] = useState<'all' | 'new' | 'renewal' | 'attention' | 'completed'>('new')
 
   // Build matrix rows for each company
   const matrixRows: CompanyMatrixRow[] = useMemo(() => {
@@ -191,14 +191,6 @@ export default function MasterMatrixDashboard({ initialCompanies, kpiStats, stag
             </div>
 
             <div className="flex items-center bg-white border border-slate-200 rounded-lg p-0.5 text-xs">
-              <button
-                onClick={() => setFilterType('all')}
-                className={`px-2.5 py-1 rounded-md font-medium transition ${
-                  filterType === 'all' ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                All ({matrixRows.length})
-              </button>
               <button
                 onClick={() => setFilterType('new')}
                 className={`px-2.5 py-1 rounded-md font-medium transition ${

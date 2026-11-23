@@ -102,7 +102,7 @@ Top to bottom:
    - Header with title, "Live 9-Stage Tracker" tag and short description.
    - Shows **both new and renewal companies** (renewal rows have "—" in the stage cells; there is no separate filter pill for them).
    - 4 stat cards: **Active Portfolios** (all registered entities) · **Compliant & On Track** · **Action Needed (Overdue)** · **Trade Name Expiry Radar** (expiring within 60 days).
-   - Toolbar: search "Search AZC code, company…"; filter pills **All · New Company · Needs Action**.
+   - Toolbar: search "Search AZC code, company…"; filter pills **New Company · Needs Action** (New Company is selected by default).
    - Table: one row per company (ID badge + name + country flag); **one column per stage** (Parent, BD Company, Activity, Foreign, Name, MISA, CR, Portals, Filing). Each cell is a coloured status badge with a short label (e.g. "Approved", "Delay 17d", "In Queue", "N/A") and days; clicking opens that stage.
    - Legend: Compliant (≤10d) green · Caution (11–13d) yellow · Overdue red · Queued grey.
    - The **Upcoming Expiries — Contact List is NOT on the Dashboard** any more; it lives only on the Renewal Companies page (§5.4).
