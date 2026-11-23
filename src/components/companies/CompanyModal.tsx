@@ -185,6 +185,7 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
   const SPAN: Record<number, string> = {
     12: 'col-span-2 lg:col-span-12',
     6: 'lg:col-span-6',
+    2: 'lg:col-span-2',
     4: 'lg:col-span-4',
     3: 'lg:col-span-3',
   }
@@ -243,7 +244,7 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
 
   const profileFields = (
     <>
-      <div className={SPAN[3]}>
+      <div className={SPAN[2]}>
         <div className="flex items-center justify-between mb-1">
           <span className="text-xs font-medium text-slate-700 flex items-center gap-1.5 whitespace-nowrap"><Hash className="w-3.5 h-3.5 text-blue-500" />Company ID *</span>
           {!company && (
@@ -296,13 +297,21 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
         )}
       </div>
 
-      <div className={`col-span-2 ${SPAN[3]}`}>
+      <div className={`col-span-2 ${SPAN[2]}`}>
         <Lbl name="entity_type">License Type</Lbl>
         <select required value={form.entity_type || ''} onChange={e => set('entity_type', e.target.value)} className={inputCls}>
           <option value="">Select license type</option>
           <option value="Trading License">Trading License</option>
           <option value="Service License">Service License</option>
           <option value="Service to Trade">Service to Trade</option>
+        </select>
+      </div>
+
+      <div className={SPAN[2]}>
+        <label className="block"><Lbl name="account_status">Status</Lbl></label>
+        <select value={form.account_status === 'Inactive' ? 'Inactive' : 'Active'} onChange={e => set('account_status', e.target.value)} className={inputCls}>
+          <option value="Active">Active</option>
+          <option value="Inactive">Inactive</option>
         </select>
       </div>
 
@@ -325,13 +334,6 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
       <div className={SPAN[6]}>
         <label className="block"><Lbl name="client_phone">Client Phone</Lbl></label>
         <input type="text" required value={form.client_phone || ''} onChange={e => set('client_phone', e.target.value)} placeholder="e.g. 05xxxxxxxx" className={inputCls} />
-      </div>
-      <div className={SPAN[6]}>
-        <label className="block"><Lbl name="account_status">Status (Active / Inactive)</Lbl></label>
-        <select value={form.account_status === 'Inactive' ? 'Inactive' : 'Active'} onChange={e => set('account_status', e.target.value)} className={inputCls}>
-          <option value="Active">Active — work is running</option>
-          <option value="Inactive">Inactive — client asked to pause (can be turned on again)</option>
-        </select>
       </div>
       {ownerOptions && company && (
         <div className={SPAN[6]}>
