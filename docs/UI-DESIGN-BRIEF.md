@@ -349,3 +349,9 @@ Sample companies in the app: *Steel Com* (AZC801, Afghanistan, Trading License),
 
 ---
 _Last updated: 22 Nov 2026 — includes Leads, mandatory company fields, invoice edit, Saudi agent locations, Balance card, team email/password change, all-phases shortcut, Dashboard without the expiry list, and the new offline page wording._
+
+### 5.18 Journal & Staff Cash (`/dashboard/journal`, module "journal")
+- Header buttons: **Employee Settlement** and **+ Journal Entry**. Three stat cards (entries, cash still with staff, staff holding cash). Tabs: **Journal Entries** (voucher, date, type, description, Dr/Cr lines, amount, status) and **Staff Cash** (per employee: collected / handed over / pending).
+- Create Journal Entry (full page): Voucher Number (JV or STL + DDMMYY + 4 digits, read-only), Reference, Entry Date, Status (Posted/Draft), Entry Type, Description, Total Debit / Total Credit with a green "Balanced" or amber "Difference" indicator, Journal Lines table (Account, Debit, Credit, delete) with "+ Add Line", Cancel / Save Entry (disabled until balanced).
+- Entry Type "Employee Settlement" shows a blue panel: Employee (name + pending amount), Amount (defaults to pending), Payment Method (Cash / Bank / Mobile Wallet), info line "NAME has pending receivable of BDT N", and **Generate Lines** (Debit cash/bank account, Credit Employee Receivable, description "Cash settlement from NAME").
+- Rule: staff cash = Completed Receive Vouchers paid in Cash with that person as Received By, minus posted settlements. A settlement larger than the pending amount is rejected.

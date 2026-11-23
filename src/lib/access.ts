@@ -14,6 +14,7 @@ export const MODULES: { key: string; label: string; href: string }[] = [
   { key: 'expenses', label: 'Expenses', href: '/dashboard/expenses' },
   { key: 'reports', label: 'Reports', href: '/dashboard/reports' },
   { key: 'invoices', label: 'Invoices', href: '/dashboard/invoices' },
+  { key: 'journal', label: 'Journal & Staff Cash', href: '/dashboard/journal' },
 ]
 
 /** Stage numbers a staff member is assigned to. Returns null for admins (= every stage). */
