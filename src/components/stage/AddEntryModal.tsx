@@ -219,7 +219,7 @@ export default function AddEntryModal({ stageId, companies, employees, onClose, 
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <Field label="Entity Structure" name="entity_type" />
-                <Field label="Clearance Number" name="name_clearance_number" />
+                <Field label="Company Name Clearance" name="name_clearance_number" />
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <Field label="Official English Name" name="company_name_english" />
