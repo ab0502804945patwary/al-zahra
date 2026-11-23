@@ -28,7 +28,6 @@ const ampm = (t?: string | null) => {
   const [h, m] = t.split(':').map(Number)
   return `${String(((h + 11) % 12) + 1).padStart(2, '0')}:${String(m).padStart(2, '0')} ${h >= 12 ? 'PM' : 'AM'}`
 }
-const shortUrl = (u: string) => u.replace(/^https?:\/\/(www\.)?/i, '').replace(/\/$/, '')
 
 type Draft = { posted_on: string; posted_time: string; channel_name: string; platform: string; employee_name: string; video_creator: string; url: string }
 
@@ -209,8 +208,8 @@ export default function VideosClient({ videos, staff, meName }: { videos: VideoR
                 <td className="px-3 py-3"><span className="inline-flex items-center gap-2 pr-2.5 pl-1 py-0.5 rounded-full bg-white border border-slate-200 text-slate-700 text-[11px] font-medium"><SourceIcon source={v.platform} size={16} />{v.platform}</span></td>
                 <td className="px-3 py-3 text-slate-700 whitespace-nowrap">{who(v.employee_name)}</td>
                 <td className="px-3 py-3 text-slate-700 whitespace-nowrap">{who(v.video_creator)}</td>
-                <td className="px-3 py-3 max-w-[260px]">
-                  {v.url ? <a href={v.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-blue-600 hover:underline truncate max-w-full"><ExternalLink className="w-3 h-3 shrink-0" /><span className="truncate">{shortUrl(v.url)}</span></a> : '—'}
+                <td className="px-3 py-3 whitespace-nowrap">
+                  {v.url ? <a href={v.url} target="_blank" rel="noopener noreferrer" title={v.url} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-blue-200 bg-blue-50 text-blue-700 text-[11px] font-semibold hover:bg-blue-100"><ExternalLink className="w-3 h-3" />View video</a> : '—'}
                 </td>
                 <td className="px-3 py-3">
                   <div className="flex items-center gap-1.5">
