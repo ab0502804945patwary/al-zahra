@@ -30,8 +30,8 @@ export default async function StagePage({ params }: { params: Promise<{ id: stri
   const canEdit = true
   const isAdmin = me?.role === 'admin'
 
-  const gated = ['2', '3', '4', '5', '6', '7', '10', '11'].includes(id)
-  const upstream = !gated || id === '10' || id === '11' ? [] : id === '4' ? ['1', '2', '3', '8', '9'] : ['1', '2', '3', '4', '5', '6'].filter(sid => Number(sid) < Number(id))
+  const gated = ['2', '3', '4', '5', '6', '7', '9', '10', '11'].includes(id)
+  const upstream = !gated || id === '9' || id === '10' || id === '11' ? [] : id === '4' ? ['1', '2', '3', '8', '9', '10', '11'] : ['1', '2', '3', '4', '5', '6'].filter(sid => Number(sid) < Number(id))
   const dbEntries: Record<string, any[]> = {}
 
   try {
@@ -44,7 +44,7 @@ export default async function StagePage({ params }: { params: Promise<{ id: stri
 
     const [eRes, cRes, empRes, ...upRes] = await Promise.all([
       entriesQuery,
-      supabase.from('companies').select('company_id, company_name, country_of_origin, entity_type, service_type, client_name, client_phone, cr_number, cr_issue_date, cr_expire_date, misa_license_no, misa_issue_date, misa_expire_date, tin_number, vat_number, chamber_registration_no, gosi_qiwa_status, account_status').order('company_id'),
+      supabase.from('companies').select('company_id, company_name, country_of_origin, entity_type, service_type, client_name, client_phone, cr_number, cr_issue_date, cr_expire_date, misa_license_no, misa_issue_date, misa_expire_date, tin_number, vat_number, chamber_registration_no, gosi_qiwa_status, account_status, selected_phases').order('company_id'),
       // colleague names are read on the server: staff may only read their own staff row
       lookup.from('employees').select('id, name, assigned_stage, assigned_stages'),
       ...upstream.map(sid => lookup.from(STAGE_CONFIG[sid].table).select(eligibilityColumns(sid, ['priority', 'category']))),

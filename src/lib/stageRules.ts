@@ -71,13 +71,24 @@ function submittedAndDone(entries: AnyEntry[] | undefined, companyId: string) {
  * Parallel start for a new company: Service License -> Stages 1, 9 (Bangladesh company), 2, 8. Trading License -> Stages 1, 9, 2, 3, 8. Stage 3 is Trading License only.
  * Stages 1,8: open to every company.
  */
-export function isEligibleForStage(stageId: string, company: { company_id: string; entity_type?: string; category?: string; service_type?: string }, all: StageEntriesMap): boolean {
+// Phases that depend on what was ticked on the Company Register form (Bangladesh Company, Foreign Mother, 1 and 2 Foreign Subsidiary)
+export const OPTIONAL_PHASES = ['9', '10', '3', '11']
+
+export function isEligibleForStage(stageId: string, company: { company_id: string; entity_type?: string; category?: string; service_type?: string; selected_phases?: string[] | null }, all: StageEntriesMap): boolean {
   // Existing companies that only need renewal skip the handoff chain entirely.
   if (company.service_type === 'renewal') return true
   const id = company.company_id
   const category = company.category || company.entity_type
+  // Ticked on the form: work goes only to the phases that were ticked. Older companies (nothing saved) keep the earlier rules.
+  const picked = Array.isArray(company.selected_phases) ? company.selected_phases : null
+  if (picked && OPTIONAL_PHASES.includes(stageId)) return picked.includes(stageId)
   switch (stageId) {
     case '4': {
+      if (picked) {
+        // MISA opens when Parent, Activity, Trade Name and every ticked phase are complete
+        const doneStage = (sid: string) => (sid === '3' ? done(all['3'], id, 'usa_complete_date') : done(all[sid], id))
+        return done(all['1'], id) && done(all['2'], id) && done(all['8'], id, 'approval_date') && picked.filter(s => OPTIONAL_PHASES.includes(s)).every(doneStage)
+      }
       // MISA opens only when every parallel step is complete:
       //   Service License: Parent (1), Bangladesh Company (9), Activity (2), Trade Name (8)
       //   Trading License: the same plus Foreign Entity (3)
@@ -94,7 +105,7 @@ export function isEligibleForStage(stageId: string, company: { company_id: strin
       return needsForeign(category)
     case '10':
     case '11':
-      // foreign company phases: Trading License only, they start together with the other parallel phases
+      // foreign company phases (older companies): Trading License only
       return category === 'Trading License'
     case '5': return submittedAndDone(all['4'], id)
     case '6': return submittedAndDone(all['5'], id)
@@ -105,10 +116,10 @@ export function isEligibleForStage(stageId: string, company: { company_id: strin
 
 export const ELIGIBILITY_HINT: Record<string, string> = {
   '2': 'Starts together with Stage 1 and Trade Name Clearance.',
-  '3': 'Trading License only (Service License skips this stage). Starts together with Stage 1.',
-  '10': 'Trading License only. Starts together with the other parallel phases.',
-  '11': 'Trading License only. Starts together with the other parallel phases.',
-  '4': 'Opens when every earlier step is complete: Parent Entity, Bangladesh Company, Activity Classification, Trade Name Clearance (and Foreign Entity for Trading License).',
+  '3': 'Work arrives when 1 Foreign Subsidiary Company is ticked on the Company Register form.',
+  '10': 'Work arrives when Foreign Mother Company is ticked on the Company Register form.',
+  '11': 'Work arrives when 2 Foreign Subsidiary Company is ticked on the Company Register form.',
+  '4': 'Opens when every earlier step is complete: Parent Entity, Activity Classification, Trade Name Clearance and every phase ticked for this company.',
   '5': 'Requires Stage 4 (MISA) submit and complete dates.',
   '6': 'Requires Stage 5 (Commercial Registration) submit and complete dates.',
   '7': 'Opens once the company has a Portals & Compliance (Stage 6) record.',
