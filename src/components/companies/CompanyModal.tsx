@@ -353,7 +353,7 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
         <Lbl name="service_type">Service Type</Lbl>
         <div className="grid grid-cols-2 gap-2 sm:gap-3">
           {[
-            { value: 'a2z', title: 'New Company', desc: 'We set up the whole company, stage by stage' },
+            { value: 'a2z', title: 'Company Register', desc: 'We set up the whole company, stage by stage' },
             { value: 'renewal', title: 'Renewal Company', desc: 'Existing company — renewal or other service only, no stage handoff' },
           ].map(opt => {
             const active = (form.service_type || 'a2z') === opt.value
