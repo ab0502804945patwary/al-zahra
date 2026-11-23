@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { matchesQuery } from '@/lib/search'
 import { CITIES, regionsFor } from '@/lib/regions'
 
-interface Agent { id: string; agent_code: string; company_name?: string | null; agent_name: string; mobile?: string | null; address?: string | null; category?: string | null; remarks?: string | null }
+interface Agent { id: string; agent_code: string; company_name?: string | null; agent_name: string; mobile?: string | null; address?: string | null; category?: string | null; remarks?: string | null; created_by?: string | null }
 
 const inputCls = 'w-full px-3 py-2.5 text-sm text-slate-900 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white placeholder:text-slate-400'
 // agents: every Saudi city (including the big ones that are also region names) plus the provinces
@@ -21,7 +21,7 @@ function nextCode(agents: Agent[]) {
   return `AGT${String(max + 1).padStart(4, '0')}`
 }
 
-export default function AgentsClient({ agents }: { agents: Agent[] }) {
+export default function AgentsClient({ agents, isAdmin = false, owners = {} }: { agents: Agent[]; isAdmin?: boolean; owners?: Record<string, string> }) {
   const router = useRouter()
   const supabase = createClient()
   const [search, setSearch] = useState('')
@@ -45,9 +45,18 @@ export default function AgentsClient({ agents }: { agents: Agent[] }) {
     if (!form.agent_name.trim()) return setError('Enter the agent name')
     setLoading(true)
     const base = { company_name: form.company_name.trim() || null, agent_name: form.agent_name.trim(), mobile: form.mobile.trim() || null, address: form.address.trim() || null, category: form.category.trim() || null, remarks: form.remarks.trim() || null, updated_at: new Date().toISOString() }
-    const { error: err } = editing === 'new'
-      ? await supabase.from('agents').insert([{ ...base, agent_code: nextCode(agents) }])
-      : await supabase.from('agents').update(base).eq('id', (editing as Agent).id)
+    let err: { message: string } | null = null
+    if (editing === 'new') {
+      // two people adding at the same time can get the same code: ask the database again and retry
+      for (let attempt = 0; attempt < 3; attempt++) {
+        const { data: code } = await supabase.rpc('next_agent_code')
+        const res = await supabase.from('agents').insert([{ ...base, agent_code: (code as string) || nextCode(agents) }])
+        err = res.error
+        if (!err || !err.message.includes('agent_code')) break
+      }
+    } else {
+      err = (await supabase.from('agents').update(base).eq('id', (editing as Agent).id)).error
+    }
     setLoading(false)
     if (err) return setError(err.message)
     setEditing(null)
@@ -65,7 +74,7 @@ export default function AgentsClient({ agents }: { agents: Agent[] }) {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-xl font-bold text-slate-900">{editing === 'new' ? 'Add Agent' : 'Edit Agent'}</h1>
-            <p className="text-xs text-slate-500 font-mono">{editing === 'new' ? nextCode(agents) : editing.agent_code}</p>
+            <p className="text-xs text-slate-500 font-mono">{editing === 'new' ? 'New agent — ID is given when you save' : editing.agent_code}</p>
           </div>
           <button type="button" onClick={() => setEditing(null)} title="Back" className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-400"><X className="w-5 h-5" /></button>
         </div>
@@ -140,7 +149,7 @@ export default function AgentsClient({ agents }: { agents: Agent[] }) {
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-x-auto">
         <table className="w-full text-xs min-w-[900px]">
           <thead className="bg-slate-50 text-slate-500 uppercase text-[10px] tracking-wide">
-            <tr>{['Agent ID', 'Company Name', 'Agent Name', 'Mobile No.', 'Address / Location', 'Category', 'Remarks', ''].map(h => <th key={h} className="text-left font-semibold px-3 py-2.5 whitespace-nowrap">{h}</th>)}</tr>
+            <tr>{['Agent ID', 'Company Name', 'Agent Name', 'Mobile No.', 'Address / Location', 'Category', 'Remarks', ...(isAdmin ? ['Created by'] : []), ''].map(h => <th key={h} className="text-left font-semibold px-3 py-2.5 whitespace-nowrap">{h}</th>)}</tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
             {filtered.map(a => (
@@ -152,10 +161,11 @@ export default function AgentsClient({ agents }: { agents: Agent[] }) {
                 <td className="px-3 py-2.5 text-slate-600">{a.address || '—'}</td>
                 <td className="px-3 py-2.5">{a.category ? <span className="px-2 py-0.5 rounded-full border border-blue-200 bg-blue-50 text-blue-700 text-[10px] font-semibold">{a.category}</span> : '—'}</td>
                 <td className="px-3 py-2.5 text-slate-500 max-w-48 truncate">{a.remarks || '—'}</td>
+                {isAdmin && <td className="px-3 py-2.5 text-slate-600 whitespace-nowrap">{a.created_by ? (owners[a.created_by] || 'Unknown') : <span className="text-slate-400">Older record</span>}</td>}
                 <td className="px-3 py-2.5 text-right"><button onClick={() => open(a)} className="p-1.5 hover:bg-slate-200/60 rounded-md text-slate-400 hover:text-slate-700"><Edit2 className="w-4 h-4" /></button></td>
               </tr>
             ))}
-            {filtered.length === 0 && <tr><td colSpan={8} className="text-center py-14 text-slate-400"><Handshake className="w-10 h-10 mx-auto mb-2 opacity-20" />No agents yet. Click “Add Agent”.</td></tr>}
+            {filtered.length === 0 && <tr><td colSpan={isAdmin ? 9 : 8} className="text-center py-14 text-slate-400"><Handshake className="w-10 h-10 mx-auto mb-2 opacity-20" />No agents yet. Click “Add Agent”.</td></tr>}
           </tbody>
         </table>
       </div>
