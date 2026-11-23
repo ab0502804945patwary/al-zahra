@@ -391,9 +391,6 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
           ))}
         </div>
       </div>
-      <div className="col-span-2 lg:col-span-12 text-[11px] text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
-        <b>Security notice:</b> for the customer&apos;s protection, do not write or store Absher passwords, OTPs, or other login credentials here. Any required access must be handled securely by the account holder.
-      </div>
     </>
   )
   const sections: { title: string; icon: any; num?: string; custom?: React.ReactNode; fields?: FieldSpec[]; renewalOnly?: boolean }[] = [
