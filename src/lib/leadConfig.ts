@@ -1,5 +1,5 @@
 // Dropdown lists for Leads. Edit here to add or rename an option.
-export const LEAD_SOURCES = ['Website', 'Facebook', 'WhatsApp', 'Google Ads', 'Social Media', 'Referral', 'Agent', 'Walk-in', 'Email', 'Other']
+export const LEAD_SOURCES = ['Website', 'Facebook', 'Instagram', 'TikTok', 'YouTube', 'WhatsApp', 'Telegram', 'Google Ads', 'Social Media', 'Referral', 'Agent', 'Walk-in', 'Email', 'Other']
 export const LEAD_STATUSES = ['New', 'Contacted', 'Interested', 'Quotation', 'Negotiation', 'Payment', 'Completed', 'Lost'] as const
 // suggestions for "Service Required" (anything can be typed; services from the Services page are added too)
 export const LEAD_SERVICES = ['MISA License', 'CR + Labor', 'Investor License', 'Renewal', 'MISA + CR', 'Trade License', 'Company Setup', 'VAT & ZATCA']

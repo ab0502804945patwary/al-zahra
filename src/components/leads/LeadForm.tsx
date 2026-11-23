@@ -6,6 +6,7 @@ import { X, Loader2, Save, Pencil } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import CountrySelect from '@/components/ui/CountrySelect'
 import ComboInput from '@/components/ui/ComboInput'
+import SourceIcon from '@/components/ui/SourceIcon'
 import { LEAD_SOURCES, LEAD_STATUSES, LEAD_SERVICES } from '@/lib/leadConfig'
 
 interface Lead { id: string; lead_name: string; mobile?: string | null; country?: string | null; company_name?: string | null; service_required?: string | null; source?: string | null; assigned_to?: string | null; status: string; follow_up_date?: string | null; notes?: string | null }
@@ -64,7 +65,7 @@ export default function LeadForm({ lead, staffNames, serviceNames, usedSources =
         <div>{L('Country')}<CountrySelect value={form.country} onChange={v => set('country', v)} /></div>
         <div>{L('Company Name')}<input value={form.company_name} onChange={e => set('company_name', e.target.value)} className={inputCls} placeholder="Company (if any)" /></div>
         <div>{L('Service Required')}<ComboInput value={form.service_required} onChange={v => set('service_required', v)} options={serviceOptions} className={inputCls} placeholder="Type or pick a service" /></div>
-        <div>{L('Source')}<ComboInput value={form.source} onChange={v => set('source', v)} options={sourceOptions} className={inputCls} placeholder="Type or pick a source" /></div>
+        <div>{L('Source')}<ComboInput value={form.source} onChange={v => set('source', v)} options={sourceOptions} renderIcon={v => <SourceIcon source={v} />} className={inputCls} placeholder="Type or pick a source" /></div>
         <div>{L('Assigned To')}
           <select value={form.assigned_to} onChange={e => set('assigned_to', e.target.value)} className={inputCls}><option value="">Select employee</option>{staffNames.map(s => <option key={s}>{s}</option>)}</select></div>
         <div>{L('Status')}

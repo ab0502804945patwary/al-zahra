@@ -7,6 +7,7 @@ import { Flag } from '@/components/ui/CountrySelect'
 import { matchesQuery } from '@/lib/search'
 import { LEAD_SOURCES, LEAD_STATUSES, isLeadOverdue, leadStatusTone, fmtLeadDate } from '@/lib/leadConfig'
 import { useSecureDelete } from '@/components/ui/useSecureDelete'
+import SourceIcon from '@/components/ui/SourceIcon'
 
 interface Lead { id: string; lead_name: string; mobile?: string | null; country?: string | null; company_name?: string | null; service_required?: string | null; source?: string | null; assigned_to?: string | null; status: string; follow_up_date?: string | null }
 
@@ -101,7 +102,7 @@ export default function LeadsClient({ leads, staffNames }: { leads: Lead[]; staf
                 <td className="px-3 py-3 text-slate-700 whitespace-nowrap"><span className="inline-flex items-center gap-1.5"><Flag country={l.country || ''} />{l.country || '—'}</span></td>
                 <td className="px-3 py-3 text-slate-800">{l.company_name || '—'}</td>
                 <td className="px-3 py-3 text-slate-700">{l.service_required || '—'}</td>
-                <td className="px-3 py-3">{l.source ? <span className="px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-100 text-[11px] font-medium">{l.source}</span> : '—'}</td>
+                <td className="px-3 py-3">{l.source ? <span className="inline-flex items-center gap-2 pr-2.5 pl-1 py-0.5 rounded-full bg-white text-slate-700 border border-slate-200 text-[11px] font-medium"><SourceIcon source={l.source} size={16} />{l.source}</span> : '—'}</td>
                 <td className="px-3 py-3 text-slate-700 whitespace-nowrap">{l.assigned_to || '—'}</td>
                 <td className="px-3 py-3"><span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full border text-[11px] font-semibold ${t.pill}`}><span className={`w-1.5 h-1.5 rounded-full ${t.dot}`} />{l.shownStatus}</span></td>
                 <td className="px-3 py-3 font-mono text-slate-700 whitespace-nowrap">{fmtLeadDate(l.follow_up_date)}</td>
