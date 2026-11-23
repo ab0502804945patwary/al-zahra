@@ -4,15 +4,14 @@ import { useRouter } from 'next/navigation'
 import { Plus, Edit2, Search, Loader2, Save, X, Handshake } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { matchesQuery } from '@/lib/search'
+import { CITIES, regionsFor } from '@/lib/regions'
 
 interface Agent { id: string; agent_code: string; company_name?: string | null; agent_name: string; mobile?: string | null; address?: string | null; category?: string | null; remarks?: string | null }
 
 const inputCls = 'w-full px-3 py-2.5 text-sm text-slate-900 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white placeholder:text-slate-400'
-const SAUDI_LOCATIONS = [
-  'Riyadh', 'Jeddah', 'Makkah', 'Madinah', 'Dammam', 'Al Khobar', 'Dhahran', 'Jubail', 'Al Ahsa (Hofuf)', 'Qatif',
-  'Taif', 'Yanbu', 'Rabigh', 'Tabuk', 'Abha', 'Khamis Mushait', 'Najran', 'Jazan', 'Buraidah', 'Unaizah',
-  'Hail', 'Al Kharj', 'Al Majmaah', 'Sakaka', 'Arar', 'Al Bahah', 'Hafar Al Batin', 'Other',
-]
+// agents: every Saudi city (including the big ones that are also region names) plus the provinces
+const SAUDI = { cities: CITIES['Saudi Arabia'], regions: regionsFor('Saudi Arabia') || [] }
+const SAUDI_ALL = [...SAUDI.cities, ...SAUDI.regions, 'Other']
 const CATEGORY_OPTIONS = ['Travel Agency', 'Consultancy', 'Maktab Al Khadamat']
 const EMPTY = { company_name: '', agent_name: '', mobile: '', address: '', category: '', remarks: '' }
 
@@ -94,7 +93,10 @@ export default function AgentsClient({ agents }: { agents: Agent[] }) {
             <label className="text-xs font-semibold text-slate-700 mb-1.5 block">Address / Location</label>
             <select value={form.address} onChange={e => setForm(p => ({ ...p, address: e.target.value }))} className={inputCls}>
               <option value="">Select location (Saudi Arabia)...</option>
-              {[...new Set([...SAUDI_LOCATIONS, ...(form.address && !SAUDI_LOCATIONS.includes(form.address) ? [form.address] : [])])].map(l => <option key={l} value={l}>{l}</option>)}
+              {form.address && !SAUDI_ALL.includes(form.address) && <option value={form.address}>{form.address}</option>}
+              <optgroup label="Cities">{SAUDI.cities.map(l => <option key={l} value={l}>{l}</option>)}</optgroup>
+              <optgroup label="Provinces / regions">{SAUDI.regions.map(l => <option key={l} value={l}>{l}</option>)}</optgroup>
+              <option value="Other">Other</option>
             </select>
           </div>
           <div className="sm:col-span-2">

@@ -46,3 +46,31 @@ export function regionsFor(country?: string | null): string[] | null {
   const code = countryCode(country)
   return (code && BY_CODE[code]) || REGIONS[country] || null
 }
+
+// Main cities per country, shown after the regions in the same dropdown (company "Province / State",
+// agent "Address / Location"). A city that is also a region name is listed only once.
+export const CITIES: Record<string, string[]> = {
+  'Saudi Arabia': [
+    'Riyadh', 'Jeddah', 'Makkah', 'Madinah', 'Dammam', 'Al Khobar', 'Dhahran', 'Jubail', 'Al Ahsa (Hofuf)', 'Qatif', 'Khafji', 'Ras Tanura',
+    'Taif', 'Yanbu', 'Rabigh', 'Al Lith', 'Al Qunfudhah', 'Badr', 'Al Ula', 'Umluj', 'Al Wajh', 'Duba',
+    'Tabuk', 'Abha', 'Khamis Mushait', 'Bisha', 'Sabya', 'Abu Arish', 'Najran', 'Sharurah', 'Jazan',
+    'Buraidah', 'Unaizah', 'Ar Rass', 'Hail', 'Al Kharj', 'Ad Diriyah', 'Al Majmaah', 'Al Zulfi', 'Shaqra', 'Dawadmi', 'Wadi ad-Dawasir', 'Layla', 'Al Aflaj',
+    'Sakaka', 'Dumat Al Jandal', 'Arar', 'Rafha', 'Turaif', 'Al Bahah', 'Baljurashi', 'Hafar Al Batin', 'Al Namas', 'Mahd Al Dhahab',
+  ],
+  Bangladesh: ['Dhaka', 'Chattogram', 'Sylhet', 'Rajshahi', 'Khulna', 'Barishal', 'Rangpur', 'Mymensingh', 'Narayanganj', 'Gazipur', 'Cumilla', "Cox's Bazar", 'Bogura', 'Jashore', 'Narsingdi', 'Tangail', 'Faridpur', 'Noakhali', 'Brahmanbaria', 'Dinajpur'],
+  Pakistan: ['Karachi', 'Lahore', 'Islamabad', 'Rawalpindi', 'Faisalabad', 'Multan', 'Peshawar', 'Quetta', 'Gujranwala', 'Sialkot', 'Hyderabad', 'Sargodha', 'Bahawalpur', 'Abbottabad'],
+  India: ['Mumbai', 'Delhi', 'Kolkata', 'Chennai', 'Bengaluru', 'Hyderabad', 'Ahmedabad', 'Pune', 'Kochi', 'Kozhikode', 'Lucknow', 'Jaipur', 'Patna', 'Guwahati'],
+  Sudan: ['Khartoum', 'Omdurman', 'Khartoum North', 'Port Sudan', 'Kassala', 'Wad Madani', 'Al-Ubayyid', 'Nyala', 'Atbara'],
+  Afghanistan: ['Kabul', 'Kandahar', 'Herat', 'Mazar-i-Sharif', 'Jalalabad', 'Kunduz'],
+  Egypt: ['Cairo', 'Giza', 'Alexandria', 'Port Said', 'Suez', 'Luxor', 'Aswan', 'Mansoura', 'Tanta', 'Hurghada', 'Sharm El Sheikh'],
+}
+
+/** Regions and main cities for a country, for a dropdown with two groups. Null when the country has no list at all. */
+export function placesFor(country?: string | null): { regions: string[]; cities: string[] } | null {
+  const regions = regionsFor(country)
+  const cities = country ? (CITIES[country] || []) : []
+  if (!regions && cities.length === 0) return null
+  const r = regions || []
+  const lower = new Set(r.map(x => x.toLowerCase()))
+  return { regions: r, cities: cities.filter(c => !lower.has(c.toLowerCase())) }
+}

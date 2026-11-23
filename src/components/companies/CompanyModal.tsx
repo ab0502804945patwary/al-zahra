@@ -38,7 +38,7 @@ import { createClient, isSupabaseConfigured } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { Company } from '@/lib/types'
 import CountrySelect from '@/components/ui/CountrySelect'
-import { regionsFor } from '@/lib/regions'
+import { placesFor } from '@/lib/regions'
 import { triggerPush } from '@/lib/pushClient'
 
 interface Props {
@@ -263,10 +263,20 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
 
       <div className={SPAN[3]}>
         <Lbl name="province">Province / State</Lbl>
-        {regionsFor(form.country_of_origin) ? (
+        {placesFor(form.country_of_origin) ? (
           <select value={form.province || ''} onChange={e => set('province', e.target.value)} className={inputCls}>
-            <option value="">Select province</option>
-            {regionsFor(form.country_of_origin)!.map(r => <option key={r} value={r}>{r}</option>)}
+            <option value="">Select province / city</option>
+            {(() => {
+              const pl = placesFor(form.country_of_origin)!
+              const known = new Set([...pl.regions, ...pl.cities])
+              return (
+                <>
+                  {form.province && !known.has(form.province) && <option value={form.province}>{form.province}</option>}
+                  {pl.regions.length > 0 && <optgroup label="Provinces / regions">{pl.regions.map(r => <option key={r} value={r}>{r}</option>)}</optgroup>}
+                  {pl.cities.length > 0 && <optgroup label="Cities">{pl.cities.map(c => <option key={c} value={c}>{c}</option>)}</optgroup>}
+                </>
+              )
+            })()}
           </select>
         ) : (
           <input value={form.province || ''} onChange={e => set('province', e.target.value)} placeholder="Type province / state" className={inputCls} />

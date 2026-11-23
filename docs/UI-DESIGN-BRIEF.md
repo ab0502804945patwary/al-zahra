@@ -281,7 +281,7 @@ Expense Number (auto `EXP` + DDMMYY + 4 digits, read-only) · Date * · **Catego
 Service Name * · Price (BDT) * · Description · tick "Active (shows in the invoice list)".
 
 ## 7. Lists and rules for lookups
-- **Countries**: full list with flags (used for company country, customer nationality, passport/country fields, BD company country). Province dropdowns exist for Saudi Arabia, Bangladesh, India, Pakistan, Afghanistan, Sudan, Egypt; other countries use free text.
+- **Countries**: full list with flags (used for company country, customer nationality, passport/country fields, BD company country). The company **Province / State** dropdown has two groups, **Provinces / regions** and **Cities** (e.g. Saudi Arabia: 13 regions + 46 cities such as Jeddah, Dammam, Al Khobar, Taif, Yanbu; also cities for Bangladesh, Pakistan, India, Sudan, Afghanistan, Egypt). Countries without a list use free text. The agent **Address / Location** dropdown uses the same Saudi list (Cities, Provinces / regions, Other).
 - **Search** boxes everywhere accept: name, code (`AZC802` or `802`), serial number (`5` or `#5`), phone (with or without leading zero), country and other fields.
 - **Money**: shown as `BDT 12,500.00`.
 
