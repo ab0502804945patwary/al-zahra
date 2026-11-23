@@ -18,7 +18,7 @@ export async function POST(request: Request) {
 
   const { table, id, password } = await request.json().catch(() => ({}))
   const stageEntry = Object.entries(STAGE_CONFIG).find(([, c]) => c.table === table)
-  if ((!stageEntry && table !== 'companies' && table !== 'employees' && table !== 'leads') || !id || typeof id !== 'string') {
+  if ((!stageEntry && table !== 'companies' && table !== 'employees' && table !== 'leads' && table !== 'videos') || !id || typeof id !== 'string') {
     return NextResponse.json({ error: 'Invalid request.' }, { status: 400 })
   }
 
@@ -29,7 +29,8 @@ export async function POST(request: Request) {
     // staff may only delete inside a stage they are assigned to
     const okStage = !!stageEntry && canAccessStage(me, Number(stageEntry[0]))
     const okLead = table === 'leads' && canAccessModule(me, 'leads')
-    if (!okStage && !okLead) return NextResponse.json({ error: 'You cannot delete this.' }, { status: 403 })
+    const okVideo = table === 'videos' && canAccessModule(me, 'videos')
+    if (!okStage && !okLead && !okVideo) return NextResponse.json({ error: 'You cannot delete this.' }, { status: 403 })
   }
 
   const v = await verifyMasterPassword(String(password || ''), user.id)
