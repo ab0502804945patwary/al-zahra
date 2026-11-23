@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { matchesQuery } from '@/lib/search'
 import PortalLogo from './PortalLogo'
 import { useState } from 'react'
-import { ExternalLink, Lock, Edit2, Search, CheckCircle2, Clock, AlertTriangle, AlertCircle, FileText } from 'lucide-react'
+import { ExternalLink, Eye, EyeOff, Lock, Edit2, Search, CheckCircle2, Clock, AlertTriangle, AlertCircle, FileText } from 'lucide-react'
 import { cn, formatDate } from '@/lib/utils'
 import { Flag } from '@/components/ui/CountrySelect'
 import EditEntryModal from './EditEntryModal'
@@ -89,6 +89,20 @@ interface Props {
   isAdmin?: boolean
 }
 
+/** A saved password: hidden until the eye is pressed (it is stored as plain text, so this only keeps it from being read over a shoulder). */
+function SecretCell({ value }: { value?: string | null }) {
+  const [show, setShow] = useState(false)
+  if (!value) return <>—</>
+  return (
+    <span className="inline-flex items-center gap-2 font-mono whitespace-nowrap">
+      <span>{show ? value : '••••••••'}</span>
+      <button type="button" onClick={() => setShow(v => !v)} title={show ? 'Hide' : 'Show'} className="text-slate-400 hover:text-slate-700">
+        {show ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+      </button>
+    </span>
+  )
+}
+
 export default function StageTable({ stageId, entries: serverEntries, companies, employees, isUSACanada, isNameClearance, canEdit = true, isAdmin = false }: Props) {
   const noDates = stageId === '6' // Portals & Compliance is a checklist: no dates, timing or payment
   const [editEntry, setEditEntry] = useState<any>(null)
@@ -100,7 +114,7 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
   const filtered = entries.filter((e, i) => {
     const comp = companies.find(c => c.company_id === e.company_id)
     return matchesQuery(search, i + 1, [
-      e.bd_company_name, e.foreign_company_name, e.city, e.registration_no, e.rjsc_reg_no, e.issue_no, e.auditor_firm, e.company_id, e.companies?.company_name, e.companies?.country_of_origin, comp?.client_name, comp?.client_phone,
+      e.bd_company_name, e.foreign_company_name, e.city, e.registration_no, e.account_email, e.account_username, e.rjsc_reg_no, e.issue_no, e.auditor_firm, e.company_id, e.companies?.company_name, e.companies?.country_of_origin, comp?.client_name, comp?.client_phone,
       e.client_name, e.client_phone, e.category, e.priority, e.current_stage, e.name_clearance_number, e.entity_type,
     ])
   })
@@ -323,6 +337,11 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
                 <th className="py-3 px-4">Country</th>
                 <th className="py-3 px-4">City</th>
                 <th className="py-3 px-4">Registration No.</th>
+                {(stageId === '3' || stageId === '11') && (<>
+                  <th className="py-3 px-4">Email</th>
+                  <th className="py-3 px-4">User Name</th>
+                  <th className="py-3 px-4">Password</th>
+                </>)}
               </>)}
               <th className="py-3 px-4">Entity Portfolio</th>
               <th className="py-3 px-4">Authorized Contact</th>
@@ -354,6 +373,11 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
                   <td className="py-3 px-4"><span className="inline-flex items-center gap-1.5 whitespace-nowrap"><Flag country={e.country} />{e.country || '—'}</span></td>
                   <td className="py-3 px-4 whitespace-nowrap">{e.city || '—'}</td>
                   <td className="py-3 px-4 font-mono">{e.registration_no || '—'}</td>
+                  {(stageId === '3' || stageId === '11') && (<>
+                    <td className="py-3 px-4 whitespace-nowrap">{e.account_email || '—'}</td>
+                    <td className="py-3 px-4 font-mono whitespace-nowrap">{e.account_username || '—'}</td>
+                    <td className="py-3 px-4"><SecretCell value={e.account_password} /></td>
+                  </>)}
                 </>)}
                 {stageId === '9' && (<>
                   <td className="py-3 px-4 font-semibold text-slate-900 whitespace-nowrap">{e.bd_company_name || '—'}</td>
