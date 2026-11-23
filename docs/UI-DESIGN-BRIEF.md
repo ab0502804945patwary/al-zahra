@@ -107,6 +107,7 @@ Top to bottom:
    - 4 stat cards: **Active Portfolios** (all registered entities) · **Compliant & On Track** · **Action Needed (Overdue)** · **Trade Name Expiry Radar** (expiring within 60 days).
    - Toolbar: search "Search AZC code, company…"; filter pills **New Company · Needs Action** (New Company is selected by default).
    - Table: one row per company (ID badge + name + country flag); **one column per stage** (Parent, BD Company, Activity, Foreign, Name, MISA, CR, Portals, Filing). Each cell is a coloured status badge with a short label (e.g. "Approved", "Delay 17d", "In Queue", "N/A") and days; clicking opens that stage.
+   - **5 companies at a time**: below the table **‹ Previous · Page 1 / N · Next ›** and a **"Show all (N)"** button that lists every company at once (click again: "Show 5 at a time"). Searching or changing the filter returns to page 1.
    - Legend: Compliant (≤10d) green · Caution (11–13d) yellow · Overdue red · Queued grey.
    - The **Upcoming Expiries — Contact List is NOT on the Dashboard** any more; it lives only on the Renewal Companies page (§5.4).
 3. **Stage summary table**: per stage → stage name, responsible employee, total files, green / yellow / red counts, average completion % (with bar).
@@ -188,7 +189,7 @@ Single column of cards (max ~768px):
 - Sidebar has two items: **New Lead** (opens the form) and **Leads** (the list).
 - **List**: title "Leads Management", button **Add New Lead**; 5 stat cards (Total Leads, Contacted, Interested, Quotation, Converted); filter bar: search "Search by name, mobile or company…", **All Countries / All Status / All Sources / All Employees**, **Follow-up date range**, **Reset**; table **# · Lead Name · Mobile · Country (flag) · Company Name · Service Required · Source (pill) · Assigned To · Status (dot pill) · Follow-up Date · Action (view / edit / delete)**; footer "Showing 1 to 10 of N entries" with page numbers.
 - **Status**: New · Contacted · Interested · Quotation · Negotiation · Payment · Completed (counted as Converted) · Lost; **Overdue** is shown automatically when the follow-up date has passed and the lead is still open.
-- **Source**: Website, Facebook, WhatsApp, Google Ads, Social Media, Referral, Agent, Walk-in, Email, Other.
+- **Source**: type anything or pick a suggestion (Website, Facebook, WhatsApp, Google Ads, Social Media, Referral, Agent, Walk-in, Email, Other, plus anything typed on earlier leads); the list's Source filter shows the same values.
 - **Form**: Lead Name * · Mobile * · Country (flag dropdown) · Company Name · Service Required (type or pick: services from the Services page + MISA License, CR + Labor, Investor License, Renewal, MISA + CR, Trade License, Company Setup, VAT & ZATCA) · Source · Assigned To (staff dropdown) · Status · Follow-up Date · Notes. The eye icon opens the same form read-only; delete asks the master password.
 
 ---

@@ -14,14 +14,19 @@ export default async function LeadPage({ params, searchParams }: { params: Promi
   if (!canAccessModule(employee, 'leads')) redirect(homeFor(employee))
   const supabase = await createClient()
   const names = await createServiceClient()
-  const [lead, eRes, sRes] = await Promise.all([
+  const [lead, eRes, sRes, uRes] = await Promise.all([
     supabase.from('leads').select('*').eq('id', id).single(),
     names.from('employees').select('name').eq('is_active', true).order('name'),
     supabase.from('services').select('name').eq('is_active', true).order('name'),
+    supabase.from('leads').select('source, service_required'),
   ])
   if (!lead.data) notFound()
+  const used = (uRes.data as any[]) || []
+  const distinct = (k: string) => [...new Set(used.map(r => String(r[k] || '').trim()).filter(Boolean))].sort()
   return (
     <LeadForm
+      usedSources={distinct('source')}
+      usedServices={distinct('service_required')}
       lead={lead.data as any}
       readOnly={view === '1'}
       staffNames={((eRes.data as any[]) || []).map(e => e.name)}

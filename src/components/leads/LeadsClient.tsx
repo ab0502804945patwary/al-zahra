@@ -26,6 +26,7 @@ export default function LeadsClient({ leads, staffNames }: { leads: Lead[]; staf
   const [page, setPage] = useState(1)
 
   const shown = leads.map(l => ({ ...l, shownStatus: isLeadOverdue(l.status, l.follow_up_date) ? 'Overdue' : l.status }))
+  const sources = useMemo(() => [...new Set([...LEAD_SOURCES, ...(leads.map(l => l.source).filter(Boolean) as string[])])], [leads])
   const countries = useMemo(() => [...new Set(leads.map(l => l.country).filter(Boolean) as string[])].sort(), [leads])
 
   const filtered = shown.filter((l, i) =>
@@ -77,7 +78,7 @@ export default function LeadsClient({ leads, staffNames }: { leads: Lead[]; staf
         </div>
         <select value={country} onChange={e => { setCountry(e.target.value); setPage(1) }} className={sel}><option value="">All Countries</option>{countries.map(c => <option key={c}>{c}</option>)}</select>
         <select value={status} onChange={e => { setStatus(e.target.value); setPage(1) }} className={sel}><option value="">All Status</option>{[...LEAD_STATUSES, 'Overdue'].map(s => <option key={s}>{s}</option>)}</select>
-        <select value={source} onChange={e => { setSource(e.target.value); setPage(1) }} className={sel}><option value="">All Sources</option>{LEAD_SOURCES.map(s => <option key={s}>{s}</option>)}</select>
+        <select value={source} onChange={e => { setSource(e.target.value); setPage(1) }} className={sel}><option value="">All Sources</option>{sources.map(s => <option key={s}>{s}</option>)}</select>
         <select value={employee} onChange={e => { setEmployee(e.target.value); setPage(1) }} className={sel}><option value="">All Employees</option>{staffNames.map(s => <option key={s}>{s}</option>)}</select>
         <div className="flex items-center gap-1.5 text-[11px] text-slate-500">Follow-up
           <input type="date" value={from} onChange={e => { setFrom(e.target.value); setPage(1) }} className={sel} /> –

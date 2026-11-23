@@ -12,7 +12,7 @@ interface Lead { id: string; lead_name: string; mobile?: string | null; country?
 
 const inputCls = 'w-full px-3 py-2.5 text-sm text-slate-900 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white placeholder:text-slate-400 disabled:bg-slate-50 disabled:text-slate-600'
 
-export default function LeadForm({ lead, staffNames, serviceNames, readOnly = false }: { lead?: Lead; staffNames: string[]; serviceNames: string[]; readOnly?: boolean }) {
+export default function LeadForm({ lead, staffNames, serviceNames, usedSources = [], usedServices = [], readOnly = false }: { lead?: Lead; staffNames: string[]; serviceNames: string[]; usedSources?: string[]; usedServices?: string[]; readOnly?: boolean }) {
   const router = useRouter()
   const supabase = createClient()
   const [form, setForm] = useState<Record<string, string>>(() => ({
@@ -23,7 +23,9 @@ export default function LeadForm({ lead, staffNames, serviceNames, readOnly = fa
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const set = (k: string, v: string) => setForm(p => ({ ...p, [k]: v }))
-  const serviceOptions = [...new Set([...serviceNames, ...LEAD_SERVICES])]
+  // suggestions: the defaults, the Services page, and anything typed on earlier leads
+  const serviceOptions = [...new Set([...serviceNames, ...LEAD_SERVICES, ...usedServices])]
+  const sourceOptions = [...new Set([...LEAD_SOURCES, ...usedSources])]
 
   const L = (t: string, req = false) => <label className="text-xs font-semibold text-slate-700 mb-1.5 block">{t}{req && <span className="text-rose-500 ml-0.5">*</span>}</label>
 
@@ -62,8 +64,7 @@ export default function LeadForm({ lead, staffNames, serviceNames, readOnly = fa
         <div>{L('Country')}<CountrySelect value={form.country} onChange={v => set('country', v)} /></div>
         <div>{L('Company Name')}<input value={form.company_name} onChange={e => set('company_name', e.target.value)} className={inputCls} placeholder="Company (if any)" /></div>
         <div>{L('Service Required')}<ComboInput value={form.service_required} onChange={v => set('service_required', v)} options={serviceOptions} className={inputCls} placeholder="Type or pick a service" /></div>
-        <div>{L('Source')}
-          <select value={form.source} onChange={e => set('source', e.target.value)} className={inputCls}><option value="">Select source</option>{LEAD_SOURCES.map(s => <option key={s}>{s}</option>)}</select></div>
+        <div>{L('Source')}<ComboInput value={form.source} onChange={v => set('source', v)} options={sourceOptions} className={inputCls} placeholder="Type or pick a source" /></div>
         <div>{L('Assigned To')}
           <select value={form.assigned_to} onChange={e => set('assigned_to', e.target.value)} className={inputCls}><option value="">Select employee</option>{staffNames.map(s => <option key={s}>{s}</option>)}</select></div>
         <div>{L('Status')}

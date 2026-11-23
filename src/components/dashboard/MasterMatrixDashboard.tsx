@@ -45,9 +45,13 @@ interface DashboardProps {
   }
 }
 
+const PAGE_SIZE = 5
+
 export default function MasterMatrixDashboard({ initialCompanies, kpiStats, stageMap }: DashboardProps) {
   const companiesList = initialCompanies
   const [search, setSearch] = useState('')
+  const [page, setPage] = useState(1)
+  const [showAll, setShowAll] = useState(false)
   const [filterType, setFilterType] = useState<'all' | 'new' | 'renewal' | 'attention' | 'completed'>('new')
 
   // Build matrix rows for each company
@@ -99,6 +103,11 @@ export default function MasterMatrixDashboard({ initialCompanies, kpiStats, stag
       return true
     })
   }, [matrixRows, search, filterType])
+
+  // 5 companies at a time (Next / Previous), or everything with "Show all"
+  const totalPages = Math.max(1, Math.ceil(filteredRows.length / PAGE_SIZE))
+  const curPage = Math.min(page, totalPages)
+  const visibleRows = showAll ? filteredRows : filteredRows.slice((curPage - 1) * PAGE_SIZE, curPage * PAGE_SIZE)
 
   return (
     <div className="space-y-6 w-full max-w-[2000px] mx-auto">
@@ -186,7 +195,7 @@ export default function MasterMatrixDashboard({ initialCompanies, kpiStats, stag
               <input
                 type="text"
                 value={search}
-                onChange={e => setSearch(e.target.value)}
+                onChange={e => { setSearch(e.target.value); setPage(1) }}
                 placeholder="Search AZC code, company..."
                 className="w-full pl-8 pr-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
@@ -194,7 +203,7 @@ export default function MasterMatrixDashboard({ initialCompanies, kpiStats, stag
 
             <div className="flex items-center bg-white border border-slate-200 rounded-lg p-0.5 text-xs">
               <button
-                onClick={() => setFilterType('new')}
+                onClick={() => { setFilterType('new'); setPage(1) }}
                 className={`px-2.5 py-1 rounded-md font-medium transition ${
                   filterType === 'new' ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
                 }`}
@@ -202,7 +211,7 @@ export default function MasterMatrixDashboard({ initialCompanies, kpiStats, stag
                 New Company ({matrixRows.filter(r => !r.isRenewal).length})
               </button>
               <button
-                onClick={() => setFilterType('attention')}
+                onClick={() => { setFilterType('attention'); setPage(1) }}
                 className={`px-2.5 py-1 rounded-md font-medium transition ${
                   filterType === 'attention' ? 'bg-rose-600 text-white shadow-xs' : 'text-slate-600 hover:text-rose-600'
                 }`}
@@ -231,7 +240,7 @@ export default function MasterMatrixDashboard({ initialCompanies, kpiStats, stag
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-slate-700">
-              {filteredRows.map(row => (
+              {visibleRows.map(row => (
                 <tr key={row.company_id} className="hover:bg-slate-50/70 transition-colors">
                   {/* Company Info */}
                   <td className="py-3 px-4">
@@ -291,6 +300,26 @@ export default function MasterMatrixDashboard({ initialCompanies, kpiStats, stag
             </tbody>
           </table>
         </div>
+
+        {filteredRows.length > PAGE_SIZE && (
+          <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-3 border-t border-slate-100 text-xs text-slate-600">
+            <span>
+              Showing <b>{showAll ? 1 : (curPage - 1) * PAGE_SIZE + 1}</b>–<b>{showAll ? filteredRows.length : Math.min(curPage * PAGE_SIZE, filteredRows.length)}</b> of <b>{filteredRows.length}</b> companies
+            </span>
+            <div className="flex items-center gap-2">
+              {!showAll && (
+                <>
+                  <button onClick={() => setPage(curPage - 1)} disabled={curPage === 1} className="px-3 py-1.5 rounded-md border border-slate-200 font-semibold disabled:opacity-40 hover:bg-slate-50">‹ Previous</button>
+                  <span className="text-slate-500">Page {curPage} / {totalPages}</span>
+                  <button onClick={() => setPage(curPage + 1)} disabled={curPage === totalPages} className="px-3 py-1.5 rounded-md bg-blue-600 text-white font-semibold disabled:opacity-40 hover:bg-blue-700">Next ›</button>
+                </>
+              )}
+              <button onClick={() => { setShowAll(v => !v); setPage(1) }} className={`px-3 py-1.5 rounded-md border font-semibold ${showAll ? 'border-blue-600 text-blue-700 bg-blue-50' : 'border-slate-200 hover:bg-slate-50'}`}>
+                {showAll ? 'Show 5 at a time' : `Show all (${filteredRows.length})`}
+              </button>
+            </div>
+          </div>
+        )}
 
         <div className="px-5 py-3 border-t border-slate-100"><StatusGuide className="border-0 p-0" /></div>
         <div className="px-5 pb-2.5 text-[10px] text-slate-400 text-right">*Click any stage badge to open that department immediately</div>
