@@ -20,7 +20,7 @@ async function loadWorkData() {
   const ids = stageIds()
   const lookup = await createServiceClient()
   const [cRes, ...sRes] = await Promise.all([
-    lookup.from('companies').select('company_id, company_name, entity_type, service_type'),
+    lookup.from('companies').select('company_id, company_name, entity_type, service_type, account_status'),
     ...ids.map(sid => lookup.from(STAGE_CONFIG[sid].table).select(eligibilityColumns(sid))),
   ])
   const all: StageEntriesMap = {}
@@ -40,6 +40,7 @@ function buildFor(companies: any[], all: StageEntriesMap, myStages: number[] | n
     for (const c of companies) {
       // Renewal-only companies are not part of the stage-to-stage relay
       if (c.service_type === 'renewal') continue
+      if (c.account_status === 'Inactive') continue // paused client
       const started = (all[sid] || []).some(e => e.company_id === c.company_id)
       if (started) continue
       if (!isEligibleForStage(sid, c, all)) continue

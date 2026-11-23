@@ -313,6 +313,13 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
         <label className="block"><Lbl name="client_phone">Client Phone</Lbl></label>
         <input type="text" required value={form.client_phone || ''} onChange={e => set('client_phone', e.target.value)} placeholder="e.g. 05xxxxxxxx" className={inputCls} />
       </div>
+      <div className={SPAN[6]}>
+        <label className="block"><Lbl name="account_status">Status (Active / Inactive)</Lbl></label>
+        <select value={form.account_status === 'Inactive' ? 'Inactive' : 'Active'} onChange={e => set('account_status', e.target.value)} className={inputCls}>
+          <option value="Active">Active — work is running</option>
+          <option value="Inactive">Inactive — client asked to pause (can be turned on again)</option>
+        </select>
+      </div>
       <div className={SPAN[12]}>
         <label className="block"><Lbl name="client_present_address">Client Present Address</Lbl></label>
         <input type="text" value={form.client_present_address || ''} onChange={e => set('client_present_address', e.target.value)} placeholder="Where the client is right now (city, area, country)" className={inputCls} />

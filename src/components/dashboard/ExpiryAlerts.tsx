@@ -45,6 +45,7 @@ export default function ExpiryAlerts({ companies: initial }: { companies: Compan
     const out: Item[] = []
     if (!mounted) return out
     for (const company of companies) {
+      if (company.account_status === 'Inactive') continue // paused client: no expiry reminders
       for (const { doc, field } of DOC_FIELDS) {
         const date = company[field] as string | undefined
         if (!date) continue

@@ -5,7 +5,17 @@ import { Plus, Edit2, Building2, Search, ExternalLink, Sparkles, LayoutGrid, Lis
 import { Company } from '@/lib/types'
 import CompanyModal, { computeNextCompanyId } from './CompanyModal'
 import { matchesQuery } from '@/lib/search'
+import { createClient } from '@/lib/supabase/client'
 import ExpiryAlerts from '@/components/dashboard/ExpiryAlerts'
+
+function StatusSwitch({ on, busy, onClick }: { on: boolean; busy: boolean; onClick: () => void }) {
+  return (
+    <button type="button" onClick={onClick} disabled={busy} title={on ? 'Turn off (Inactive)' : 'Turn on (Active)'} aria-pressed={on}
+      className={`relative w-9 h-5 rounded-full transition shrink-0 ${on ? 'bg-emerald-500' : 'bg-slate-300'} ${busy ? 'opacity-60' : ''}`}>
+      <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-all ${on ? 'left-[18px]' : 'left-0.5'}`} />
+    </button>
+  )
+}
 
 interface Props { companies: Company[]; mode?: 'new' | 'renewal'; isAdmin?: boolean }
 
@@ -14,6 +24,8 @@ export default function CompaniesClient({ companies: initialCompanies, mode = 'n
   const renewalMode = mode === 'renewal'
   const [companiesList, setCompaniesList] = useState<Company[]>(initialCompanies)
   const [search, setSearch] = useState('')
+  const [statusFilter, setStatusFilter] = useState<'all' | 'Active' | 'Inactive'>('all')
+  const [toggling, setToggling] = useState<string | null>(null)
   const [selected, setSelected] = useState<Company | null>(null)
   const [showAdd, setShowAdd] = useState(false)
   const [view, setView] = useState<'grid' | 'list'>(mode === 'renewal' ? 'list' : 'grid')
@@ -56,6 +68,16 @@ export default function CompaniesClient({ companies: initialCompanies, mode = 'n
     })
   }
 
+  // Admin: switch a company on / off without opening the form
+  async function toggleStatus(c: Company) {
+    const next = c.account_status === 'Inactive' ? 'Active' : 'Inactive'
+    setToggling(c.id)
+    const { error } = await createClient().from('companies').update({ account_status: next }).eq('id', c.id)
+    setToggling(null)
+    if (error) { alert('Could not change the status: ' + error.message); return }
+    setCompaniesList(prev => prev.map(x => (x.id === c.id ? { ...x, account_status: next } : x)))
+  }
+
   function handleDelete(id: string) {
     setCompaniesList(prev => prev.filter(c => c.id !== id))
   }
@@ -66,6 +88,7 @@ export default function CompaniesClient({ companies: initialCompanies, mode = 'n
   const modeList = companiesList.filter(c => (renewalMode ? isRenewal(c) : !isRenewal(c)))
   const serialOf = (c: Company) => modeList.indexOf(c) + 1
   const filtered = modeList.filter(c =>
+    (statusFilter === 'all' || (statusFilter === 'Inactive') === (c.account_status === 'Inactive')) &&
     matchesQuery(search, serialOf(c), [
       c.company_id, c.company_name, c.country_of_origin, c.entity_type, c.client_name, c.client_phone,
       c.whatsapp_number, c.official_email, c.cr_number, c.misa_license_no, c.tin_number, c.vat_number,
@@ -130,6 +153,11 @@ export default function CompaniesClient({ companies: initialCompanies, mode = 'n
           <div className="hidden md:block text-xs text-slate-500 font-medium">
             Showing <span className="font-bold text-slate-800">{filtered.length}</span> of {modeList.length}
           </div>
+          <select value={statusFilter} onChange={e => setStatusFilter(e.target.value as any)} className="px-2.5 py-1.5 text-xs border border-slate-200 rounded-lg bg-white text-slate-700">
+            <option value="all">All status</option>
+            <option value="Active">Active ({modeList.filter(c => c.account_status !== 'Inactive').length})</option>
+            <option value="Inactive">Inactive ({modeList.filter(c => c.account_status === 'Inactive').length})</option>
+          </select>
           <div className="inline-flex rounded-lg border border-slate-200 bg-white p-0.5">
             <button onClick={() => changeView('grid')} title="Grid view" className={`p-1.5 rounded-md transition ${view === 'grid' ? 'bg-blue-600 text-white' : 'text-slate-500 hover:bg-slate-50'}`}><LayoutGrid className="w-4 h-4" /></button>
             <button onClick={() => changeView('list')} title="List view" className={`p-1.5 rounded-md transition ${view === 'list' ? 'bg-blue-600 text-white' : 'text-slate-500 hover:bg-slate-50'}`}><List className="w-4 h-4" /></button>
@@ -150,7 +178,7 @@ export default function CompaniesClient({ companies: initialCompanies, mode = 'n
             </thead>
             <tbody className="divide-y divide-slate-100">
               {filtered.map(c => (
-                <tr key={c.id} className="hover:bg-slate-50/70">
+                <tr key={c.id} className={`hover:bg-slate-50/70 ${c.account_status === 'Inactive' ? 'opacity-60' : ''}`}>
                   <td className="px-3 py-2.5 text-slate-400 font-mono">{serialOf(c)}</td>
                   <td className="px-3 py-2.5 font-mono font-bold text-blue-700">{c.company_id}</td>
                   <td className="px-3 py-2.5 font-semibold text-slate-900">{c.company_name}</td>
@@ -160,7 +188,12 @@ export default function CompaniesClient({ companies: initialCompanies, mode = 'n
                   <td className="px-3 py-2.5 font-mono text-slate-600">{c.cr_number || '—'}</td>
                   <td className="px-3 py-2.5 font-mono text-slate-600">{c.misa_license_no || '—'}</td>
                   <td className="px-3 py-2.5 font-mono text-slate-600">{renewalMode ? (() => { const n = nextExpiry(c); return n ? <span className={`px-2 py-0.5 rounded-full border text-[10px] font-semibold ${n.days < 0 ? 'bg-rose-50 text-rose-700 border-rose-200' : n.days <= 30 ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-emerald-50 text-emerald-700 border-emerald-200'}`}>{n.date} · {n.days < 0 ? `${-n.days}d overdue` : `${n.days}d`}</span> : '—' })() : (c.cr_expire_date || '—')}</td>
-                  <td className={`px-3 py-2.5 font-semibold ${c.account_status === 'Inactive' ? 'text-slate-400' : 'text-emerald-700'}`}>{c.account_status || 'Active'}</td>
+                  <td className="px-3 py-2.5">
+                    <div className="flex items-center gap-2">
+                      <span className={`font-semibold ${c.account_status === 'Inactive' ? 'text-slate-400' : 'text-emerald-700'}`}>{c.account_status === 'Inactive' ? 'Inactive' : 'Active'}</span>
+                      {isAdmin && <StatusSwitch on={c.account_status !== 'Inactive'} busy={toggling === c.id} onClick={() => toggleStatus(c)} />}
+                    </div>
+                  </td>
                   <td className="px-3 py-2.5">
                     {c.drive_link ? <a href={c.drive_link} target="_blank" rel="noreferrer" className="text-blue-600 hover:text-blue-800 inline-flex items-center gap-1"><ExternalLink className="w-3 h-3" />Open</a> : <span className="text-slate-300">—</span>}
                   </td>
@@ -204,12 +237,15 @@ export default function CompaniesClient({ companies: initialCompanies, mode = 'n
                     </div>
                   </div>
                   {isAdmin && (
-                    <button
-                      onClick={() => setSelected(company)}
-                      className="p-1.5 hover:bg-slate-200/60 rounded-md transition text-slate-400 hover:text-slate-700"
-                    >
-                      <Edit2 className="w-4 h-4" />
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <StatusSwitch on={company.account_status !== 'Inactive'} busy={toggling === company.id} onClick={() => toggleStatus(company)} />
+                      <button
+                        onClick={() => setSelected(company)}
+                        className="p-1.5 hover:bg-slate-200/60 rounded-md transition text-slate-400 hover:text-slate-700"
+                      >
+                        <Edit2 className="w-4 h-4" />
+                      </button>
+                    </div>
                   )}
                 </div>
               </div>
@@ -239,7 +275,7 @@ export default function CompaniesClient({ companies: initialCompanies, mode = 'n
               <div className="flex items-center gap-1.5">
                 <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-semibold border ${company.account_status === 'Inactive' ? 'bg-slate-100 text-slate-500 border-slate-300' : 'bg-emerald-50 text-emerald-700 border-emerald-200'}`}>
                   <span className={`w-1.5 h-1.5 rounded-full ${company.account_status === 'Inactive' ? 'bg-slate-400' : 'bg-emerald-500'}`} />
-                  {company.account_status || 'Active Entity'}
+                  {company.account_status === 'Inactive' ? 'Inactive' : 'Active'}
                 </span>
                 <TypeBadge company={company} />
               </div>

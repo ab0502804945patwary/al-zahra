@@ -30,6 +30,7 @@ interface CompanyMatrixRow {
   country_of_origin?: string
   entity_type?: string
   isRenewal: boolean
+  inactive?: boolean
   stages: Record<number, StageSummary>
 }
 
@@ -69,6 +70,7 @@ export default function MasterMatrixDashboard({ initialCompanies, kpiStats, stag
         country_of_origin: c.country_of_origin,
         entity_type: c.entity_type,
         isRenewal,
+        inactive: c.account_status === 'Inactive',
         stages,
       }
     })
@@ -244,6 +246,7 @@ export default function MasterMatrixDashboard({ initialCompanies, kpiStats, stag
                         <div className="text-[10px] text-slate-400 font-medium">
                           <span className="font-mono text-slate-500 font-semibold">{row.company_id}</span>
                           {row.country_of_origin && <span> • {row.country_of_origin}</span>}
+                          {row.inactive && <span className="ml-1.5 px-1.5 py-px rounded-full bg-slate-100 text-slate-500 border border-slate-300 font-semibold">Inactive</span>}
                           {row.isRenewal && <span className="ml-1.5 px-1.5 py-px rounded-full bg-violet-50 text-violet-700 border border-violet-200 font-semibold">Renewal / Other</span>}
                         </div>
                       </div>

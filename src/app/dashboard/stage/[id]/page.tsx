@@ -44,7 +44,7 @@ export default async function StagePage({ params }: { params: Promise<{ id: stri
 
     const [eRes, cRes, empRes, ...upRes] = await Promise.all([
       entriesQuery,
-      supabase.from('companies').select('company_id, company_name, country_of_origin, entity_type, service_type, client_name, client_phone, cr_number, cr_issue_date, cr_expire_date, misa_license_no, misa_issue_date, misa_expire_date, tin_number, vat_number, chamber_registration_no, gosi_qiwa_status').order('company_id'),
+      supabase.from('companies').select('company_id, company_name, country_of_origin, entity_type, service_type, client_name, client_phone, cr_number, cr_issue_date, cr_expire_date, misa_license_no, misa_issue_date, misa_expire_date, tin_number, vat_number, chamber_registration_no, gosi_qiwa_status, account_status').order('company_id'),
       // colleague names are read on the server: staff may only read their own staff row
       lookup.from('employees').select('id, name, assigned_stage, assigned_stages'),
       ...upstream.map(sid => lookup.from(STAGE_CONFIG[sid].table).select(eligibilityColumns(sid, ['priority', 'category']))),
@@ -94,7 +94,7 @@ export default async function StagePage({ params }: { params: Promise<{ id: stri
         stats={stats}
         companies={companies}
         employees={employees}
-        eligibleIds={eligibleCompanies.filter(c => !entries.some(e => e.company_id === c.company_id)).map(c => c.company_id)}
+        eligibleIds={eligibleCompanies.filter(c => c.account_status !== 'Inactive' && !entries.some(e => e.company_id === c.company_id)).map(c => c.company_id)}
         eligibilityHint={eligibilityHint}
         canEdit={canEdit}
         isAdmin={isAdmin}
