@@ -102,7 +102,7 @@ export default function EditEntryModal({ stageId, entry, companies, employees, o
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {stageId === '9' && <BdFields form={form} set={set} />}
-          {(stageId === '10' || stageId === '11') && <ForeignFields form={form} set={set} title={stageId === '10' ? 'Foreign Mother Company' : '2 Foreign Subsidiary Company'} />}
+          {(stageId === '3' || stageId === '10' || stageId === '11') && <ForeignFields form={form} set={set} title={stageId === '10' ? 'Foreign Mother Company' : stageId === '3' ? '1 Foreign Subsidiary Company' : '2 Foreign Subsidiary Company'} />}
           <Sel
             label={stageId === '9' ? 'Linked Client Company (optional)' : 'Corporate Entity'}
             name="company_id"

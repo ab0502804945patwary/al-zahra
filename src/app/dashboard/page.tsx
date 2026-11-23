@@ -61,11 +61,11 @@ export default async function DashboardPage() {
         status = r.status === 'Active' ? 'Green' : r.status === 'Warning' ? 'Yellow' : 'Red'
         label = r.status === 'Expired' ? 'Expired' : `${r.remaining_days ?? '-'}d Left`
       } else {
-        const st = r.status || r.usa_status
+        const st = r.status
         status = st === 'Green' || st === 'Yellow' || st === 'Red' ? st : 'Pending'
-        const done = n === 3 ? r.usa_complete_date : r.complete_date
+        const done = r.complete_date
         label = done ? 'Complete' : (r.current_stage || 'In Progress')
-        days = r.days_taken ?? r.usa_days_taken ?? undefined
+        days = r.days_taken ?? undefined
       }
       ;(stageMap[r.company_id] ||= {})[n] = { status, label, days }
     }
@@ -73,7 +73,7 @@ export default async function DashboardPage() {
 
   for (const rows of Object.values(stageRows)) {
     for (const r of rows) {
-      const st = [r.status, r.usa_status, r.canada_status]
+      const st = [r.status]
       kpiStats.compliant += st.filter(x => x === 'Green' || x === 'Active').length
       kpiStats.overdue += st.filter(x => x === 'Red' || x === 'Expired').length
       if (r.remaining_days != null && r.remaining_days >= 0 && r.remaining_days <= 40) kpiStats.expiring += 1
@@ -96,8 +96,8 @@ export default async function DashboardPage() {
           avg: null as number | null,
         }
       }
-      const st = (r: any) => r.status || r.usa_status
-      const pct = rows.map(r => r.completion_percent ?? r.usa_completion_percent).filter((x: any) => typeof x === 'number')
+      const st = (r: any) => r.status
+      const pct = rows.map(r => r.completion_percent).filter((x: any) => typeof x === 'number')
       return {
         id: sid,
         label: `Phase ${phaseOf(sid)}: ${c.label}`,

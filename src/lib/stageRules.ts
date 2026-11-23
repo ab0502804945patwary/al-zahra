@@ -91,7 +91,7 @@ export function isEligibleForStage(stageId: string, company: { company_id: strin
     case '4': {
       if (picked) {
         // MISA opens when Parent, Activity, Trade Name and every ticked phase are complete
-        const doneStage = (sid: string) => (sid === '3' ? dk('3', 'usa_complete_date') : dk(sid))
+        const doneStage = (sid: string) => (sid === '3' ? dk('3') : dk(sid))
         return dk('1') && dk('2') && dk('8', 'approval_date') && picked.filter(s => OPTIONAL_PHASES.includes(s)).every(doneStage)
       }
       // MISA opens only when every parallel step is complete:
@@ -99,7 +99,7 @@ export function isEligibleForStage(stageId: string, company: { company_id: strin
       //   Trading License: the same plus Foreign Entity (3)
       const common = dk('1') && dk('9') && dk('2') && dk('8', 'approval_date')
       if (category === 'Service License') return common
-      if (needsForeign(category)) return common && dk('3', 'usa_complete_date')
+      if (needsForeign(category)) return common && dk('3')
       return false
     }
     case '2':
@@ -133,14 +133,11 @@ export const ELIGIBILITY_HINT: Record<string, string> = {
 // ---- Columns that really exist in each Supabase stage table (see supabase-schema.sql) ----
 const COMMON = ['company_id', 'client_name', 'client_phone', 'category', 'priority', 'current_stage', 'submit_date', 'target_date', 'complete_date', 'payment_status', 'remarks', 'employee_id', 'drive_link', 'overdue_status', 'days_taken', 'status', 'completion_percent']
 export const TABLE_COLUMNS: Record<string, string[]> = {
-  '10': [...COMMON, 'foreign_company_name', 'country', 'registration_no'],
-  '11': [...COMMON, 'foreign_company_name', 'country', 'registration_no'],
+  '10': [...COMMON, 'foreign_company_name', 'country', 'city', 'registration_no'],
+  '11': [...COMMON, 'foreign_company_name', 'country', 'city', 'registration_no'],
   '9': [...COMMON, 'bd_company_name', 'country', 'rjsc_reg_no', 'issue_no', 'incorporation_date', 'auditor_firm', 'rjsc_return_due_date'],
   '1': COMMON, '2': COMMON, '4': COMMON, '5': COMMON, '6': [...COMMON, 'portal_accounts'], '7': COMMON,
-  '3': ['company_id', 'client_name', 'client_phone', 'category', 'priority', 'current_stage',
-    'usa_type', 'usa_submit_date', 'usa_target_date', 'usa_complete_date', 'usa_overdue_status', 'usa_days_taken', 'usa_status', 'usa_completion_percent', 'usa_payment_status',
-    'canada_type', 'canada_submit_date', 'canada_target_date', 'canada_complete_date', 'canada_overdue_status', 'canada_days_taken', 'canada_status', 'canada_completion_percent', 'canada_payment_status',
-    'remarks', 'employee_id', 'drive_link'],
+  '3': [...COMMON, 'foreign_company_name', 'country', 'city', 'registration_no'],
   '8': ['company_id', 'entity_type', 'company_name_english', 'arabic_name', 'name_clearance_number', 'submit_date', 'approval_date', 'expire_date', 'remaining_days', 'status', 'cr_status', 'notes'],
 }
 

@@ -25,9 +25,8 @@ export const STAGE_CONFIG: Record<string, {
     step: '04',
     table: 'stage3_foreign_company',
     label: '1 Foreign Subsidiary Company',
-    category: 'Cross-Border Licensing (USA & Canada)',
-    employee: 'Arju Hossain',
-    hasUSACanada: true
+    category: 'Foreign Subsidiary Company',
+    employee: 'Arju Hossain'
   },
   '4': {
     step: '06',
