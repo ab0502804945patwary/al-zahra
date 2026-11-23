@@ -24,7 +24,7 @@ export const STAGE_CONFIG: Record<string, {
   '3': {
     step: '04',
     table: 'stage3_foreign_company',
-    label: 'Foreign Entity Clearance',
+    label: '1 Foreign Subsidiary Company',
     category: 'Cross-Border Licensing (USA & Canada)',
     employee: 'Arju Hossain',
     hasUSACanada: true
@@ -64,6 +64,20 @@ export const STAGE_CONFIG: Record<string, {
     category: 'RJSC Registration & Annual Return',
     employee: 'Operations'
   },
+  '10': {
+    step: '00',
+    table: 'stage10_foreign_mother',
+    label: 'Foreign Mother Company',
+    category: 'Foreign Parent Company',
+    employee: 'Operations'
+  },
+  '11': {
+    step: '00',
+    table: 'stage11_foreign_subsidiary_2',
+    label: '2 Foreign Subsidiary Company',
+    category: 'Foreign Subsidiary Company',
+    employee: 'Operations'
+  },
   '8': {
     step: '05',
     table: 'stage8_name_clearance',
@@ -75,7 +89,9 @@ export const STAGE_CONFIG: Record<string, {
 }
 
 /** Order of the workflow menu. Phase numbers follow this order (stage ids and URLs stay the same). */
-export const MENU_ORDER = ['1', '9', '2', '3', '8', '4', '5', '6', '7']
+export const MENU_ORDER = ['1', '9', '10', '2', '3', '11', '8', '4', '5', '6', '7']
+// the "PHASE 0X" number of every stage follows its place in the menu
+MENU_ORDER.forEach((id, i) => { if (STAGE_CONFIG[id]) STAGE_CONFIG[id].step = String(i + 1).padStart(2, '0') })
 export const phaseOf = (stageId: string | number) => {
   const i = MENU_ORDER.indexOf(String(stageId))
   return i < 0 ? Number(stageId) : i + 1

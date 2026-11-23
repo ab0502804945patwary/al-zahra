@@ -1,0 +1,30 @@
+'use client'
+import CountrySelect from '@/components/ui/CountrySelect'
+
+const input = 'w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white'
+
+/** Foreign company details for Foreign Mother Company and the Foreign Subsidiary phases (add and edit forms). */
+export default function ForeignFields({ form, set, title }: { form: Record<string, string>; set: (k: string, v: string) => void; title: string }) {
+  const L = ({ children, req }: { children: React.ReactNode; req?: boolean }) => (
+    <label className="text-xs font-medium text-slate-700 mb-1 block">{children}{req && <span className="text-rose-500 ml-0.5">*</span>}</label>
+  )
+  return (
+    <div className="bg-sky-50/50 border border-sky-200 rounded-xl p-4 space-y-3">
+      <h3 className="text-xs font-semibold text-slate-800">{title}</h3>
+      <div>
+        <L>Foreign Company Name</L>
+        <input className={input} value={form.foreign_company_name || ''} onChange={e => set('foreign_company_name', e.target.value)} />
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div>
+          <L>Country</L>
+          <CountrySelect value={form.country || ''} onChange={v => set('country', v)} />
+        </div>
+        <div>
+          <L>Registration No.</L>
+          <input className={input} value={form.registration_no || ''} onChange={e => set('registration_no', e.target.value)} />
+        </div>
+      </div>
+    </div>
+  )
+}

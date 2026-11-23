@@ -37,6 +37,8 @@ export const PHASE_OPTIONS: Record<string, string[]> = {
   '6': ['SPL', 'QIWA', 'MUQEEM', 'GOSI CERTIFICATE', 'Chamber Of Commerce', 'VAT'],
   '7': DEFAULT_PHASES,
   '9': DEFAULT_PHASES,
+  '10': DEFAULT_PHASES,
+  '11': DEFAULT_PHASES,
 }
 
 export const toOptions = (list: string[]) => list.map(v => ({ value: v, label: v }))
@@ -90,6 +92,10 @@ export function isEligibleForStage(stageId: string, company: { company_id: strin
     case '3':
       // Foreign licensing is only needed for Trading License (Service License skips Stage 3); starts together with Stage 1
       return needsForeign(category)
+    case '10':
+    case '11':
+      // foreign company phases: Trading License only, they start together with the other parallel phases
+      return category === 'Trading License'
     case '5': return submittedAndDone(all['4'], id)
     case '6': return submittedAndDone(all['5'], id)
     case '7': return (all['6'] || []).some(e => e.company_id === id) // Portals & Compliance has no dates: a record there is enough
@@ -100,6 +106,8 @@ export function isEligibleForStage(stageId: string, company: { company_id: strin
 export const ELIGIBILITY_HINT: Record<string, string> = {
   '2': 'Starts together with Stage 1 and Trade Name Clearance.',
   '3': 'Trading License only (Service License skips this stage). Starts together with Stage 1.',
+  '10': 'Trading License only. Starts together with the other parallel phases.',
+  '11': 'Trading License only. Starts together with the other parallel phases.',
   '4': 'Opens when every earlier step is complete: Parent Entity, Bangladesh Company, Activity Classification, Trade Name Clearance (and Foreign Entity for Trading License).',
   '5': 'Requires Stage 4 (MISA) submit and complete dates.',
   '6': 'Requires Stage 5 (Commercial Registration) submit and complete dates.',
@@ -109,6 +117,8 @@ export const ELIGIBILITY_HINT: Record<string, string> = {
 // ---- Columns that really exist in each Supabase stage table (see supabase-schema.sql) ----
 const COMMON = ['company_id', 'client_name', 'client_phone', 'category', 'priority', 'current_stage', 'submit_date', 'target_date', 'complete_date', 'payment_status', 'remarks', 'employee_id', 'drive_link', 'overdue_status', 'days_taken', 'status', 'completion_percent']
 export const TABLE_COLUMNS: Record<string, string[]> = {
+  '10': [...COMMON, 'foreign_company_name', 'country', 'registration_no'],
+  '11': [...COMMON, 'foreign_company_name', 'country', 'registration_no'],
   '9': [...COMMON, 'bd_company_name', 'country', 'rjsc_reg_no', 'issue_no', 'incorporation_date', 'auditor_firm', 'rjsc_return_due_date'],
   '1': COMMON, '2': COMMON, '4': COMMON, '5': COMMON, '6': [...COMMON, 'portal_accounts'], '7': COMMON,
   '3': ['company_id', 'client_name', 'client_phone', 'category', 'priority', 'current_stage',

@@ -42,13 +42,14 @@ It asks for the email, name and password (hidden while typing). Then sign in on 
 ## 4. Setting up a brand-new Supabase project (only if moving to a new database)
 
 In Supabase → SQL Editor run, in this order: `supabase-schema.sql`, then the files in `db/`:
-`rls-lockdown.sql`, `stage3-8-guard.sql`, `customers.sql`, `invoices.sql`, `agents.sql`, `expenses.sql`, `company-statutory.sql`, `portal-accounts.sql`, `push.sql`, `modules.sql`, `videos.sql`, `agents-owner.sql`, `customer-form.sql` (and the other files in `db/`, oldest first).
+`rls-lockdown.sql`, `stage3-8-guard.sql`, `customers.sql`, `invoices.sql`, `agents.sql`, `expenses.sql`, `company-statutory.sql`, `portal-accounts.sql`, `push.sql`, `modules.sql`, `videos.sql`, `foreign-stages.sql`, `agents-owner.sql`, `customer-form.sql` (and the other files in `db/`, oldest first).
 Also create the storage buckets: `avatars` (public), `expense-files` (private). `customer-form.sql` creates the private `company-docs` bucket itself.
 
 ## 5. How the work flows
 
-- New company: **Service License** → Phases 1, 2, 3, 5 get the work at the same time. **Trading License** → Phases 1, 2, 3, 4, 5.
-- Phase 6 (MISA) opens when all of those are complete. Then CR (7) → Portals (8) → Final Dossier (9).
+- Menu order (= phase number): 01 Parent Entity, 02 Bangladesh Company, 03 Foreign Mother Company, 04 Activity, 05 1 Foreign Subsidiary Company, 06 2 Foreign Subsidiary Company, 07 Trade Name Clearance, 08 MISA, 09 CR, 10 Portals, 11 Final Dossier.
+- New company: **Service License** → Parent, Bangladesh Company, Activity, Trade Name Clearance get the work at the same time. **Trading License** → the same plus the three foreign phases (Foreign Mother, 1 and 2 Foreign Subsidiary).
+- MISA opens when Parent, Bangladesh Company, Activity, Trade Name Clearance (and the 1 Foreign Subsidiary phase for Trading License) are complete. Then CR → Portals → Final Dossier.
 - Renewal / Other companies skip the phase chain.
 - Staff see only their phases, cannot change the submission date, and cannot edit a record after it is completed. Admins can.
 - Deleting anything needs the master password (5 wrong tries lock it for 15 minutes).

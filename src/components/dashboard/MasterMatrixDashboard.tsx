@@ -14,7 +14,9 @@ import {
 } from 'lucide-react'
 import { Company } from '@/lib/types'
 import StatusGuide from '@/components/ui/StatusGuide'
-import { phaseOf } from '@/lib/stageData'
+import { phaseOf, MENU_ORDER } from '@/lib/stageData'
+
+const SHORT: Record<string, string> = { '1': 'Parent', '9': 'BD Company', '10': 'Foreign Mother', '2': 'Activity', '3': 'Foreign Sub 1', '11': 'Foreign Sub 2', '8': 'Name', '4': 'MISA', '5': 'CR', '6': 'Portals', '7': 'Filing' }
 
 interface StageSummary {
   status: 'Green' | 'Yellow' | 'Red' | 'Pending' | 'Not Started'
@@ -60,10 +62,10 @@ export default function MasterMatrixDashboard({ initialCompanies, kpiStats, stag
       const real = stageMap[c.company_id] || {}
       const stages: Record<number, StageSummary> = {}
       const isRenewal = c.service_type === 'renewal'
-      for (let n = 1; n <= 9; n++) {
+      for (let n = 1; n <= 11; n++) {
         if (real[n]) stages[n] = real[n]
         else if (isRenewal) stages[n] = { status: 'Not Started', label: '—' } // renewal: no stage handoff
-        else if (n === 3 && c.entity_type === 'Service License') stages[n] = { status: 'Not Started', label: 'N/A' } // Service License skips Stage 3
+        else if ((n === 3 || n === 10 || n === 11) && c.entity_type === 'Service License') stages[n] = { status: 'Not Started', label: 'N/A' } // Service License skips the foreign phases
         else stages[n] = { status: 'Not Started', label: 'Not started' }
       }
 
@@ -228,15 +230,7 @@ export default function MasterMatrixDashboard({ initialCompanies, kpiStats, stag
             <thead>
               <tr className="bg-slate-100/70 text-slate-600 font-semibold uppercase tracking-wider border-b border-slate-200 text-[11px]">
                 <th className="py-3 px-4 font-mono">Company</th>
-                <th className="py-3 px-3 text-center">1: Parent</th>
-                <th className="py-3 px-3 text-center">2: BD Company</th>
-                <th className="py-3 px-3 text-center">3: Activity</th>
-                <th className="py-3 px-3 text-center">4: Foreign</th>
-                <th className="py-3 px-3 text-center">5: Name</th>
-                <th className="py-3 px-3 text-center">6: MISA</th>
-                <th className="py-3 px-3 text-center">7: CR</th>
-                <th className="py-3 px-3 text-center">8: Portals</th>
-                <th className="py-3 px-3 text-center">9: Filing</th>
+                {MENU_ORDER.map((id, i) => <th key={id} className="py-3 px-3 text-center whitespace-nowrap">{i + 1}: {SHORT[id]}</th>)}
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-slate-700">
@@ -263,7 +257,7 @@ export default function MasterMatrixDashboard({ initialCompanies, kpiStats, stag
                   </td>
 
                   {/* 8 Stages Badges */}
-                  {[1, 9, 2, 3, 8, 4, 5, 6, 7].map(stgNum => {
+                  {MENU_ORDER.map(Number).map(stgNum => {
                     const stg = row.stages[stgNum] || { status: 'Not Started', label: 'Queued' }
 
                     let badgeClass = 'bg-slate-100 text-slate-400 border-slate-200'
@@ -292,7 +286,7 @@ export default function MasterMatrixDashboard({ initialCompanies, kpiStats, stag
 
               {filteredRows.length === 0 && (
                 <tr>
-                  <td colSpan={10} className="py-12 text-center text-slate-400">
+                  <td colSpan={12} className="py-12 text-center text-slate-400">
                     <p className="text-xs">No corporate entities found matching your filter</p>
                   </td>
                 </tr>

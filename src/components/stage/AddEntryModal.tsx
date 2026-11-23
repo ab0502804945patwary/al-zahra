@@ -4,6 +4,7 @@ import { X, Loader2, Globe, Building2, User, FileText, CheckCircle2, Sparkles } 
 import { createClient, isSupabaseConfigured } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import BdFields from './BdFields'
+import ForeignFields from './ForeignFields'
 import { triggerPush } from '@/lib/pushClient'
 import PortalAccountsEditor from './PortalAccountsEditor'
 import type { PortalAccount } from '@/lib/portals'
@@ -15,7 +16,7 @@ import { calculateNameClearance, assessTiming } from '@/lib/utils'
 const STAGE_TABLES: Record<string, string> = {
   '1': 'stage1_mother_company', '2': 'stage2_activity_list', '3': 'stage3_foreign_company',
   '4': 'stage4_misa_license', '5': 'stage5_commercial_registration', '6': 'stage6_other_websites',
-  '7': 'stage7_file_ready', '8': 'stage8_name_clearance', '9': 'stage9_bd_company',
+  '7': 'stage7_file_ready', '8': 'stage8_name_clearance', '9': 'stage9_bd_company', '10': 'stage10_foreign_mother', '11': 'stage11_foreign_subsidiary_2',
 }
 
 const MODULE_TITLES: Record<string, string> = {
@@ -28,6 +29,8 @@ const MODULE_TITLES: Record<string, string> = {
   '7': 'Final Legal Dossier & Issuance',
   '8': 'Trade Name Clearance',
   '9': 'Bangladesh Company Name',
+  '10': 'Foreign Mother Company',
+  '11': '2 Foreign Subsidiary Company',
 }
 
 interface Props {
@@ -128,6 +131,7 @@ export default function AddEntryModal({ stageId, companies, employees, onClose, 
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {stageId === '9' && <BdFields form={form} set={set} />}
+          {(stageId === '10' || stageId === '11') && <ForeignFields form={form} set={set} title={stageId === '10' ? 'Foreign Mother Company' : '2 Foreign Subsidiary Company'} />}
           <Select
             label={stageId === '9' ? 'Linked Client Company (optional)' : 'Corporate Entity (Auto-fills client profile)'}
             name="company_id"
