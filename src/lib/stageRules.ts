@@ -88,6 +88,14 @@ export function isEligibleForStage(stageId: string, company: { company_id: strin
   const dk = (sid: string, field: 'complete_date' | 'usa_complete_date' | 'approval_date' = 'complete_date') => skipped.includes(sid) || done(all[sid], id, field)
   if (picked && OPTIONAL_PHASES.includes(stageId)) return picked.includes(stageId)
   switch (stageId) {
+    case '1':
+      // Service License (ticked on the form): Parent Entity Verification starts only after every ticked phase is complete.
+      // Other license types and older companies: it starts together with the others.
+      if (picked && category === 'Service License') {
+        const doneFirst = (sid: string) => (sid === '3' ? dk('3') : dk(sid))
+        return picked.filter(s => OPTIONAL_PHASES.includes(s)).every(doneFirst)
+      }
+      return true
     case '4': {
       if (picked) {
         // MISA opens when Parent, Activity, Trade Name and every ticked phase are complete
@@ -120,6 +128,7 @@ export function isEligibleForStage(stageId: string, company: { company_id: strin
 }
 
 export const ELIGIBILITY_HINT: Record<string, string> = {
+  '1': 'Service License: opens after the phases ticked on the Company Register form (Foreign Company, Bangladesh Company) are complete.',
   '2': 'Starts together with Stage 1 and Company Name Clearance.',
   '3': 'Work arrives when 1 Foreign Subsidiary Company is ticked on the Company Register form.',
   '10': 'Work arrives when Foreign Mother Company is ticked on the Company Register form.',

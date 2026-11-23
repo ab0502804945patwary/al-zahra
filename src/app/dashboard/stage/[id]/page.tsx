@@ -30,8 +30,8 @@ export default async function StagePage({ params }: { params: Promise<{ id: stri
   const canEdit = true
   const isAdmin = me?.role === 'admin'
 
-  const gated = ['2', '3', '4', '5', '6', '7', '9', '10', '11'].includes(id)
-  const upstream = !gated || id === '9' || id === '10' || id === '11' ? [] : id === '4' ? ['1', '2', '3', '8', '9', '10', '11'] : ['1', '2', '3', '4', '5', '6'].filter(sid => Number(sid) < Number(id))
+  const gated = ['1', '2', '3', '4', '5', '6', '7', '9', '10', '11'].includes(id)
+  const upstream = !gated || id === '9' || id === '10' || id === '11' ? [] : id === '1' ? ['9', '10', '3', '11'] : id === '4' ? ['1', '2', '3', '8', '9', '10', '11'] : ['1', '2', '3', '4', '5', '6'].filter(sid => Number(sid) < Number(id))
   const dbEntries: Record<string, any[]> = {}
 
   try {

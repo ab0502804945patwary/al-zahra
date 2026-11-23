@@ -58,10 +58,13 @@ interface Props {
 const AUDIT_STATUSES = ['Not Started', 'In Progress', 'Completed', 'Overdue']
 
 // Work categories that can be ticked for each License Type (stage ids: 9 Bangladesh Company, 10 Foreign Mother, 3 / 11 Foreign Subsidiary 1 / 2)
+// Service License: Foreign Company must be ticked (cannot be removed), Bangladesh Company is optional
+const MANDATORY_FOR: Record<string, string[]> = { 'Service License': ['10'] }
+const labelFor = (id: string, license?: string) => (license === 'Service License' && id === '10' ? 'Foreign Company' : license === 'Service License' && id === '9' ? 'Bangladesh Company' : PHASE_LABEL[id])
 const PHASE_LABEL: Record<string, string> = { '9': 'Bangladesh Company Name', '10': 'Foreign Mother Company', '3': '1 Foreign Subsidiary Company', '11': '2 Foreign Subsidiary Company' }
 const PHASES_FOR: Record<string, string[]> = {
   'Trading License': ['9', '10', '3', '11'],
-  'Service License': ['9', '10'],
+  'Service License': ['10', '9'],
   'Service to Trade': ['3', '11'],
 }
 const phasesFor = (license?: string) => PHASES_FOR[license || ''] || []
@@ -145,6 +148,7 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
     if (form.service_type !== 'renewal') {
       // Company Register form: the new sections are the source of truth
       row.shareholders = holders
+    if (Array.isArray(row.selected_phases)) row.selected_phases = Array.from(new Set([...(MANDATORY_FOR[form.entity_type || ''] || []), ...row.selected_phases]))
       // other screens (cards, search, reminders, forms) still read these older columns: keep them in step
       row.ceo_gm_name = row.admin_name || row.ceo_gm_name || null
       row.iqama_no = row.admin_iqama_no || row.iqama_no || null
@@ -352,18 +356,21 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
       {form.service_type !== 'renewal' && phasesFor(form.entity_type).length > 0 && (
         <div className={SPAN[12]}>
           <span className="text-xs font-semibold text-slate-700 mb-1.5 block">Work categories <span className="font-normal text-slate-400">— tick the ones this company needs. Work goes only to the ticked categories.</span></span>
+          {form.entity_type === 'Service License' && <p className="text-[11px] text-blue-700 bg-blue-50 border border-blue-200 rounded-lg px-3 py-2 mb-2">Parent Entity Verification starts only after the ticked categories are complete.</p>}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
             {phasesFor(form.entity_type).map(id => {
-              const on = (form.selected_phases || []).includes(id)
+              const must = (MANDATORY_FOR[form.entity_type || ''] || []).includes(id)
+              const on = must || (form.selected_phases || []).includes(id)
               return (
-                <label key={id} className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg border cursor-pointer transition ${on ? 'border-blue-500 bg-blue-50 ring-1 ring-blue-500' : 'border-slate-200 bg-white hover:bg-slate-50'}`}>
+                <label key={id} className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg border transition ${must ? 'cursor-not-allowed' : 'cursor-pointer'} ${on ? 'border-blue-500 bg-blue-50 ring-1 ring-blue-500' : 'border-slate-200 bg-white hover:bg-slate-50'}`}>
                   <input
                     type="checkbox"
                     checked={on}
-                    onChange={() => set('selected_phases', on ? (form.selected_phases || []).filter((x: string) => x !== id) : [...(form.selected_phases || []), id])}
+                    disabled={must}
+                    onChange={() => !must && set('selected_phases', on ? (form.selected_phases || []).filter((x: string) => x !== id) : [...(form.selected_phases || []), id])}
                     className="accent-blue-600 w-4 h-4 shrink-0"
                   />
-                  <span className={`text-xs font-semibold ${on ? 'text-blue-700' : 'text-slate-700'}`}>{PHASE_LABEL[id]}</span>
+                  <span className={`text-xs font-semibold ${on ? 'text-blue-700' : 'text-slate-700'}`}>{labelFor(id, form.entity_type)}{must && <span className="ml-1.5 text-[10px] font-semibold text-rose-600">Required</span>}</span>
                 </label>
               )
             })}
