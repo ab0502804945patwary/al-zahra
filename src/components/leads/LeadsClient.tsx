@@ -9,7 +9,7 @@ import { LEAD_SOURCES, LEAD_STATUSES, isLeadOverdue, leadStatusTone, fmtLeadDate
 import { useSecureDelete } from '@/components/ui/useSecureDelete'
 import SourceIcon from '@/components/ui/SourceIcon'
 
-interface Lead { id: string; lead_name: string; mobile?: string | null; country?: string | null; city?: string | null; company_name?: string | null; service_required?: string | null; source?: string | null; assigned_to?: string | null; status: string; follow_up_date?: string | null }
+interface Lead { id: string; lead_date?: string | null; lead_name: string; mobile?: string | null; country?: string | null; city?: string | null; company_name?: string | null; service_required?: string | null; source?: string | null; assigned_to?: string | null; status: string; follow_up_date?: string | null }
 
 const PAGE = 10
 const sel = 'px-3 py-2 text-xs border border-slate-200 rounded-lg bg-white text-slate-700'
@@ -89,15 +89,16 @@ export default function LeadsClient({ leads, staffNames }: { leads: Lead[]; staf
       </div>
 
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-x-auto">
-        <table className="w-full text-xs min-w-[1200px]">
+        <table className="w-full text-xs min-w-[1300px]">
           <thead className="bg-slate-50 text-slate-600 text-[11px] tracking-wide">
-            <tr>{['#', 'Lead Name', 'Mobile', 'Country', 'City', 'Company Name', 'Service Required', 'Source', 'Assigned To', 'Status', 'Follow-up Date', 'Action'].map(h => <th key={h} className="text-left font-semibold px-3 py-3 whitespace-nowrap">{h}</th>)}</tr>
+            <tr>{['#', 'Lead Name', 'Date', 'Mobile', 'Country', 'City', 'Company Name', 'Service Required', 'Source', 'Assigned To', 'Status', 'Follow-up Date', 'Action'].map(h => <th key={h} className="text-left font-semibold px-3 py-3 whitespace-nowrap">{h}</th>)}</tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
             {rows.map((l, i) => { const t = leadStatusTone(l.shownStatus); return (
               <tr key={l.id} className="hover:bg-slate-50/70">
                 <td className="px-3 py-3 text-slate-500">{(cur - 1) * PAGE + i + 1}</td>
                 <td className="px-3 py-3 font-semibold text-slate-900">{l.lead_name}</td>
+                <td className="px-3 py-3 font-mono text-slate-700 whitespace-nowrap">{fmtLeadDate(l.lead_date)}</td>
                 <td className="px-3 py-3 font-mono text-slate-700 whitespace-nowrap">{l.mobile || '—'}</td>
                 <td className="px-3 py-3 text-slate-700 whitespace-nowrap"><span className="inline-flex items-center gap-1.5"><Flag country={l.country || ''} />{l.country || '—'}</span></td>
                 <td className="px-3 py-3 text-slate-700 whitespace-nowrap">{l.city || '—'}</td>

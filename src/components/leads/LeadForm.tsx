@@ -10,7 +10,7 @@ import SourceIcon from '@/components/ui/SourceIcon'
 import { LEAD_SOURCES, LEAD_STATUSES, LEAD_SERVICES } from '@/lib/leadConfig'
 import { placesFor } from '@/lib/regions'
 
-interface Lead { id: string; lead_name: string; mobile?: string | null; country?: string | null; city?: string | null; company_name?: string | null; service_required?: string | null; source?: string | null; assigned_to?: string | null; status: string; follow_up_date?: string | null; notes?: string | null }
+interface Lead { id: string; lead_date?: string | null; lead_name: string; mobile?: string | null; country?: string | null; city?: string | null; company_name?: string | null; service_required?: string | null; source?: string | null; assigned_to?: string | null; status: string; follow_up_date?: string | null; notes?: string | null }
 
 const inputCls = 'w-full px-3 py-2.5 text-sm text-slate-900 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white placeholder:text-slate-400 disabled:bg-slate-50 disabled:text-slate-600'
 
@@ -18,7 +18,7 @@ export default function LeadForm({ lead, staffNames, serviceNames, usedSources =
   const router = useRouter()
   const supabase = createClient()
   const [form, setForm] = useState<Record<string, string>>(() => ({
-    lead_name: lead?.lead_name || '', mobile: lead?.mobile || '', country: lead?.country || 'Saudi Arabia', city: lead?.city || '', company_name: lead?.company_name || '',
+    lead_date: lead?.lead_date || new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10), lead_name: lead?.lead_name || '', mobile: lead?.mobile || '', country: lead?.country || 'Saudi Arabia', city: lead?.city || '', company_name: lead?.company_name || '',
     service_required: lead?.service_required || '', source: lead?.source || '', assigned_to: lead?.assigned_to || '', status: lead?.status || 'New',
     follow_up_date: lead?.follow_up_date || '', notes: lead?.notes || '',
   }))
@@ -63,6 +63,7 @@ export default function LeadForm({ lead, staffNames, serviceNames, usedSources =
       </div>
 
       <fieldset disabled={readOnly} className="bg-white rounded-xl border border-slate-200 shadow-sm p-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="sm:col-span-2 sm:max-w-[calc(50%-0.5rem)]">{L('Date')}<input type="date" value={form.lead_date} onChange={e => set('lead_date', e.target.value)} className={inputCls} /></div>
         <div>{L('Lead Name', true)}<input value={form.lead_name} onChange={e => set('lead_name', e.target.value)} className={inputCls} placeholder="Full name" /></div>
         <div>{L('Mobile', true)}<input value={form.mobile} onChange={e => set('mobile', e.target.value)} className={inputCls} placeholder="+966 5x xxx xxxx" /></div>
         <div>{L('Country')}<CountrySelect value={form.country} onChange={v => setForm(p => ({ ...p, country: v, city: '' }))} /></div>
