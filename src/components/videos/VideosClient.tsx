@@ -5,7 +5,8 @@ import { Check, Download, ExternalLink, FileText, Loader2, Pencil, Plus, Printer
 import { createClient } from '@/lib/supabase/client'
 import ComboInput from '@/components/ui/ComboInput'
 import SourceIcon from '@/components/ui/SourceIcon'
-import PlatformSelect from './PlatformSelect'
+import IconSelect from './IconSelect'
+import Avatar from '@/components/ui/Avatar'
 import { useSecureDelete } from '@/components/ui/useSecureDelete'
 import { matchesQuery } from '@/lib/search'
 
@@ -31,7 +32,7 @@ const shortUrl = (u: string) => u.replace(/^https?:\/\/(www\.)?/i, '').replace(/
 
 type Draft = { posted_on: string; posted_time: string; channel_name: string; platform: string; employee_name: string; video_creator: string; url: string }
 
-export default function VideosClient({ videos, staffNames, meName }: { videos: VideoRow[]; staffNames: string[]; meName: string }) {
+export default function VideosClient({ videos, staff, meName }: { videos: VideoRow[]; staff: { name: string; avatar: string | null }[]; meName: string }) {
   const router = useRouter()
   const supabase = createClient()
   const { askDelete, dialog } = useSecureDelete()
@@ -46,7 +47,10 @@ export default function VideosClient({ videos, staffNames, meName }: { videos: V
   const [error, setError] = useState('')
 
   const channels = useMemo(() => [...new Set(videos.map(v => v.channel_name).filter(Boolean) as string[])].sort(), [videos])
-  const people = useMemo(() => [...new Set([...staffNames, ...videos.flatMap(v => [v.employee_name, v.video_creator]).filter(Boolean) as string[]])].sort(), [staffNames, videos])
+  const avatarOf = useMemo(() => new Map(staff.map(x => [x.name, x.avatar] as const)), [staff])
+  const people = useMemo(() => [...new Set([...staff.map(x => x.name), ...videos.flatMap(v => [v.employee_name, v.video_creator]).filter(Boolean) as string[]])].sort(), [staff, videos])
+  const personOptions = useMemo(() => people.map(n => ({ value: n, label: n, icon: <Avatar name={n} src={avatarOf.get(n)} size={20} /> })), [people, avatarOf])
+  const who = (n?: string | null) => n ? <span className="inline-flex items-center gap-2"><Avatar name={n} src={avatarOf.get(n)} size={22} /><span>{n}</span></span> : <>—</>
 
   const sevenAgo = (() => { const d = new Date(); d.setDate(d.getDate() - 6); return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10) })()
   const rows = useMemo(() => videos.filter(v =>
@@ -133,9 +137,9 @@ export default function VideosClient({ videos, staffNames, meName }: { videos: V
       <td className="px-2 py-2"><input type="date" value={draft.posted_on} onChange={e => set('posted_on', e.target.value)} className={inputCls} /></td>
       <td className="px-2 py-2"><input type="time" value={draft.posted_time} onChange={e => set('posted_time', e.target.value)} className={inputCls} /></td>
       <td className="px-2 py-2 min-w-[150px]"><ComboInput value={draft.channel_name} onChange={v => set('channel_name', v)} options={channels} className={inputCls} placeholder="Channel name" /></td>
-      <td className="px-2 py-2 min-w-[150px]"><PlatformSelect value={draft.platform} onChange={v => set('platform', v)} options={draft.platform && !PLATFORMS.includes(draft.platform) ? [...PLATFORMS, draft.platform] : PLATFORMS} className={`${inputCls} bg-white`} /></td>
-      <td className="px-2 py-2"><select value={draft.employee_name} onChange={e => set('employee_name', e.target.value)} className={inputCls}><option value="">—</option>{people.map(n => <option key={n}>{n}</option>)}</select></td>
-      <td className="px-2 py-2"><select value={draft.video_creator} onChange={e => set('video_creator', e.target.value)} className={inputCls}><option value="">—</option>{people.map(n => <option key={n}>{n}</option>)}</select></td>
+      <td className="px-2 py-2 min-w-[150px]"><IconSelect value={draft.platform} onChange={v => set('platform', v)} placeholder="Select platform" options={(draft.platform && !PLATFORMS.includes(draft.platform) ? [...PLATFORMS, draft.platform] : PLATFORMS).map(p => ({ value: p, label: p, icon: <SourceIcon source={p} size={16} /> }))} className={`${inputCls} bg-white`} /></td>
+      <td className="px-2 py-2 min-w-[170px]"><IconSelect value={draft.employee_name} onChange={v => set('employee_name', v)} placeholder="Select employee" emptyLabel="—" options={personOptions} className={`${inputCls} bg-white`} /></td>
+      <td className="px-2 py-2 min-w-[170px]"><IconSelect value={draft.video_creator} onChange={v => set('video_creator', v)} placeholder="Select creator" emptyLabel="—" options={personOptions} className={`${inputCls} bg-white`} /></td>
       <td className="px-2 py-2 min-w-[190px]"><input value={draft.url} onChange={e => set('url', e.target.value)} placeholder="https://..." className={inputCls} /></td>
       <td className="px-2 py-2">
         <div className="flex items-center gap-1.5">
@@ -203,8 +207,8 @@ export default function VideosClient({ videos, staffNames, meName }: { videos: V
                 <td className="px-3 py-3 whitespace-nowrap text-slate-600">{ampm(v.posted_time)}</td>
                 <td className="px-3 py-3 text-slate-900 font-medium">{v.channel_name || '—'}</td>
                 <td className="px-3 py-3"><span className="inline-flex items-center gap-2 pr-2.5 pl-1 py-0.5 rounded-full bg-white border border-slate-200 text-slate-700 text-[11px] font-medium"><SourceIcon source={v.platform} size={16} />{v.platform}</span></td>
-                <td className="px-3 py-3 text-slate-700 whitespace-nowrap">{v.employee_name || '—'}</td>
-                <td className="px-3 py-3 text-slate-700 whitespace-nowrap">{v.video_creator || '—'}</td>
+                <td className="px-3 py-3 text-slate-700 whitespace-nowrap">{who(v.employee_name)}</td>
+                <td className="px-3 py-3 text-slate-700 whitespace-nowrap">{who(v.video_creator)}</td>
                 <td className="px-3 py-3 max-w-[260px]">
                   {v.url ? <a href={v.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-blue-600 hover:underline truncate max-w-full"><ExternalLink className="w-3 h-3 shrink-0" /><span className="truncate">{shortUrl(v.url)}</span></a> : '—'}
                 </td>
