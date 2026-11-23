@@ -130,12 +130,19 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
     const { id: _id, created_at: _c, ...rest } = form as any
     const row: Record<string, any> = {}
     for (const [k, v] of Object.entries(rest)) row[k] = v === '' ? null : v
-    row.shareholders = holders
-    // other screens (cards, search, reminders, forms) still read these older columns: keep them in step
-    row.ceo_gm_name = row.admin_name || row.ceo_gm_name || null
-    row.iqama_no = row.admin_iqama_no || row.iqama_no || null
-    row.shareholders_name = holders[0]?.name || row.shareholders_name || null
-    row.shareholder_phone = holders[0]?.phone || row.shareholder_phone || null
+    if (form.service_type !== 'renewal') {
+      // Company Register form: the new sections are the source of truth
+      row.shareholders = holders
+      // other screens (cards, search, reminders, forms) still read these older columns: keep them in step
+      row.ceo_gm_name = row.admin_name || row.ceo_gm_name || null
+      row.iqama_no = row.admin_iqama_no || row.iqama_no || null
+      row.shareholders_name = holders[0]?.name || row.shareholders_name || null
+      row.shareholder_phone = holders[0]?.phone || row.shareholder_phone || null
+    } else {
+      // Renewal form keeps its own fields (CEO / GM, Main Shareholder ...); the new sections are not part of it
+      delete row.shareholders; delete row.admin_name; delete row.admin_iqama_no; delete row.admin_iqama_expiry
+      delete row.admin_mobile; delete row.admin_email; delete row.admin_access_setup; delete row.doc_checks; delete row.company_documents
+    }
     if (company) {
       const { data, error } = await supabase.from('companies').update(row).eq('id', company.id).select().single()
       if (error) { alert('Could not save: ' + error.message); setLoading(false); return }
@@ -395,19 +402,21 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
       </div>
     </>
   )
-  const sections: { title: string; icon: any; num?: string; custom?: React.ReactNode; fields?: FieldSpec[]; renewalOnly?: boolean }[] = [
+  const sections: { title: string; icon: any; num?: string; custom?: React.ReactNode; fields?: FieldSpec[]; renewalOnly?: boolean; newOnly?: boolean }[] = [
     { title: 'Company Profile & Identification', icon: Building2, num: '01', custom: profileFields },
     {
       title: 'Shareholders / Partners',
       icon: Users,
       num: '02',
+      newOnly: true,
       custom: <ShareholdersEditor value={holders} onChange={v => set('shareholders', v)} />,
     },
-    { title: 'Main Administrator Information', icon: IdCard, num: '03', custom: adminBlock },
+    { title: 'Main Administrator Information', icon: IdCard, num: '03', newOnly: true, custom: adminBlock },
     {
       title: 'Internal Document Verification',
       icon: ClipboardCheck,
       num: '04',
+      newOnly: true,
       custom: (
         <DocumentVerification
           checks={form.doc_checks || {}}
@@ -433,6 +442,17 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
         { label: 'VAT Number', name: 'vat_number', span: 3 },
         { label: 'Chamber Ref', name: 'chamber_registration_no', span: 3 },
         { label: 'GOSI / Qiwa Status', name: 'gosi_qiwa_status', span: 3 },
+      ],
+    },
+    {
+      title: 'Executive Leadership & Shareholders',
+      icon: Users,
+      renewalOnly: true,
+      fields: [
+        { label: 'CEO / GM Name', name: 'ceo_gm_name', span: 3 },
+        { label: 'National ID / Iqama', name: 'iqama_no', span: 3 },
+        { label: 'Main Shareholder', name: 'shareholders_name', span: 3 },
+        { label: 'Shareholder Mobile', name: 'shareholder_phone', span: 3 },
       ],
     },
     {
@@ -494,12 +514,12 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
       </div>
 
       <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-5">
-        {sections.filter(section => form.service_type === 'renewal' ? true : (!section.renewalOnly && !section.title.startsWith('Statutory'))).map(section => {
+        {sections.filter(section => form.service_type === 'renewal' ? !section.newOnly : (!section.renewalOnly && !section.title.startsWith('Statutory'))).map(section => {
           const SectionIcon = section.icon
           return (
             <div key={section.title} className="bg-slate-50/60 border border-slate-200/80 rounded-xl p-5">
               <div className="flex items-center gap-2 mb-3 pb-2 border-b border-slate-200/60">
-                {section.num && <span className="text-[11px] font-bold text-white bg-blue-600 rounded-md px-1.5 py-0.5">{section.num}</span>}
+                {section.num && form.service_type !== 'renewal' && <span className="text-[11px] font-bold text-white bg-blue-600 rounded-md px-1.5 py-0.5">{section.num}</span>}
                 <SectionIcon className="w-4 h-4 text-blue-600" />
                 <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wide">{section.title}</h3>
               </div>
