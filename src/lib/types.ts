@@ -132,6 +132,7 @@ export interface Company {
   shareholder_phone?: string
   shareholders?: any[]
   selected_phases?: string[] | null
+  skipped_phases?: string[] | null
   admin_name?: string
   admin_iqama_no?: string
   admin_iqama_expiry?: string

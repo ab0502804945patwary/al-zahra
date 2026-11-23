@@ -74,27 +74,32 @@ function submittedAndDone(entries: AnyEntry[] | undefined, companyId: string) {
 // Phases that depend on what was ticked on the Company Register form (Bangladesh Company, Foreign Mother, 1 and 2 Foreign Subsidiary)
 export const OPTIONAL_PHASES = ['9', '10', '3', '11']
 
-export function isEligibleForStage(stageId: string, company: { company_id: string; entity_type?: string; category?: string; service_type?: string; selected_phases?: string[] | null }, all: StageEntriesMap): boolean {
+export function isEligibleForStage(stageId: string, company: { company_id: string; entity_type?: string; category?: string; service_type?: string; selected_phases?: string[] | null; skipped_phases?: string[] | null }, all: StageEntriesMap): boolean {
   // Existing companies that only need renewal skip the handoff chain entirely.
   if (company.service_type === 'renewal') return true
   const id = company.company_id
   const category = company.category || company.entity_type
   // Ticked on the form: work goes only to the phases that were ticked. Older companies (nothing saved) keep the earlier rules.
   const picked = Array.isArray(company.selected_phases) ? company.selected_phases : null
+  // A phase the admin removed for this company never gets its work; the other phases are not affected.
+  const skipped = Array.isArray(company.skipped_phases) ? company.skipped_phases : []
+  if (skipped.includes(stageId)) return false
+  // a removed phase counts as done for the phases that wait for it (MISA, CR, Portals, Final Dossier)
+  const dk = (sid: string, field: 'complete_date' | 'usa_complete_date' | 'approval_date' = 'complete_date') => skipped.includes(sid) || done(all[sid], id, field)
   if (picked && OPTIONAL_PHASES.includes(stageId)) return picked.includes(stageId)
   switch (stageId) {
     case '4': {
       if (picked) {
         // MISA opens when Parent, Activity, Trade Name and every ticked phase are complete
-        const doneStage = (sid: string) => (sid === '3' ? done(all['3'], id, 'usa_complete_date') : done(all[sid], id))
-        return done(all['1'], id) && done(all['2'], id) && done(all['8'], id, 'approval_date') && picked.filter(s => OPTIONAL_PHASES.includes(s)).every(doneStage)
+        const doneStage = (sid: string) => (sid === '3' ? dk('3', 'usa_complete_date') : dk(sid))
+        return dk('1') && dk('2') && dk('8', 'approval_date') && picked.filter(s => OPTIONAL_PHASES.includes(s)).every(doneStage)
       }
       // MISA opens only when every parallel step is complete:
       //   Service License: Parent (1), Bangladesh Company (9), Activity (2), Trade Name (8)
       //   Trading License: the same plus Foreign Entity (3)
-      const common = done(all['1'], id) && done(all['9'], id) && done(all['2'], id) && done(all['8'], id, 'approval_date')
+      const common = dk('1') && dk('9') && dk('2') && dk('8', 'approval_date')
       if (category === 'Service License') return common
-      if (needsForeign(category)) return common && done(all['3'], id, 'usa_complete_date')
+      if (needsForeign(category)) return common && dk('3', 'usa_complete_date')
       return false
     }
     case '2':
@@ -107,9 +112,9 @@ export function isEligibleForStage(stageId: string, company: { company_id: strin
     case '11':
       // foreign company phases (older companies): Trading License only
       return category === 'Trading License'
-    case '5': return submittedAndDone(all['4'], id)
-    case '6': return submittedAndDone(all['5'], id)
-    case '7': return (all['6'] || []).some(e => e.company_id === id) // Portals & Compliance has no dates: a record there is enough
+    case '5': return skipped.includes('4') || submittedAndDone(all['4'], id)
+    case '6': return skipped.includes('5') || submittedAndDone(all['5'], id)
+    case '7': return skipped.includes('6') || (all['6'] || []).some(e => e.company_id === id) // Portals & Compliance has no dates: a record there is enough
     default: return true
   }
 }

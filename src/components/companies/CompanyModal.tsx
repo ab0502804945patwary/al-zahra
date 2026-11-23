@@ -40,6 +40,7 @@ import { Company } from '@/lib/types'
 import CountrySelect from '@/components/ui/CountrySelect'
 import { placesFor } from '@/lib/regions'
 import { triggerPush } from '@/lib/pushClient'
+import { STAGE_CONFIG } from '@/lib/stageData'
 import { ShareholdersEditor, DocumentVerification, blankShareholder, isBlankShareholder, type Shareholder } from './FormParts'
 
 interface Props {
@@ -64,6 +65,7 @@ const PHASES_FOR: Record<string, string[]> = {
   'Service to Trade': ['3', '11'],
 }
 const phasesFor = (license?: string) => PHASES_FOR[license || ''] || []
+const OPTIONAL_IDS = ['9', '10', '3', '11']
 
 export function computeNextCompanyId(companies: Company[] = []): string {
   let maxNum = 800
@@ -331,6 +333,21 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
           <option value="Inactive">Inactive</option>
         </select>
       </div>
+
+      {company && Array.isArray(form.skipped_phases) && form.skipped_phases.length > 0 && (
+        <div className={SPAN[12]}>
+          <span className="text-xs font-semibold text-slate-700 mb-1.5 block">Removed from these phases <span className="font-normal text-slate-400">— no work goes there. Restore to bring it back.</span></span>
+          <div className="flex flex-wrap gap-2">
+            {form.skipped_phases.map((id: string) => (
+              <span key={id} className="inline-flex items-center gap-2 pl-3 pr-1.5 py-1 rounded-full border border-slate-200 bg-slate-50 text-xs font-medium text-slate-700">
+                {STAGE_CONFIG[id]?.label || `Phase ${id}`}
+                <button type="button" onClick={() => setForm(p => ({ ...p, skipped_phases: (p.skipped_phases || []).filter((x: string) => x !== id), selected_phases: PHASES_FOR[p.entity_type || ''] && OPTIONAL_IDS.includes(id) && !(p.selected_phases || []).includes(id) ? [...(p.selected_phases || []), id] : p.selected_phases }))}
+                  className="px-2 py-0.5 rounded-full bg-blue-600 text-white text-[11px] font-semibold hover:bg-blue-700">Restore</button>
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
 
       {form.service_type !== 'renewal' && phasesFor(form.entity_type).length > 0 && (
         <div className={SPAN[12]}>

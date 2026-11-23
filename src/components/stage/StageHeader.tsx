@@ -1,7 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { useSecureDelete } from '@/components/ui/useSecureDelete'
+import { createClient } from '@/lib/supabase/client'
 import { Trash2, Plus, PlayCircle, CheckCircle2, Clock, AlertCircle, AlertTriangle, Layers } from 'lucide-react'
 import AddEntryModal from './AddEntryModal'
 
@@ -24,15 +24,28 @@ interface Props {
   eligibilityHint?: string
 }
 
-// Temporary clean-up tool: the admin can delete a company that wrongly shows in "Waiting for you".
-// Set to false when it is no longer needed and the trash icon disappears.
+// Temporary clean-up tool: the admin can take a company out of THIS phase when it shows in "Waiting for you" by mistake.
+// The company stays in every other phase. Set to false when it is no longer needed and the icon disappears.
 const SHOW_WAITING_DELETE = true
 
 export default function StageHeader({ stageId, config, stats, companies, employees, eligibleIds, eligibilityHint, canEdit = true, isAdmin = false }: Props) {
   const [showModal, setShowModal] = useState(false)
   const [startFor, setStartFor] = useState<string | undefined>()
   const router = useRouter()
-  const { askDelete, dialog } = useSecureDelete()
+  const supabase = createClient()
+  const [removing, setRemoving] = useState<string | null>(null)
+
+  async function removeFromPhase(c: any) {
+    if (!confirm(`Remove ${c.company_id} ${c.company_name} from "${config.label}"?\n\nThe company stays in all the other phases.`)) return
+    setRemoving(c.company_id)
+    const skipped = Array.from(new Set([...(c.skipped_phases || []), stageId]))
+    const patch: Record<string, any> = { skipped_phases: skipped }
+    if (Array.isArray(c.selected_phases)) patch.selected_phases = c.selected_phases.filter((x: string) => x !== stageId)
+    const { error } = await supabase.from('companies').update(patch).eq('id', c.id)
+    setRemoving(null)
+    if (error) { alert('Could not remove: ' + error.message); return }
+    router.refresh()
+  }
   // Companies that reached this stage and are waiting for the assigned staff to start
   const waiting = canEdit && eligibleIds ? companies.filter(c => eligibleIds.includes(c.company_id) && c.service_type !== 'renewal') : []
   const kpis = [
@@ -90,7 +103,6 @@ export default function StageHeader({ stageId, config, stats, companies, employe
         })}
       </div>
 
-      {dialog}
       {waiting.length > 0 && (
         <div className="bg-amber-50/70 border border-amber-200 rounded-xl p-4">
           <div className="flex items-center gap-2 mb-3">
@@ -108,9 +120,10 @@ export default function StageHeader({ stageId, config, stats, companies, employe
                 <div className="shrink-0 flex items-center gap-1.5">
                 {SHOW_WAITING_DELETE && isAdmin && c.id && (
                   <button
-                    onClick={async () => { if (await askDelete('companies', c.id, `${c.company_id} ${c.company_name} and all its records`)) router.refresh() }}
-                    title="Delete this company (admin only)"
-                    className="p-1.5 border border-rose-200 text-rose-600 hover:bg-rose-50 rounded-lg"
+                    onClick={() => removeFromPhase(c)}
+                    disabled={removing === c.company_id}
+                    title="Remove from this phase only (the company stays in the other phases) — admin only"
+                    className="p-1.5 border border-rose-200 text-rose-600 hover:bg-rose-50 rounded-lg disabled:opacity-50"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>

@@ -20,7 +20,7 @@ async function loadWorkData() {
   const ids = stageIds()
   const lookup = await createServiceClient()
   const [cRes, ...sRes] = await Promise.all([
-    lookup.from('companies').select('company_id, company_name, entity_type, service_type, account_status, selected_phases'),
+    lookup.from('companies').select('company_id, company_name, entity_type, service_type, account_status, selected_phases, skipped_phases'),
     ...ids.map(sid => lookup.from(STAGE_CONFIG[sid].table).select(eligibilityColumns(sid))),
   ])
   const all: StageEntriesMap = {}
