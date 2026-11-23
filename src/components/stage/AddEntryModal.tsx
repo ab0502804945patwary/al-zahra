@@ -27,7 +27,7 @@ const MODULE_TITLES: Record<string, string> = {
   '5': 'Commercial Registration (CR)',
   '6': 'Government Portals Compliance',
   '7': 'Final Legal Dossier & Issuance',
-  '8': 'Trade Name Clearance',
+  '8': 'Company Name Clearance',
   '9': 'Bangladesh Company Name',
   '10': 'Foreign Mother Company',
   '11': '2 Foreign Subsidiary Company',
@@ -223,7 +223,7 @@ export default function AddEntryModal({ stageId, companies, employees, onClose, 
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <Field label="Entity Structure" name="entity_type" />
-                <Field label="Company Name Clearance" name="name_clearance_number" />
+                <Field label="Clearance Number" name="name_clearance_number" />
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <Field label="Official English Name" name="company_name_english" />

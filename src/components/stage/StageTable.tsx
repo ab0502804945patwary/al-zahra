@@ -144,7 +144,7 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
               <tr className="bg-slate-50/80 text-slate-500 font-semibold uppercase tracking-wider border-b border-slate-200">
                 <th className="py-3 px-4">Entity</th>
                 <th className="py-3 px-4">Entity Structure</th>
-                <th className="py-3 px-4">Company Name Clearance</th>
+                <th className="py-3 px-4">Clearance Number</th>
                 <th className="py-3 px-4">Submission Date</th>
                 <th className="py-3 px-4">Approval Date</th>
                 <th className="py-3 px-4">Expiration Date</th>

@@ -120,11 +120,11 @@ export function isEligibleForStage(stageId: string, company: { company_id: strin
 }
 
 export const ELIGIBILITY_HINT: Record<string, string> = {
-  '2': 'Starts together with Stage 1 and Trade Name Clearance.',
+  '2': 'Starts together with Stage 1 and Company Name Clearance.',
   '3': 'Work arrives when 1 Foreign Subsidiary Company is ticked on the Company Register form.',
   '10': 'Work arrives when Foreign Mother Company is ticked on the Company Register form.',
   '11': 'Work arrives when 2 Foreign Subsidiary Company is ticked on the Company Register form.',
-  '4': 'Opens when every earlier step is complete: Parent Entity, Activity Classification, Trade Name Clearance and every phase ticked for this company.',
+  '4': 'Opens when every earlier step is complete: Parent Entity, Activity Classification, Company Name Clearance and every phase ticked for this company.',
   '5': 'Requires Stage 4 (MISA) submit and complete dates.',
   '6': 'Requires Stage 5 (Commercial Registration) submit and complete dates.',
   '7': 'Opens once the company has a Portals & Compliance (Stage 6) record.',

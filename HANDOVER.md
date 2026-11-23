@@ -47,10 +47,10 @@ Also create the storage buckets: `avatars` (public), `expense-files` (private). 
 
 ## 5. How the work flows
 
-- Menu order (= phase number): 01 Parent Entity, 02 Bangladesh Company, 03 Foreign Mother Company, 04 Activity, 05 1 Foreign Subsidiary Company, 06 2 Foreign Subsidiary Company, 07 Trade Name Clearance, 08 MISA, 09 CR, 10 Portals, 11 Final Dossier.
+- Menu order (= phase number): 01 Parent Entity, 02 Bangladesh Company, 03 Foreign Mother Company, 04 Activity, 05 1 Foreign Subsidiary Company, 06 2 Foreign Subsidiary Company, 07 Company Name Clearance, 08 MISA, 09 CR, 10 Portals, 11 Final Dossier.
 - On the Company Register form, choosing the License Type shows boxes: Trading = Bangladesh Company, Foreign Mother, 1 and 2 Foreign Subsidiary; Service = Bangladesh Company, Foreign Mother; Service to Trade = 1 and 2 Foreign Subsidiary. Work goes only to the ticked ones, and MISA waits for exactly those.
-- New company: **Service License** → Parent, Bangladesh Company, Activity, Trade Name Clearance get the work at the same time. **Trading License** → the same plus the three foreign phases (Foreign Mother, 1 and 2 Foreign Subsidiary).
-- MISA opens when Parent, Bangladesh Company, Activity, Trade Name Clearance (and the 1 Foreign Subsidiary phase for Trading License) are complete. Then CR → Portals → Final Dossier.
+- New company: **Service License** → Parent, Bangladesh Company, Activity, Company Name Clearance get the work at the same time. **Trading License** → the same plus the three foreign phases (Foreign Mother, 1 and 2 Foreign Subsidiary).
+- MISA opens when Parent, Bangladesh Company, Activity, Company Name Clearance (and the 1 Foreign Subsidiary phase for Trading License) are complete. Then CR → Portals → Final Dossier.
 - Renewal / Other companies skip the phase chain.
 - Staff see only their phases, cannot change the submission date, and cannot edit a record after it is completed. Admins can.
 - Deleting anything needs the master password (5 wrong tries lock it for 15 minutes).

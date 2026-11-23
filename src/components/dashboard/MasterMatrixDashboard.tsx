@@ -166,7 +166,7 @@ export default function MasterMatrixDashboard({ initialCompanies, kpiStats, stag
         {/* Expiring Soon */}
         <div className="bg-white rounded-xl p-4 border border-slate-200/90 shadow-sm flex items-center justify-between">
           <div>
-            <p className="text-xs font-medium text-slate-500">Trade Name Expiry Radar</p>
+            <p className="text-xs font-medium text-slate-500">Company Name Expiry Radar</p>
             <p className="text-2xl font-bold text-amber-600 mt-1">{kpiStats.expiring}</p>
             <p className="text-[11px] text-amber-600/80 mt-0.5">Expiring within 60 days</p>
           </div>

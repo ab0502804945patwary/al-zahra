@@ -84,7 +84,7 @@ export default async function DashboardPage() {
     .map(([sid, c]) => {
       const rows = stageRows[sid] || []
       if (c.isNameClearance) {
-        // Trade Name Clearance has its own validity statuses: Active = green, Warning = yellow, Urgent/Expired = red
+        // Company Name Clearance has its own validity statuses: Active = green, Warning = yellow, Urgent/Expired = red
         return {
           id: sid,
           label: `Phase ${phaseOf(sid)}: ${c.label}`,

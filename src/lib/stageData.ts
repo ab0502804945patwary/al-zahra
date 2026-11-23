@@ -80,7 +80,7 @@ export const STAGE_CONFIG: Record<string, {
   '8': {
     step: '05',
     table: 'stage8_name_clearance',
-    label: 'Commercial Trade Name Clearance',
+    label: 'Company Name Clearance',
     category: 'Official Name Reservation',
     employee: 'System Administrator',
     isNameClearance: true

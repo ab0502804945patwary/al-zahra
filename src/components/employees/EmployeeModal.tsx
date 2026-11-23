@@ -32,7 +32,7 @@ const MODULE_OPTIONS = [
   { value: 2, label: '04: Activity Classification' },
   { value: 3, label: '05: 1 Foreign Subsidiary Company' },
   { value: 11, label: '06: 2 Foreign Subsidiary Company' },
-  { value: 8, label: '07: Trade Name Clearance' },
+  { value: 8, label: '07: Company Name Clearance' },
   { value: 4, label: '08: MISA Investment Licensing' },
   { value: 5, label: '09: Commercial Registration (CR)' },
   { value: 6, label: '10: Government Portals & Compliance' },

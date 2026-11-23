@@ -188,7 +188,7 @@ export default function EditEntryModal({ stageId, entry, companies, employees, o
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <Field label="Entity Structure" name="entity_type" />
-                <Field label="Company Name Clearance" name="name_clearance_number" />
+                <Field label="Clearance Number" name="name_clearance_number" />
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <Field label="Submission Date" name="submit_date" type="date" disabled={!isAdmin} hint={!isAdmin ? "Fixed — only an admin can change it" : undefined} />
