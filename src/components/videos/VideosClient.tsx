@@ -5,7 +5,7 @@ import { Check, Download, ExternalLink, FileText, Loader2, Pencil, Plus, Printer
 import { createClient } from '@/lib/supabase/client'
 import ComboInput from '@/components/ui/ComboInput'
 import SourceIcon from '@/components/ui/SourceIcon'
-import IconSelect from './IconSelect'
+import IconSelect from '@/components/ui/IconSelect'
 import Avatar from '@/components/ui/Avatar'
 import { useSecureDelete } from '@/components/ui/useSecureDelete'
 import { matchesQuery } from '@/lib/search'

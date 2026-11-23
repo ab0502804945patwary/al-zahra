@@ -13,11 +13,11 @@ export default async function NewLeadPage() {
   const supabase = await createClient()
   const names = await createServiceClient()
   const [eRes, sRes, uRes] = await Promise.all([
-    names.from('employees').select('name').eq('is_active', true).order('name'),
+    names.from('employees').select('name, avatar_url').eq('is_active', true).order('name'),
     supabase.from('services').select('name').eq('is_active', true).order('name'),
     supabase.from('leads').select('source, service_required'),
   ])
   const used = (uRes.data as any[]) || []
   const distinct = (k: string) => [...new Set(used.map(r => String(r[k] || '').trim()).filter(Boolean))].sort()
-  return <LeadForm usedSources={distinct('source')} usedServices={distinct('service_required')} staffNames={((eRes.data as any[]) || []).map(e => e.name)} serviceNames={((sRes.data as any[]) || []).map(s => s.name)} />
+  return <LeadForm usedSources={distinct('source')} usedServices={distinct('service_required')} staff={((eRes.data as any[]) || []).map(e => ({ name: e.name as string, avatar: (e.avatar_url as string) || null }))} serviceNames={((sRes.data as any[]) || []).map(s => s.name)} />
 }

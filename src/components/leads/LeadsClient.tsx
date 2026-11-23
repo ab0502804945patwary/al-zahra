@@ -1,5 +1,7 @@
 'use client'
 import { useMemo, useState } from 'react'
+import IconSelect from '@/components/ui/IconSelect'
+import Avatar from '@/components/ui/Avatar'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Plus, Search, Eye, Pencil, Trash2, RotateCcw, Users, PhoneCall, Star, FileText, Handshake } from 'lucide-react'
@@ -14,7 +16,8 @@ interface Lead { id: string; lead_date?: string | null; lead_name: string; mobil
 const PAGE = 10
 const sel = 'px-3 py-2 text-xs border border-slate-200 rounded-lg bg-white text-slate-700'
 
-export default function LeadsClient({ leads, staffNames }: { leads: Lead[]; staffNames: string[] }) {
+export default function LeadsClient({ leads, staff }: { leads: Lead[]; staff: { name: string; avatar: string | null }[] }) {
+  const avatarOf = new Map(staff.map(x => [x.name, x.avatar] as const))
   const router = useRouter()
   const { askDelete, dialog } = useSecureDelete()
   const [search, setSearch] = useState('')
@@ -80,7 +83,7 @@ export default function LeadsClient({ leads, staffNames }: { leads: Lead[]; staf
         <select value={country} onChange={e => { setCountry(e.target.value); setPage(1) }} className={sel}><option value="">All Countries</option>{countries.map(c => <option key={c}>{c}</option>)}</select>
         <select value={status} onChange={e => { setStatus(e.target.value); setPage(1) }} className={sel}><option value="">All Status</option>{[...LEAD_STATUSES, 'Overdue'].map(s => <option key={s}>{s}</option>)}</select>
         <select value={source} onChange={e => { setSource(e.target.value); setPage(1) }} className={sel}><option value="">All Sources</option>{sources.map(s => <option key={s}>{s}</option>)}</select>
-        <select value={employee} onChange={e => { setEmployee(e.target.value); setPage(1) }} className={sel}><option value="">All Employees</option>{staffNames.map(s => <option key={s}>{s}</option>)}</select>
+        <div className="w-52"><IconSelect value={employee} onChange={v => { setEmployee(v); setPage(1) }} placeholder="All Employees" emptyLabel="All Employees" options={staff.map(x => ({ value: x.name, label: x.name, icon: <Avatar name={x.name} src={x.avatar} size={20} /> }))} className={`${sel} w-full`} /></div>
         <div className="flex items-center gap-1.5 text-[11px] text-slate-500">Follow-up
           <input type="date" value={from} onChange={e => { setFrom(e.target.value); setPage(1) }} className={sel} /> –
           <input type="date" value={to} onChange={e => { setTo(e.target.value); setPage(1) }} className={sel} />
@@ -105,7 +108,7 @@ export default function LeadsClient({ leads, staffNames }: { leads: Lead[]; staf
                 <td className="px-3 py-3 text-slate-800">{l.company_name || '—'}</td>
                 <td className="px-3 py-3 text-slate-700">{l.service_required || '—'}</td>
                 <td className="px-3 py-3">{l.source ? <span className="inline-flex items-center gap-2 pr-2.5 pl-1 py-0.5 rounded-full bg-white text-slate-700 border border-slate-200 text-[11px] font-medium"><SourceIcon source={l.source} size={16} />{l.source}</span> : '—'}</td>
-                <td className="px-3 py-3 text-slate-700 whitespace-nowrap">{l.assigned_to || '—'}</td>
+                <td className="px-3 py-3 text-slate-700 whitespace-nowrap">{l.assigned_to ? <span className="inline-flex items-center gap-2"><Avatar name={l.assigned_to} src={avatarOf.get(l.assigned_to)} size={22} /><span>{l.assigned_to}</span></span> : '—'}</td>
                 <td className="px-3 py-3"><span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full border text-[11px] font-semibold ${t.pill}`}><span className={`w-1.5 h-1.5 rounded-full ${t.dot}`} />{l.shownStatus}</span></td>
                 <td className="px-3 py-3 font-mono text-slate-700 whitespace-nowrap">{fmtLeadDate(l.follow_up_date)}</td>
                 <td className="px-3 py-3">

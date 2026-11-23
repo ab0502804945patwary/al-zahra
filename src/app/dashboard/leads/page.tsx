@@ -14,7 +14,7 @@ export default async function LeadsPage() {
   const names = await createServiceClient()
   const [lRes, eRes] = await Promise.all([
     supabase.from('leads').select('*').order('created_at', { ascending: false }),
-    names.from('employees').select('name').eq('is_active', true).order('name'),
+    names.from('employees').select('name, avatar_url').eq('is_active', true).order('name'),
   ])
-  return <LeadsClient leads={(lRes.data as any[]) || []} staffNames={((eRes.data as any[]) || []).map(e => e.name)} />
+  return <LeadsClient leads={(lRes.data as any[]) || []} staff={((eRes.data as any[]) || []).map(e => ({ name: e.name as string, avatar: (e.avatar_url as string) || null }))} />
 }

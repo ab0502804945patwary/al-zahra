@@ -9,12 +9,14 @@ import ComboInput from '@/components/ui/ComboInput'
 import SourceIcon from '@/components/ui/SourceIcon'
 import { LEAD_SOURCES, LEAD_STATUSES, LEAD_SERVICES } from '@/lib/leadConfig'
 import { placesFor } from '@/lib/regions'
+import IconSelect from '@/components/ui/IconSelect'
+import Avatar from '@/components/ui/Avatar'
 
 interface Lead { id: string; lead_date?: string | null; lead_name: string; mobile?: string | null; country?: string | null; city?: string | null; company_name?: string | null; service_required?: string | null; source?: string | null; assigned_to?: string | null; status: string; follow_up_date?: string | null; notes?: string | null }
 
 const inputCls = 'w-full px-3 py-2.5 text-sm text-slate-900 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white placeholder:text-slate-400 disabled:bg-slate-50 disabled:text-slate-600'
 
-export default function LeadForm({ lead, staffNames, serviceNames, usedSources = [], usedServices = [], readOnly = false }: { lead?: Lead; staffNames: string[]; serviceNames: string[]; usedSources?: string[]; usedServices?: string[]; readOnly?: boolean }) {
+export default function LeadForm({ lead, staff, serviceNames, usedSources = [], usedServices = [], readOnly = false }: { lead?: Lead; staff: { name: string; avatar: string | null }[]; serviceNames: string[]; usedSources?: string[]; usedServices?: string[]; readOnly?: boolean }) {
   const router = useRouter()
   const supabase = createClient()
   const [form, setForm] = useState<Record<string, string>>(() => ({
@@ -72,7 +74,7 @@ export default function LeadForm({ lead, staffNames, serviceNames, usedSources =
         <div>{L('Service Required')}<ComboInput value={form.service_required} onChange={v => set('service_required', v)} options={serviceOptions} className={inputCls} placeholder="Type or pick a service" /></div>
         <div>{L('Source')}<ComboInput value={form.source} onChange={v => set('source', v)} options={sourceOptions} renderIcon={v => <SourceIcon source={v} />} className={inputCls} placeholder="Type or pick a source" /></div>
         <div>{L('Assigned To')}
-          <select value={form.assigned_to} onChange={e => set('assigned_to', e.target.value)} className={inputCls}><option value="">Select employee</option>{staffNames.map(s => <option key={s}>{s}</option>)}</select></div>
+          <IconSelect value={form.assigned_to} onChange={v => set('assigned_to', v)} placeholder="Select employee" emptyLabel="—" options={staff.map(x => ({ value: x.name, label: x.name, icon: <Avatar name={x.name} src={x.avatar} size={20} /> }))} className={inputCls} /></div>
         <div>{L('Status')}
           <select value={form.status} onChange={e => set('status', e.target.value)} className={inputCls}>{LEAD_STATUSES.map(s => <option key={s}>{s}</option>)}</select></div>
         <div>{L('Follow-up Date')}<input type="date" value={form.follow_up_date} onChange={e => set('follow_up_date', e.target.value)} className={inputCls} /></div>

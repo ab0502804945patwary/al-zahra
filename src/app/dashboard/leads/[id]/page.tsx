@@ -16,7 +16,7 @@ export default async function LeadPage({ params, searchParams }: { params: Promi
   const names = await createServiceClient()
   const [lead, eRes, sRes, uRes] = await Promise.all([
     supabase.from('leads').select('*').eq('id', id).single(),
-    names.from('employees').select('name').eq('is_active', true).order('name'),
+    names.from('employees').select('name, avatar_url').eq('is_active', true).order('name'),
     supabase.from('services').select('name').eq('is_active', true).order('name'),
     supabase.from('leads').select('source, service_required'),
   ])
@@ -29,7 +29,7 @@ export default async function LeadPage({ params, searchParams }: { params: Promi
       usedServices={distinct('service_required')}
       lead={lead.data as any}
       readOnly={view === '1'}
-      staffNames={((eRes.data as any[]) || []).map(e => e.name)}
+      staff={((eRes.data as any[]) || []).map(e => ({ name: e.name as string, avatar: (e.avatar_url as string) || null }))}
       serviceNames={((sRes.data as any[]) || []).map(s => s.name)}
     />
   )
