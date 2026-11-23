@@ -130,6 +130,15 @@ export interface Company {
   iqama_no?: string
   shareholders_name?: string
   shareholder_phone?: string
+  shareholders?: any[]
+  admin_name?: string
+  admin_iqama_no?: string
+  admin_iqama_expiry?: string
+  admin_mobile?: string
+  admin_email?: string
+  admin_access_setup?: string
+  doc_checks?: Record<string, any>
+  company_documents?: any[]
   bank_name?: string
   account_name?: string
   account_number?: string
