@@ -207,7 +207,7 @@ Sections as grey panels with icon + uppercase title; fields in a 12-column grid 
 | **Statutory & Legal Identifiers** (renewal only; for new companies these are filled later in Stage 7) | CR Number · CR Issue Date · CR Expiry Date · MISA License No. · MISA Issue Date · MISA Expiry Date · TIN Number · VAT Number · Chamber of Commerce · GOSI / Qiwa Status |
 | **Headquarters & Official Communication** (new only) | Corporate Email · WhatsApp · National Address |
 | **Executive Leadership & Shareholders** | CEO / GM Name · National ID / Iqama · Main Shareholder · Shareholder Mobile |
-| **Bangladesh Company (RJSC)** (renewal) | RJSC Registration No. · Incorporation Date · RJSC Annual Return Due Date · Issue No · Auditor / Firm |
+| **Bangladesh Company (RJSC)** (renewal) | RJSC Registration No. · Incorporation Date · RJSC Annual Return Due Date · Issue No · Auditor / Firm · **Company Type (dropdown: Original, Fake)** |
 | **Bangladesh Audit Information** (renewal) | Last Audit Date · Audit Status (dropdown: Not Started, In Progress, Completed, Overdue) · Next Audit Due Date · Financial Year · Auditor / Audit Firm Name · Audit Report (link) · Additional Information (text area) |
 | **Saudi Audit Information** (renewal) | same 7 fields |
 

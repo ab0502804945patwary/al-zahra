@@ -181,7 +181,7 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
     misa_license_no: BadgeCheck, misa_issue_date: CalendarDays, misa_expire_date: CalendarX2,
     tin_number: Receipt, vat_number: Receipt, chamber_registration_no: Building2, gosi_qiwa_status: BadgeCheck,
     official_email: Mail, whatsapp_number: MessageCircle, national_address: MapPin,
-    client_name: User, client_phone: Phone, ceo_gm_name: User, iqama_no: IdCard, shareholders_name: Users, shareholder_phone: Phone,
+    rjsc_company_type: BadgeCheck, client_name: User, client_phone: Phone, ceo_gm_name: User, iqama_no: IdCard, shareholders_name: Users, shareholder_phone: Phone,
     bank_name: Landmark, account_name: User, account_number: CreditCard, iban_swift: Banknote,
     file_portal_login: KeyRound, account_status: Activity, assigned_office: MapPin, drive_link: FolderOpen, employee: User, remarks: StickyNote,
   }
@@ -210,8 +210,8 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
     <div key={f.name} className={`${WIDE.has(f.name) ? 'col-span-2 ' : ''}${SPAN[f.span]}`}>
       <label className="block"><Lbl name={f.name}>{f.label}</Lbl></label>
       {f.options ? (
-        <select required={REQ.has(f.name)} value={form[f.name] || (f.name.endsWith('audit_status') ? '' : f.options[0])} onChange={e => set(f.name, e.target.value)} className={inputCls}>
-          {f.name.endsWith('audit_status') && <option value="">Select Status</option>}
+        <select required={REQ.has(f.name)} value={form[f.name] || ((f.name.endsWith('audit_status') || f.name === 'rjsc_company_type') ? '' : f.options[0])} onChange={e => set(f.name, e.target.value)} className={inputCls}>
+          {(f.name.endsWith('audit_status') || f.name === 'rjsc_company_type') && <option value="">{f.name === 'rjsc_company_type' ? 'Select type' : 'Select Status'}</option>}
           {f.options.map(o => <option key={o} value={o}>{o}</option>)}
         </select>
       ) : f.textarea ? (
@@ -375,8 +375,9 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
         { label: 'RJSC Registration No.', name: 'rjsc_reg_no', span: 4 },
         { label: 'Incorporation Date', name: 'rjsc_incorporation_date', type: 'date', span: 4 },
         { label: 'RJSC Annual Return Due Date', name: 'rjsc_annual_return_due', type: 'date', span: 4 },
-        { label: 'Issue No', name: 'rjsc_issue_no', span: 6 },
-        { label: 'Auditor / Firm', name: 'rjsc_auditor', span: 6 },
+        { label: 'Issue No', name: 'rjsc_issue_no', span: 4 },
+        { label: 'Auditor / Firm', name: 'rjsc_auditor', span: 4 },
+        { label: 'Company Type', name: 'rjsc_company_type', span: 4, options: ['Original', 'Fake'] },
       ],
     },
     {

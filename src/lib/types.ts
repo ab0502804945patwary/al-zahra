@@ -88,6 +88,7 @@ export interface Company {
   entity_type?: string
   rjsc_issue_no?: string
   rjsc_auditor?: string
+  rjsc_company_type?: string
   rjsc_reg_no?: string
   rjsc_incorporation_date?: string
   rjsc_annual_return_due?: string

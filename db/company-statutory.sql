@@ -21,3 +21,6 @@ BEGIN
     updated_at = NOW()
   WHERE company_id = p_company_id;
 END $$;
+
+-- MIGRATION: Bangladesh company type for renewal companies (Original / Fake)
+ALTER TABLE companies ADD COLUMN IF NOT EXISTS rjsc_company_type TEXT;
