@@ -86,7 +86,13 @@ export function isEligibleForStage(stageId: string, company: { company_id: strin
   if (skipped.includes(stageId)) return false
   // a removed phase counts as done for the phases that wait for it (MISA, CR, Portals, Final Dossier)
   const dk = (sid: string, field: 'complete_date' | 'usa_complete_date' | 'approval_date' = 'complete_date') => skipped.includes(sid) || done(all[sid], id, field)
-  if (picked && OPTIONAL_PHASES.includes(stageId)) return picked.includes(stageId)
+  if (picked && OPTIONAL_PHASES.includes(stageId)) {
+    if (!picked.includes(stageId)) return false
+    if (stageId === '10' && category === 'Service License' && picked.includes('9') && !skipped.includes('9')) {
+      return (all['9'] || []).some(e => e.company_id === id && (e as any).approval_status === 'Approved')
+    }
+    return true
+  }
   switch (stageId) {
     case '1':
       // Service License (ticked on the form): Parent Entity Verification starts only after every ticked phase is complete.
@@ -117,6 +123,11 @@ export function isEligibleForStage(stageId: string, company: { company_id: strin
       // Foreign licensing is only needed for Trading License (Service License skips Stage 3); starts together with Stage 1
       return needsForeign(category)
     case '10':
+      // Service License with Bangladesh Company ticked: Foreign Company starts only after the Bangladesh name is Approved
+      if (picked && category === 'Service License' && picked.includes('9') && !skipped.includes('9')) {
+        return (all['9'] || []).some(e => e.company_id === id && (e as any).approval_status === 'Approved')
+      }
+      return category === 'Trading License'
     case '11':
       // foreign company phases (older companies): Trading License only
       return category === 'Trading License'
@@ -152,7 +163,7 @@ export const TABLE_COLUMNS: Record<string, string[]> = {
 
 /** Columns the eligibility check needs, limited to those that exist in the given stage table. */
 export function eligibilityColumns(stageId: string, extra: string[] = []): string {
-  const wanted = ['company_id', 'submit_date', 'complete_date', 'usa_complete_date', 'approval_date', ...extra]
+  const wanted = ['company_id', 'submit_date', 'complete_date', 'usa_complete_date', 'approval_date', 'approval_status', ...extra]
   const real = new Set(TABLE_COLUMNS[stageId] || [])
   return wanted.filter(c => real.has(c)).join(', ')
 }

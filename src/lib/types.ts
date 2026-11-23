@@ -131,6 +131,7 @@ export interface Company {
   shareholders_name?: string
   shareholder_phone?: string
   shareholders?: any[]
+  original_company_name?: string | null
   selected_phases?: string[] | null
   skipped_phases?: string[] | null
   admin_name?: string

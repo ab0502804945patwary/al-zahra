@@ -42,7 +42,7 @@ It asks for the email, name and password (hidden while typing). Then sign in on 
 ## 4. Setting up a brand-new Supabase project (only if moving to a new database)
 
 In Supabase → SQL Editor run, in this order: `supabase-schema.sql`, then the files in `db/`:
-`rls-lockdown.sql`, `stage3-8-guard.sql`, `customers.sql`, `invoices.sql`, `agents.sql`, `expenses.sql`, `company-statutory.sql`, `portal-accounts.sql`, `push.sql`, `modules.sql`, `videos.sql`, `foreign-stages.sql`, `selected-phases.sql`, `skipped-phases.sql`, `foreign-subsidiary-1.sql`, `foreign-accounts.sql`, `cr-association.sql`, `bd-approval-status.sql`, `agents-owner.sql`, `customer-form.sql` (and the other files in `db/`, oldest first).
+`rls-lockdown.sql`, `stage3-8-guard.sql`, `customers.sql`, `invoices.sql`, `agents.sql`, `expenses.sql`, `company-statutory.sql`, `portal-accounts.sql`, `push.sql`, `modules.sql`, `videos.sql`, `foreign-stages.sql`, `selected-phases.sql`, `skipped-phases.sql`, `foreign-subsidiary-1.sql`, `foreign-accounts.sql`, `cr-association.sql`, `bd-approval-status.sql`, `bd-name-sync.sql`, `agents-owner.sql`, `customer-form.sql` (and the other files in `db/`, oldest first).
 Also create the storage buckets: `avatars` (public), `expense-files` (private). `customer-form.sql` creates the private `company-docs` bucket itself.
 
 ## 5. How the work flows

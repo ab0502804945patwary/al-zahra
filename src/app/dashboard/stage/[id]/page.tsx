@@ -31,15 +31,15 @@ export default async function StagePage({ params }: { params: Promise<{ id: stri
   const isAdmin = me?.role === 'admin'
 
   const gated = ['1', '2', '3', '4', '5', '6', '7', '9', '10', '11'].includes(id)
-  const upstream = !gated || id === '9' || id === '10' || id === '11' ? [] : id === '1' ? ['9', '10', '3', '11'] : id === '4' ? ['1', '2', '3', '8', '9', '10', '11'] : ['1', '2', '3', '4', '5', '6'].filter(sid => Number(sid) < Number(id))
+  const upstream = !gated || id === '9' || id === '11' ? [] : id === '10' ? ['9'] : id === '1' ? ['9', '10', '3', '11'] : id === '4' ? ['1', '2', '3', '8', '9', '10', '11'] : ['1', '2', '3', '4', '5', '6'].filter(sid => Number(sid) < Number(id))
   const dbEntries: Record<string, any[]> = {}
 
   try {
     const entriesQuery = supabase
       .from(config.table)
       .select(config.isNameClearance
-        ? '*, companies(company_name, country_of_origin)'
-        : '*, companies(company_name, country_of_origin)')
+        ? '*, companies(company_name, original_company_name, country_of_origin)'
+        : '*, companies(company_name, original_company_name, country_of_origin)')
       .order('created_at', { ascending: false })
 
     const [eRes, cRes, empRes, crRes, ...upRes] = await Promise.all([
