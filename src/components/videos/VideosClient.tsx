@@ -5,6 +5,7 @@ import { Check, Download, ExternalLink, FileText, Loader2, Pencil, Plus, Printer
 import { createClient } from '@/lib/supabase/client'
 import ComboInput from '@/components/ui/ComboInput'
 import SourceIcon from '@/components/ui/SourceIcon'
+import PlatformSelect from './PlatformSelect'
 import { useSecureDelete } from '@/components/ui/useSecureDelete'
 import { matchesQuery } from '@/lib/search'
 
@@ -132,17 +133,7 @@ export default function VideosClient({ videos, staffNames, meName }: { videos: V
       <td className="px-2 py-2"><input type="date" value={draft.posted_on} onChange={e => set('posted_on', e.target.value)} className={inputCls} /></td>
       <td className="px-2 py-2"><input type="time" value={draft.posted_time} onChange={e => set('posted_time', e.target.value)} className={inputCls} /></td>
       <td className="px-2 py-2 min-w-[150px]"><ComboInput value={draft.channel_name} onChange={v => set('channel_name', v)} options={channels} className={inputCls} placeholder="Channel name" /></td>
-      <td className="px-2 py-2 min-w-[170px]">
-        <div className="flex flex-wrap gap-1.5">
-          {PLATFORMS.map(p => (
-            <button key={p} type="button" onClick={() => set('platform', p)} title={p}
-              className={`inline-flex items-center gap-1.5 pr-2 pl-1 py-0.5 rounded-full border text-[11px] font-medium transition ${draft.platform === p ? 'border-blue-600 bg-blue-50 text-blue-700 ring-1 ring-blue-600' : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'}`}>
-              <SourceIcon source={p} size={14} />{p}
-            </button>
-          ))}
-          {draft.platform && !PLATFORMS.includes(draft.platform) && <span className="text-[11px] text-slate-500 self-center">{draft.platform} (older entry)</span>}
-        </div>
-      </td>
+      <td className="px-2 py-2 min-w-[150px]"><PlatformSelect value={draft.platform} onChange={v => set('platform', v)} options={draft.platform && !PLATFORMS.includes(draft.platform) ? [...PLATFORMS, draft.platform] : PLATFORMS} className={`${inputCls} bg-white`} /></td>
       <td className="px-2 py-2"><select value={draft.employee_name} onChange={e => set('employee_name', e.target.value)} className={inputCls}><option value="">—</option>{people.map(n => <option key={n}>{n}</option>)}</select></td>
       <td className="px-2 py-2"><select value={draft.video_creator} onChange={e => set('video_creator', e.target.value)} className={inputCls}><option value="">—</option>{people.map(n => <option key={n}>{n}</option>)}</select></td>
       <td className="px-2 py-2 min-w-[190px]"><input value={draft.url} onChange={e => set('url', e.target.value)} placeholder="https://..." className={inputCls} /></td>
