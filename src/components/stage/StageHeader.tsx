@@ -1,6 +1,8 @@
 'use client'
 import { useState } from 'react'
-import { Plus, PlayCircle, CheckCircle2, Clock, AlertCircle, AlertTriangle, Layers } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { useSecureDelete } from '@/components/ui/useSecureDelete'
+import { Trash2, Plus, PlayCircle, CheckCircle2, Clock, AlertCircle, AlertTriangle, Layers } from 'lucide-react'
 import AddEntryModal from './AddEntryModal'
 
 interface Props {
@@ -22,9 +24,15 @@ interface Props {
   eligibilityHint?: string
 }
 
+// Temporary clean-up tool: the admin can delete a company that wrongly shows in "Waiting for you".
+// Set to false when it is no longer needed and the trash icon disappears.
+const SHOW_WAITING_DELETE = true
+
 export default function StageHeader({ stageId, config, stats, companies, employees, eligibleIds, eligibilityHint, canEdit = true, isAdmin = false }: Props) {
   const [showModal, setShowModal] = useState(false)
   const [startFor, setStartFor] = useState<string | undefined>()
+  const router = useRouter()
+  const { askDelete, dialog } = useSecureDelete()
   // Companies that reached this stage and are waiting for the assigned staff to start
   const waiting = canEdit && eligibleIds ? companies.filter(c => eligibleIds.includes(c.company_id) && c.service_type !== 'renewal') : []
   const kpis = [
@@ -82,6 +90,7 @@ export default function StageHeader({ stageId, config, stats, companies, employe
         })}
       </div>
 
+      {dialog}
       {waiting.length > 0 && (
         <div className="bg-amber-50/70 border border-amber-200 rounded-xl p-4">
           <div className="flex items-center gap-2 mb-3">
@@ -96,12 +105,23 @@ export default function StageHeader({ stageId, config, stats, companies, employe
                   <div className="text-xs font-bold text-slate-900 truncate">{c.company_name}</div>
                   <div className="text-[11px] text-slate-500 font-mono">{c.company_id}{c.entity_type ? ` · ${c.entity_type}` : ''}</div>
                 </div>
+                <div className="shrink-0 flex items-center gap-1.5">
+                {SHOW_WAITING_DELETE && isAdmin && c.id && (
+                  <button
+                    onClick={async () => { if (await askDelete('companies', c.id, `${c.company_id} ${c.company_name} and all its records`)) router.refresh() }}
+                    title="Delete this company (admin only)"
+                    className="p-1.5 border border-rose-200 text-rose-600 hover:bg-rose-50 rounded-lg"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                )}
                 <button
                   onClick={() => { setStartFor(c.company_id); setShowModal(true) }}
-                  className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white text-[11px] font-semibold rounded-lg"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white text-[11px] font-semibold rounded-lg"
                 >
                   <PlayCircle className="w-3.5 h-3.5" /> Start
                 </button>
+                </div>
               </li>
             ))}
           </ul>
