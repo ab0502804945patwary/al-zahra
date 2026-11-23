@@ -16,6 +16,7 @@ export default async function DashboardPage() {
   const { employee } = await getSessionInfo()
   if (!canAccessModule(employee, 'dashboard')) redirect(homeFor(employee))
 
+  const isAdmin = employee?.role === 'admin'
   let companies: Company[] = []
   let invoices: any[] = []
   let expenses: any[] = []
@@ -24,6 +25,7 @@ export default async function DashboardPage() {
 
   if (isSupabaseConfigured) {
     const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
     try {
       const inv = await supabase.from('invoices').select('id, invoice_no, customer_id, customer_name, total, status, payments(amount, paid_on)')
       invoices = (inv.data as any[]) || []
@@ -37,6 +39,12 @@ export default async function DashboardPage() {
         ...ids.map(sid => supabase.from(STAGE_CONFIG[sid].table).select('*')),
       ])
       companies = (cRes.data as Company[]) || []
+      if (!isAdmin) {
+        // staff see only the companies they registered, and only the stage work of those companies
+        companies = companies.filter((c: any) => c.created_by === user?.id)
+        const mine = new Set(companies.map(c => c.company_id))
+        ids.forEach((sid, k) => { sRes[k].data = ((sRes[k].data as any[]) || []).filter(r => mine.has(r.company_id)) })
+      }
       kpiStats.totalCompanies = companies.length
       ids.forEach((sid, k) => { stageRows[sid] = ((sRes[k].data as any[]) || []).map(r => (STAGE_CONFIG[sid].isNameClearance ? r : enrichTiming(r))) })
     } catch {}
@@ -104,7 +112,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <AccountsSummary invoices={invoices} expenses={expenses} />
+      {isAdmin && <AccountsSummary invoices={invoices} expenses={expenses} />}
       <MasterMatrixDashboard initialCompanies={companies} kpiStats={kpiStats} stageMap={stageMap} />
       <StageSummaryTable rows={summary} />
     </div>
