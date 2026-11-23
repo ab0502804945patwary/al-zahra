@@ -9,7 +9,7 @@ import { LEAD_SOURCES, LEAD_STATUSES, isLeadOverdue, leadStatusTone, fmtLeadDate
 import { useSecureDelete } from '@/components/ui/useSecureDelete'
 import SourceIcon from '@/components/ui/SourceIcon'
 
-interface Lead { id: string; lead_name: string; mobile?: string | null; country?: string | null; company_name?: string | null; service_required?: string | null; source?: string | null; assigned_to?: string | null; status: string; follow_up_date?: string | null }
+interface Lead { id: string; lead_name: string; mobile?: string | null; country?: string | null; city?: string | null; company_name?: string | null; service_required?: string | null; source?: string | null; assigned_to?: string | null; status: string; follow_up_date?: string | null }
 
 const PAGE = 10
 const sel = 'px-3 py-2 text-xs border border-slate-200 rounded-lg bg-white text-slate-700'
@@ -33,7 +33,7 @@ export default function LeadsClient({ leads, staffNames }: { leads: Lead[]; staf
   const filtered = shown.filter((l, i) =>
     (!country || l.country === country) && (!status || l.shownStatus === status) && (!source || l.source === source) && (!employee || l.assigned_to === employee) &&
     (!from || (l.follow_up_date || '') >= from) && (!to || (!!l.follow_up_date && l.follow_up_date <= to)) &&
-    matchesQuery(search, leads.length - i, [l.lead_name, l.mobile, l.company_name, l.service_required, l.country, l.source, l.assigned_to])
+    matchesQuery(search, leads.length - i, [l.lead_name, l.mobile, l.company_name, l.service_required, l.country, l.city, l.source, l.assigned_to])
   )
   const pages = Math.max(1, Math.ceil(filtered.length / PAGE))
   const cur = Math.min(page, pages)
@@ -89,9 +89,9 @@ export default function LeadsClient({ leads, staffNames }: { leads: Lead[]; staf
       </div>
 
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-x-auto">
-        <table className="w-full text-xs min-w-[1100px]">
+        <table className="w-full text-xs min-w-[1200px]">
           <thead className="bg-slate-50 text-slate-600 text-[11px] tracking-wide">
-            <tr>{['#', 'Lead Name', 'Mobile', 'Country', 'Company Name', 'Service Required', 'Source', 'Assigned To', 'Status', 'Follow-up Date', 'Action'].map(h => <th key={h} className="text-left font-semibold px-3 py-3 whitespace-nowrap">{h}</th>)}</tr>
+            <tr>{['#', 'Lead Name', 'Mobile', 'Country', 'City', 'Company Name', 'Service Required', 'Source', 'Assigned To', 'Status', 'Follow-up Date', 'Action'].map(h => <th key={h} className="text-left font-semibold px-3 py-3 whitespace-nowrap">{h}</th>)}</tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
             {rows.map((l, i) => { const t = leadStatusTone(l.shownStatus); return (
@@ -100,6 +100,7 @@ export default function LeadsClient({ leads, staffNames }: { leads: Lead[]; staf
                 <td className="px-3 py-3 font-semibold text-slate-900">{l.lead_name}</td>
                 <td className="px-3 py-3 font-mono text-slate-700 whitespace-nowrap">{l.mobile || '—'}</td>
                 <td className="px-3 py-3 text-slate-700 whitespace-nowrap"><span className="inline-flex items-center gap-1.5"><Flag country={l.country || ''} />{l.country || '—'}</span></td>
+                <td className="px-3 py-3 text-slate-700 whitespace-nowrap">{l.city || '—'}</td>
                 <td className="px-3 py-3 text-slate-800">{l.company_name || '—'}</td>
                 <td className="px-3 py-3 text-slate-700">{l.service_required || '—'}</td>
                 <td className="px-3 py-3">{l.source ? <span className="inline-flex items-center gap-2 pr-2.5 pl-1 py-0.5 rounded-full bg-white text-slate-700 border border-slate-200 text-[11px] font-medium"><SourceIcon source={l.source} size={16} />{l.source}</span> : '—'}</td>

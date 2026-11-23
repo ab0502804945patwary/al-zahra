@@ -8,8 +8,9 @@ import CountrySelect from '@/components/ui/CountrySelect'
 import ComboInput from '@/components/ui/ComboInput'
 import SourceIcon from '@/components/ui/SourceIcon'
 import { LEAD_SOURCES, LEAD_STATUSES, LEAD_SERVICES } from '@/lib/leadConfig'
+import { placesFor } from '@/lib/regions'
 
-interface Lead { id: string; lead_name: string; mobile?: string | null; country?: string | null; company_name?: string | null; service_required?: string | null; source?: string | null; assigned_to?: string | null; status: string; follow_up_date?: string | null; notes?: string | null }
+interface Lead { id: string; lead_name: string; mobile?: string | null; country?: string | null; city?: string | null; company_name?: string | null; service_required?: string | null; source?: string | null; assigned_to?: string | null; status: string; follow_up_date?: string | null; notes?: string | null }
 
 const inputCls = 'w-full px-3 py-2.5 text-sm text-slate-900 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white placeholder:text-slate-400 disabled:bg-slate-50 disabled:text-slate-600'
 
@@ -17,7 +18,7 @@ export default function LeadForm({ lead, staffNames, serviceNames, usedSources =
   const router = useRouter()
   const supabase = createClient()
   const [form, setForm] = useState<Record<string, string>>(() => ({
-    lead_name: lead?.lead_name || '', mobile: lead?.mobile || '', country: lead?.country || 'Saudi Arabia', company_name: lead?.company_name || '',
+    lead_name: lead?.lead_name || '', mobile: lead?.mobile || '', country: lead?.country || 'Saudi Arabia', city: lead?.city || '', company_name: lead?.company_name || '',
     service_required: lead?.service_required || '', source: lead?.source || '', assigned_to: lead?.assigned_to || '', status: lead?.status || 'New',
     follow_up_date: lead?.follow_up_date || '', notes: lead?.notes || '',
   }))
@@ -27,6 +28,8 @@ export default function LeadForm({ lead, staffNames, serviceNames, usedSources =
   // suggestions: the defaults, the Services page, and anything typed on earlier leads
   const serviceOptions = [...new Set([...serviceNames, ...LEAD_SERVICES, ...usedServices])]
   const sourceOptions = [...new Set([...LEAD_SOURCES, ...usedSources])]
+  // cities of the chosen country (a city can also be typed when the list does not have it)
+  const cityOptions = (() => { const pl = placesFor(form.country); return pl ? [...new Set([...pl.cities, ...pl.regions])] : [] })()
 
   const L = (t: string, req = false) => <label className="text-xs font-semibold text-slate-700 mb-1.5 block">{t}{req && <span className="text-rose-500 ml-0.5">*</span>}</label>
 
@@ -62,7 +65,8 @@ export default function LeadForm({ lead, staffNames, serviceNames, usedSources =
       <fieldset disabled={readOnly} className="bg-white rounded-xl border border-slate-200 shadow-sm p-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>{L('Lead Name', true)}<input value={form.lead_name} onChange={e => set('lead_name', e.target.value)} className={inputCls} placeholder="Full name" /></div>
         <div>{L('Mobile', true)}<input value={form.mobile} onChange={e => set('mobile', e.target.value)} className={inputCls} placeholder="+966 5x xxx xxxx" /></div>
-        <div>{L('Country')}<CountrySelect value={form.country} onChange={v => set('country', v)} /></div>
+        <div>{L('Country')}<CountrySelect value={form.country} onChange={v => setForm(p => ({ ...p, country: v, city: '' }))} /></div>
+        <div>{L('City')}<ComboInput value={form.city} onChange={v => set('city', v)} options={cityOptions} className={inputCls} placeholder="Type or pick a city" /></div>
         <div>{L('Company Name')}<input value={form.company_name} onChange={e => set('company_name', e.target.value)} className={inputCls} placeholder="Company (if any)" /></div>
         <div>{L('Service Required')}<ComboInput value={form.service_required} onChange={v => set('service_required', v)} options={serviceOptions} className={inputCls} placeholder="Type or pick a service" /></div>
         <div>{L('Source')}<ComboInput value={form.source} onChange={v => set('source', v)} options={sourceOptions} renderIcon={v => <SourceIcon source={v} />} className={inputCls} placeholder="Type or pick a source" /></div>
