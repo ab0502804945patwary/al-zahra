@@ -19,9 +19,10 @@ export default async function RenewalCompaniesPage() {
   const { data } = await query
   // admin: who registered each company
   const owners: Record<string, string> = {}
+  const ownerAvatars: Record<string, string> = {}
   if (isAdmin) {
-    const { data: staff } = await (await createServiceClient()).from('employees').select('user_id, name')
-    for (const e of (staff as any[]) || []) if (e.user_id) owners[e.user_id] = e.name
+    const { data: staff } = await (await createServiceClient()).from('employees').select('user_id, name, avatar_url')
+    for (const e of (staff as any[]) || []) if (e.user_id) { owners[e.user_id] = e.name; if (e.avatar_url) ownerAvatars[e.user_id] = e.avatar_url }
   }
-  return <CompaniesClient companies={(data as Company[]) || []} mode="renewal" isAdmin={isAdmin} owners={owners} />
+  return <CompaniesClient companies={(data as Company[]) || []} mode="renewal" isAdmin={isAdmin} owners={owners} ownerAvatars={ownerAvatars} />
 }

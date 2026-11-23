@@ -1,5 +1,6 @@
 'use client'
 import { Flag } from '@/components/ui/CountrySelect'
+import OwnerTag from '@/components/ui/OwnerTag'
 import { useState, useEffect } from 'react'
 import { Plus, Edit2, Building2, Search, ExternalLink, Sparkles, LayoutGrid, List, RefreshCw } from 'lucide-react'
 import { Company } from '@/lib/types'
@@ -17,10 +18,10 @@ function StatusSwitch({ on, busy, onClick }: { on: boolean; busy: boolean; onCli
   )
 }
 
-interface Props { companies: Company[]; mode?: 'new' | 'renewal'; isAdmin?: boolean; owners?: Record<string, string> }
+interface Props { companies: Company[]; mode?: 'new' | 'renewal'; isAdmin?: boolean; owners?: Record<string, string>; ownerAvatars?: Record<string, string> }
 
 // Only an admin can edit or delete a company. Staff can look and register new ones.
-export default function CompaniesClient({ companies: initialCompanies, mode = 'new', isAdmin = false, owners = {} }: Props) {
+export default function CompaniesClient({ companies: initialCompanies, mode = 'new', isAdmin = false, owners = {}, ownerAvatars = {} }: Props) {
   const renewalMode = mode === 'renewal'
   const [companiesList, setCompaniesList] = useState<Company[]>(initialCompanies)
   const [search, setSearch] = useState('')
@@ -185,7 +186,7 @@ export default function CompaniesClient({ companies: initialCompanies, mode = 'n
                   <td className="px-3 py-2.5 text-slate-400 font-mono">{serialOf(c)}</td>
                   <td className="px-3 py-2.5 font-mono font-bold text-blue-700">{c.company_id}</td>
                   <td className="px-3 py-2.5 font-semibold text-slate-900">{c.company_name}</td>
-                  {isAdmin && <td className="px-3 py-2.5 text-slate-600">{c.created_by ? (owners[c.created_by] || 'Unknown') : <span className="text-slate-300">—</span>}</td>}
+                  {isAdmin && <td className="px-3 py-2.5 text-slate-600"><OwnerTag name={c.created_by ? (owners[c.created_by] || 'Unknown') : null} avatar={c.created_by ? ownerAvatars[c.created_by] : null} /></td>}
                   <td className="px-3 py-2.5 text-slate-600"><span className="inline-flex items-center gap-1"><Flag country={c.country_of_origin} />{c.country_of_origin}</span></td>
                   <td className="px-3 py-2.5"><TypeBadge company={c} /></td>
                   <td className="px-3 py-2.5 text-slate-600">{c.entity_type || '—'}</td>
