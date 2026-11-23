@@ -1,4 +1,4 @@
-import { createClient, isSupabaseConfigured } from '@/lib/supabase/server'
+import { createClient, createServiceClient, isSupabaseConfigured } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { getSessionInfo } from '@/lib/session'
 import { canAccessModule, homeFor } from '@/lib/access'
@@ -9,9 +9,19 @@ export const dynamic = 'force-dynamic'
 
 export default async function RenewalCompaniesPage() {
   if (!isSupabaseConfigured) redirect('/login')
-  const { employee } = await getSessionInfo()
+  const { employee, user } = await getSessionInfo()
   if (!canAccessModule(employee, 'renewals')) redirect(homeFor(employee))
   const supabase = await createClient()
-  const { data } = await supabase.from('companies').select('*').order('company_id')
-  return <CompaniesClient companies={(data as Company[]) || []} mode="renewal" isAdmin={employee?.role === 'admin'} />
+  const isAdmin = employee?.role === 'admin'
+  // Staff see only the companies they registered themselves; an admin sees every company
+  let query = supabase.from('companies').select('*').order('company_id')
+  if (!isAdmin) query = query.eq('created_by', user?.id ?? '00000000-0000-0000-0000-000000000000')
+  const { data } = await query
+  // admin: who registered each company
+  const owners: Record<string, string> = {}
+  if (isAdmin) {
+    const { data: staff } = await (await createServiceClient()).from('employees').select('user_id, name')
+    for (const e of (staff as any[]) || []) if (e.user_id) owners[e.user_id] = e.name
+  }
+  return <CompaniesClient companies={(data as Company[]) || []} mode="renewal" isAdmin={isAdmin} owners={owners} />
 }

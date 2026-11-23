@@ -17,10 +17,10 @@ function StatusSwitch({ on, busy, onClick }: { on: boolean; busy: boolean; onCli
   )
 }
 
-interface Props { companies: Company[]; mode?: 'new' | 'renewal'; isAdmin?: boolean }
+interface Props { companies: Company[]; mode?: 'new' | 'renewal'; isAdmin?: boolean; owners?: Record<string, string> }
 
 // Only an admin can edit or delete a company. Staff can look and register new ones.
-export default function CompaniesClient({ companies: initialCompanies, mode = 'new', isAdmin = false }: Props) {
+export default function CompaniesClient({ companies: initialCompanies, mode = 'new', isAdmin = false, owners = {} }: Props) {
   const renewalMode = mode === 'renewal'
   const [companiesList, setCompaniesList] = useState<Company[]>(initialCompanies)
   const [search, setSearch] = useState('')
@@ -82,7 +82,10 @@ export default function CompaniesClient({ companies: initialCompanies, mode = 'n
     setCompaniesList(prev => prev.filter(c => c.id !== id))
   }
 
-  const nextAutoId = computeNextCompanyId(companiesList)
+  // staff only see their own companies here, so the real next ID comes from the database
+  const [dbNextId, setDbNextId] = useState('')
+  useEffect(() => { createClient().rpc('next_company_id').then(({ data }) => { if (data) setDbNextId(data as string) }) }, [])
+  const nextAutoId = dbNextId || computeNextCompanyId(companiesList)
 
   // New and renewal companies live on separate pages
   const modeList = companiesList.filter(c => (renewalMode ? isRenewal(c) : !isRenewal(c)))
@@ -111,7 +114,7 @@ export default function CompaniesClient({ companies: initialCompanies, mode = 'n
     return <CompanyModal lockedType={renewalMode ? 'renewal' : 'a2z'} existingCompanies={companiesList} onClose={() => setShowAdd(false)} onSave={handleSave} />
   }
   if (selected && isAdmin) {
-    return <CompanyModal lockedType={renewalMode ? 'renewal' : 'a2z'} company={selected} existingCompanies={companiesList} onClose={() => setSelected(null)} onSave={handleSave} onDelete={handleDelete} />
+    return <CompanyModal lockedType={renewalMode ? 'renewal' : 'a2z'} company={selected} ownerOptions={isAdmin ? owners : undefined} existingCompanies={companiesList} onClose={() => setSelected(null)} onSave={handleSave} onDelete={handleDelete} />
   }
 
   return (
@@ -171,7 +174,7 @@ export default function CompaniesClient({ companies: initialCompanies, mode = 'n
           <table className="w-full text-xs min-w-[900px]">
             <thead className="bg-slate-50 text-slate-500 uppercase text-[10px] tracking-wide">
               <tr>
-                {['SL', 'ID', 'Company', 'Country', 'Service Type', 'License', 'CR No.', 'MISA No.', renewalMode ? 'Next Due' : 'CR Expiry', 'Status', 'Folder', ''].map(h => (
+                {['SL', 'ID', 'Company', ...(isAdmin ? ['Registered by'] : []), 'Country', 'Service Type', 'License', 'CR No.', 'MISA No.', renewalMode ? 'Next Due' : 'CR Expiry', 'Status', 'Folder', ''].map(h => (
                   <th key={h} className="text-left font-semibold px-3 py-2.5 whitespace-nowrap">{h}</th>
                 ))}
               </tr>
@@ -182,6 +185,7 @@ export default function CompaniesClient({ companies: initialCompanies, mode = 'n
                   <td className="px-3 py-2.5 text-slate-400 font-mono">{serialOf(c)}</td>
                   <td className="px-3 py-2.5 font-mono font-bold text-blue-700">{c.company_id}</td>
                   <td className="px-3 py-2.5 font-semibold text-slate-900">{c.company_name}</td>
+                  {isAdmin && <td className="px-3 py-2.5 text-slate-600">{c.created_by ? (owners[c.created_by] || 'Unknown') : <span className="text-slate-300">—</span>}</td>}
                   <td className="px-3 py-2.5 text-slate-600"><span className="inline-flex items-center gap-1"><Flag country={c.country_of_origin} />{c.country_of_origin}</span></td>
                   <td className="px-3 py-2.5"><TypeBadge company={c} /></td>
                   <td className="px-3 py-2.5 text-slate-600">{c.entity_type || '—'}</td>
@@ -203,7 +207,7 @@ export default function CompaniesClient({ companies: initialCompanies, mode = 'n
                 </tr>
               ))}
               {filtered.length === 0 && (
-                <tr><td colSpan={12} className="text-center py-12 text-slate-400">No matching corporate entities located</td></tr>
+                <tr><td colSpan={13} className="text-center py-12 text-slate-400">No matching corporate entities located</td></tr>
               )}
             </tbody>
           </table>

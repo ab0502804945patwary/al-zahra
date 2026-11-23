@@ -47,6 +47,8 @@ interface Props {
   onClose: () => void
   /** When set, the service type is fixed by the page (New Companies / Renewal Companies) */
   lockedType?: 'a2z' | 'renewal'
+  /** admin only: staff user id -> name, to say who registered (owns) this company */
+  ownerOptions?: Record<string, string>
   onSave?: (savedCompany: Company) => void
   onDelete?: (id: string) => void
 }
@@ -69,7 +71,7 @@ export function computeNextCompanyId(companies: Company[] = []): string {
 }
 
 import { useSecureDelete } from '@/components/ui/useSecureDelete'
-export default function CompanyModal({ company, existingCompanies = [], onClose, onSave, onDelete, lockedType }: Props) {
+export default function CompanyModal({ company, existingCompanies = [], onClose, onSave, onDelete, lockedType, ownerOptions }: Props) {
   const router = useRouter()
   const supabase = createClient()
   const { askDelete, dialog } = useSecureDelete()
@@ -181,7 +183,7 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
     misa_license_no: BadgeCheck, misa_issue_date: CalendarDays, misa_expire_date: CalendarX2,
     tin_number: Receipt, vat_number: Receipt, chamber_registration_no: Building2, gosi_qiwa_status: BadgeCheck,
     official_email: Mail, whatsapp_number: MessageCircle, national_address: MapPin,
-    client_present_address: MapPin, rjsc_company_type: BadgeCheck, client_name: User, client_phone: Phone, ceo_gm_name: User, iqama_no: IdCard, shareholders_name: Users, shareholder_phone: Phone,
+    created_by: User, client_present_address: MapPin, rjsc_company_type: BadgeCheck, client_name: User, client_phone: Phone, ceo_gm_name: User, iqama_no: IdCard, shareholders_name: Users, shareholder_phone: Phone,
     bank_name: Landmark, account_name: User, account_number: CreditCard, iban_swift: Banknote,
     file_portal_login: KeyRound, account_status: Activity, assigned_office: MapPin, drive_link: FolderOpen, employee: User, remarks: StickyNote,
   }
@@ -320,6 +322,15 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
           <option value="Inactive">Inactive — client asked to pause (can be turned on again)</option>
         </select>
       </div>
+      {ownerOptions && company && (
+        <div className={SPAN[6]}>
+          <label className="block"><Lbl name="created_by">Registered by (who can see it)</Lbl></label>
+          <select value={form.created_by || ''} onChange={e => set('created_by', e.target.value)} className={inputCls}>
+            <option value="">Nobody (admin only)</option>
+            {Object.entries(ownerOptions).map(([id, name]) => <option key={id} value={id}>{name}</option>)}
+          </select>
+        </div>
+      )}
       <div className={SPAN[12]}>
         <label className="block"><Lbl name="client_present_address">Client Present Address</Lbl></label>
         <input type="text" value={form.client_present_address || ''} onChange={e => set('client_present_address', e.target.value)} placeholder="Where the client is right now (city, area, country)" className={inputCls} />

@@ -109,6 +109,8 @@ export interface Company {
   client_name?: string
   client_phone?: string
   client_present_address?: string
+  /** auth user id of whoever registered the company (staff see only their own in the directory) */
+  created_by?: string | null
   /** 'a2z' = A2Z handles the full setup flow; 'renewal' = existing company, renewal only */
   service_type?: 'a2z' | 'renewal' | string
   cr_number?: string
