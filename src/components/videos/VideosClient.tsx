@@ -167,10 +167,7 @@ export default function VideosClient({ videos, staff, meName }: { videos: VideoR
 
       <div className="flex flex-wrap items-center gap-2">
         <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search channel, platform, name, URL..." className={`${sel} w-64`} />
-        <select value={employee} onChange={e => setEmployee(e.target.value)} className={sel}>
-          <option value="">All employees</option>
-          {people.map(n => <option key={n}>{n}</option>)}
-        </select>
+        <div className="w-56"><IconSelect value={employee} onChange={setEmployee} placeholder="All employees" emptyLabel="All employees" options={personOptions} className={`${sel} w-full`} /></div>
         <input type="month" value={month} disabled={last7} onChange={e => setMonth(e.target.value)} className={`${sel} disabled:opacity-50`} />
         <button onClick={() => setLast7(v => !v)} className={`inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-lg border ${last7 ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'}`}>
           7 Day Report
