@@ -331,11 +331,11 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
         <label className="block"><Lbl name="client_name">Client Contact Name</Lbl></label>
         <input type="text" required value={form.client_name || ''} onChange={e => set('client_name', e.target.value)} placeholder="Authorized contact person" className={inputCls} />
       </div>
-      <div className={SPAN[4]}>
+      <div className={SPAN[2]}>
         <label className="block"><Lbl name="client_phone">Client Phone</Lbl></label>
         <input type="text" required value={form.client_phone || ''} onChange={e => set('client_phone', e.target.value)} placeholder="e.g. 05xxxxxxxx" className={inputCls} />
       </div>
-      <div className={SPAN[4]}>
+      <div className={SPAN[6]}>
         <label className="block"><Lbl name="client_present_address">Client Present Address</Lbl></label>
         <input type="text" value={form.client_present_address || ''} onChange={e => set('client_present_address', e.target.value)} placeholder="Where the client is right now (city, area, country)" className={inputCls} />
       </div>
