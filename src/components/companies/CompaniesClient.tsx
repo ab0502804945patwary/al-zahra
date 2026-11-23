@@ -50,7 +50,7 @@ export default function CompaniesClient({ companies: initialCompanies, mode = 'n
     </span>
   ) : (
     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200">
-      Company Register
+      New Company
     </span>
   )
 
@@ -123,7 +123,7 @@ export default function CompaniesClient({ companies: initialCompanies, mode = 'n
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3 border-b border-slate-200">
         <div>
-          <h1 className="text-xl font-bold text-slate-900 tracking-tight">{renewalMode ? 'Renewal Companies' : 'Corporate Directory & Master Data'}</h1>
+          <h1 className="text-xl font-bold text-slate-900 tracking-tight">{renewalMode ? 'Renewal Companies' : 'Company Register'}</h1>
           <p className="text-xs text-slate-500 mt-0.5">Central repository for statutory entity profiles, identifiers, and compliance dossiers</p>
         </div>
         <div className="flex items-center gap-2">

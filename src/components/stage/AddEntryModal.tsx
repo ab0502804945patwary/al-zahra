@@ -152,7 +152,7 @@ export default function AddEntryModal({ stageId, companies, employees, onClose, 
                   <label className="text-xs font-medium text-slate-700 mb-1 block">Contact Phone</label>
                   <div className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg bg-slate-50 text-slate-700 min-h-[34px] font-mono">{clientInfo.phone || '—'}</div>
                 </div>
-                <p className="sm:col-span-2 text-[10px] text-slate-400 -mt-1">Taken from the company profile. Edit it once in Company Directory.</p>
+                <p className="sm:col-span-2 text-[10px] text-slate-400 -mt-1">Taken from the company profile. Edit it once in Company Register.</p>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>

@@ -5,7 +5,7 @@ type StaffLike = { role?: string; assigned_stage?: number | null; assigned_stage
 /** The non-workflow modules an admin can give to a staff member. Order = sidebar order. */
 export const MODULES: { key: string; label: string; href: string }[] = [
   { key: 'dashboard', label: 'Dashboard', href: '/dashboard' },
-  { key: 'companies', label: 'Company Directory', href: '/dashboard/companies' },
+  { key: 'companies', label: 'Company Register', href: '/dashboard/companies' },
   { key: 'leads', label: 'Leads (New Lead & Leads list)', href: '/dashboard/leads' },
   { key: 'videos', label: 'Video Management', href: '/dashboard/videos' },
   { key: 'renewals', label: 'Renewal Companies', href: '/dashboard/renewals' },

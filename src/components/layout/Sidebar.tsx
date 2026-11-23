@@ -58,7 +58,7 @@ const navGroups: NavGroup[] = [
     title: 'OVERVIEW',
     items: [
       { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, module: 'dashboard' },
-      { href: '/dashboard/companies', label: 'Company Directory', icon: Building2, module: 'companies' },
+      { href: '/dashboard/companies', label: 'Company Register', icon: Building2, module: 'companies' },
       { href: '/dashboard/leads/new', label: 'New Lead', icon: UserPlus, module: 'leads' },
       { href: '/dashboard/leads', label: 'Leads', icon: Contact, module: 'leads', notPath: '/dashboard/leads/new' },
       { href: '/dashboard/videos', label: 'Video Management', icon: Clapperboard, module: 'videos' },

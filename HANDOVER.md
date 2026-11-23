@@ -37,7 +37,7 @@ node scripts/create-admin.mjs
 
 It asks for the email, name and password (hidden while typing). Then sign in on the website and:
 1. Open **Settings → Master password** and set one. Every delete in the app asks for it.
-2. Open **Team & Access Control** and add the staff. In **Assigned Modules** tick what each person may open: workflow phases (01-09) and the other modules (Dashboard, Company Directory, Renewal Companies, Customers, Agents, Services, Expenses, Reports, Invoices). Admins always have everything.
+2. Open **Team & Access Control** and add the staff. In **Assigned Modules** tick what each person may open: workflow phases (01-09) and the other modules (Dashboard, Company Register, Renewal Companies, Customers, Agents, Services, Expenses, Reports, Invoices). Admins always have everything.
 
 ## 4. Setting up a brand-new Supabase project (only if moving to a new database)
 
