@@ -398,7 +398,7 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
   const sections: { title: string; icon: any; num?: string; custom?: React.ReactNode; fields?: FieldSpec[]; renewalOnly?: boolean }[] = [
     { title: 'Company Profile & Identification', icon: Building2, num: '01', custom: profileFields },
     {
-      title: 'Shareholders / Partners (up to 5)',
+      title: 'Shareholders / Partners',
       icon: Users,
       num: '02',
       custom: <ShareholdersEditor value={holders} onChange={v => set('shareholders', v)} />,

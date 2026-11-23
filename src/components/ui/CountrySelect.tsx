@@ -23,10 +23,12 @@ export default function CountrySelect({
   value,
   onChange,
   required = false,
+  compact = false,
 }: {
   value?: string
   onChange: (v: string) => void
   required?: boolean
+  compact?: boolean
 }) {
   const [open, setOpen] = useState(false)
   const [q, setQ] = useState('')
@@ -47,7 +49,7 @@ export default function CountrySelect({
       <button
         type="button"
         onClick={() => setOpen(o => !o)}
-        className="w-full px-3 py-2.5 text-sm border border-slate-300 rounded-lg bg-white flex items-center justify-between gap-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className={`w-full px-3 ${compact ? 'py-1.5 text-xs' : 'py-2.5 text-sm'} border border-slate-300 rounded-lg bg-white flex items-center justify-between gap-2 focus:outline-none focus:ring-2 focus:ring-blue-500`}
       >
         <span className="flex items-center gap-2 truncate">
           {value ? <><Flag country={value} />{value}</> : <span className="text-slate-400">Select country...</span>}

@@ -1,6 +1,6 @@
 -- ============================================
 -- MIGRATION: Customer Information & Document Checklist (from the client's paper form)
---   02 Shareholders / partners (up to 5)      -> companies.shareholders (list)
+--   02 Shareholders / partners (any number)   -> companies.shareholders (list)
 --   03 Main administrator information         -> admin_* columns (separate from the older CEO / GM fields)
 --   04 Internal document verification + files -> companies.doc_checks, companies.company_documents
 -- Passports and ID copies are private: files go to the private bucket "company-docs" and are opened with a short-lived link.

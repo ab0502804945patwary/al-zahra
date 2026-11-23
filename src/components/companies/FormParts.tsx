@@ -4,11 +4,10 @@ import { Copy, ExternalLink, FileText, Link2, Loader2, Plus, Trash2, Upload, X }
 import { createClient } from '@/lib/supabase/client'
 import CountrySelect from '@/components/ui/CountrySelect'
 
-const inputCls = 'w-full px-3 py-2 text-sm text-slate-900 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white placeholder:text-slate-400'
-const labelCls = 'block text-xs font-semibold text-slate-700 mb-1'
+const inputCls = 'w-full px-2.5 py-1.5 text-xs text-slate-900 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white placeholder:text-slate-400'
+const labelCls = 'block text-[11px] font-semibold text-slate-600 mb-0.5'
 
-// ---------- 02 Shareholders / partners (up to 5) ----------
-export const MAX_SHAREHOLDERS = 5
+// ---------- 02 Shareholders / partners (as many as needed) ----------
 export const SH_DOCS: { key: string; label: string }[] = [
   { key: 'signature', label: 'Signature' },
   { key: 'photo', label: 'Photo' },
@@ -30,9 +29,9 @@ export const blankShareholder = (): Shareholder => ({
 export const isBlankShareholder = (s: Shareholder) =>
   !Object.entries(s).some(([k, v]) => (k === 'docs' ? Object.values(v as object).some(Boolean) : String(v || '').trim() !== ''))
 
-function ShareholderCard({ index, total, value, onChange, onDuplicate, onRemove, canAdd }: {
+function ShareholderCard({ index, total, value, onChange, onDuplicate, onRemove }: {
   index: number; total: number; value: Shareholder; onChange: (s: Shareholder) => void
-  onDuplicate: () => void; onRemove: () => void; canAdd: boolean
+  onDuplicate: () => void; onRemove: () => void
 }) {
   const set = (k: keyof Shareholder, v: string) => onChange({ ...value, [k]: v })
   const text = (label: string, k: keyof Shareholder, type = 'text', placeholder = '') => (
@@ -42,12 +41,12 @@ function ShareholderCard({ index, total, value, onChange, onDuplicate, onRemove,
     </div>
   )
   return (
-    <div className="bg-white border border-slate-200 rounded-xl p-4 space-y-3">
+    <div className="bg-white border border-slate-200 rounded-xl p-3 space-y-2.5">
       <div className="flex items-center justify-between gap-2">
         <span className="text-[11px] font-bold tracking-wider text-blue-700 bg-blue-50 border border-blue-200 rounded-md px-2 py-1 uppercase">Shareholder {index + 1}</span>
         <div className="flex items-center gap-1.5">
-          <button type="button" onClick={onDuplicate} disabled={!canAdd} title={canAdd ? 'Copy this shareholder into a new one' : `Up to ${MAX_SHAREHOLDERS} shareholders`}
-            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] font-semibold text-slate-700 border border-slate-200 rounded-lg hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed">
+          <button type="button" onClick={onDuplicate} title="Copy this shareholder into a new one"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] font-semibold text-slate-700 border border-slate-200 rounded-lg hover:bg-slate-50">
             <Copy className="w-3.5 h-3.5" /> Duplicate
           </button>
           {total > 1 && (
@@ -59,14 +58,14 @@ function ShareholderCard({ index, total, value, onChange, onDuplicate, onRemove,
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-6 gap-x-2.5 gap-y-2">
         {text('Name', 'name')}
         {text("Father's Name", 'father_name')}
         {text("Mother's Name", 'mother_name')}
         {text('Date of Birth', 'dob', 'date')}
         <div>
           <label className={labelCls}>Nationality</label>
-          <CountrySelect value={value.nationality} onChange={v => set('nationality', v)} />
+          <CountrySelect compact value={value.nationality} onChange={v => set('nationality', v)} />
         </div>
         {text('Passport No.', 'passport_no')}
         {text('TIN No.', 'tin_no')}
@@ -74,18 +73,18 @@ function ShareholderCard({ index, total, value, onChange, onDuplicate, onRemove,
         {text('Phone', 'phone')}
         {text('Designation', 'designation')}
         {text('Shareholding %', 'share_percent', 'number', 'e.g. 50')}
-        <div className="sm:col-span-2 lg:col-span-3">
+        <div className="col-span-2 md:col-span-4 xl:col-span-6">
           <label className={labelCls}>Address</label>
           <input value={value.address} onChange={e => set('address', e.target.value)} className={inputCls} />
         </div>
       </div>
 
-      <div className="border-t border-slate-100 pt-3">
-        <div className="text-[11px] font-bold tracking-wider text-slate-500 uppercase mb-2">Documents</div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
+      <div className="border-t border-slate-100 pt-2.5">
+        <div className="text-[11px] font-bold tracking-wider text-slate-500 uppercase mb-1.5">Documents</div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
           {SH_DOCS.map(d => (
-            <div key={d.key} className="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2">
-              <div className="text-xs font-semibold text-slate-700 mb-1.5">{d.label}</div>
+            <div key={d.key} className="bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5">
+              <div className="text-[11px] font-semibold text-slate-700 mb-1">{d.label}</div>
               <div className="flex gap-1">
                 {(['Collected', 'Pending'] as const).map(st => {
                   const on = value.docs?.[d.key] === st
@@ -94,7 +93,7 @@ function ShareholderCard({ index, total, value, onChange, onDuplicate, onRemove,
                       key={st}
                       type="button"
                       onClick={() => onChange({ ...value, docs: { ...value.docs, [d.key]: on ? '' : st } })}
-                      className={`flex-1 px-2 py-1 text-[11px] font-semibold rounded-md border transition ${on
+                      className={`flex-1 px-1.5 py-0.5 text-[10px] font-semibold rounded border transition ${on
                         ? (st === 'Collected' ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-amber-500 text-white border-amber-500')
                         : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-100'}`}
                     >
@@ -111,10 +110,9 @@ function ShareholderCard({ index, total, value, onChange, onDuplicate, onRemove,
   )
 }
 
-/** One card by default. "Add shareholder" adds a blank one, "Duplicate" copies a card. Up to five. */
+/** One card by default. "Add shareholder" adds a blank one, "Duplicate" copies a card. No limit. */
 export function ShareholdersEditor({ value, onChange }: { value: Shareholder[]; onChange: (v: Shareholder[]) => void }) {
   const list = value.length ? value : [blankShareholder()]
-  const canAdd = list.length < MAX_SHAREHOLDERS
   const update = (i: number, s: Shareholder) => onChange(list.map((x, k) => (k === i ? s : x)))
   const total = list.reduce((a, s) => a + (parseFloat(s.share_percent) || 0), 0)
 
@@ -127,21 +125,19 @@ export function ShareholdersEditor({ value, onChange }: { value: Shareholder[]; 
           total={list.length}
           value={s}
           onChange={x => update(i, x)}
-          canAdd={canAdd}
           onDuplicate={() => onChange([...list.slice(0, i + 1), { ...s, docs: { ...s.docs } }, ...list.slice(i + 1)])}
           onRemove={() => onChange(list.filter((_, k) => k !== i))}
         />
       ))}
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <button type="button" onClick={() => onChange([...list, blankShareholder()])} disabled={!canAdd}
-          className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-blue-700 border border-blue-200 bg-blue-50 rounded-lg hover:bg-blue-100 disabled:opacity-40 disabled:cursor-not-allowed">
-          <Plus className="w-3.5 h-3.5" /> Add shareholder ({list.length}/{MAX_SHAREHOLDERS})
+        <button type="button" onClick={() => onChange([...list, blankShareholder()])}
+          className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-blue-700 border border-blue-200 bg-blue-50 rounded-lg hover:bg-blue-100">
+          <Plus className="w-3.5 h-3.5" /> Add shareholder ({list.length})
         </button>
         <span className={`text-[11px] font-medium ${total > 100 ? 'text-rose-600' : 'text-slate-500'}`}>
           Total shareholding: {total}%{total > 100 ? ' — more than 100%' : ''}
         </span>
       </div>
-      {!canAdd && <p className="text-[11px] text-slate-400">For more than five shareholders, attach an additional sheet using the same format.</p>}
     </div>
   )
 }
