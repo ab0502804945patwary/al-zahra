@@ -98,8 +98,9 @@ export function isEligibleForStage(stageId: string, company: { company_id: strin
       // Service License (ticked on the form): Parent Entity Verification starts only after every ticked phase is complete.
       // Other license types and older companies: it starts together with the others.
       if (picked && category === 'Service License') {
-        const doneFirst = (sid: string) => (sid === '3' ? dk('3') : dk(sid))
-        return picked.filter(s => OPTIONAL_PHASES.includes(s)).every(doneFirst)
+        // Bangladesh Company ticked: an Approved name is enough, Foreign may still be in progress
+        if (picked.includes('9') && !skipped.includes('9')) return (all['9'] || []).some(e => e.company_id === id && (e as any).approval_status === 'Approved')
+        return picked.filter(s => OPTIONAL_PHASES.includes(s)).every(sid => dk(sid))
       }
       return true
     case '4': {
@@ -139,7 +140,7 @@ export function isEligibleForStage(stageId: string, company: { company_id: strin
 }
 
 export const ELIGIBILITY_HINT: Record<string, string> = {
-  '1': 'Service License: opens after the phases ticked on the Company Register form (Foreign Company, Bangladesh Company) are complete.',
+  '1': 'Service License: opens when the Bangladesh Company Name is Approved (Foreign Company may still be in progress); with only Foreign Company ticked, after it is complete.',
   '2': 'Starts together with Stage 1 and Company Name Clearance.',
   '3': 'Work arrives when 1 Foreign Subsidiary Company is ticked on the Company Register form.',
   '10': 'Work arrives when Foreign Mother Company is ticked on the Company Register form.',
