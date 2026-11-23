@@ -117,7 +117,7 @@ export default function ExpiryAlerts({ companies: initial }: { companies: Compan
                   </td>
                   <td className="px-3 py-2.5">
                     {c.service_type === 'renewal'
-                      ? <span className="inline-flex items-center gap-1 text-amber-700"><RefreshCw className="w-3 h-3" />Renewal / Other</span>
+                      ? <span className="inline-flex items-center gap-1 text-amber-700"><RefreshCw className="w-3 h-3" />Renewal Company</span>
                       : <span className="text-indigo-700">New Company</span>}
                   </td>
                   <td className="px-3 py-2.5 font-semibold text-slate-700">{i.doc}</td>

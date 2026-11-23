@@ -45,7 +45,7 @@ export default function CompaniesClient({ companies: initialCompanies, mode = 'n
   const isRenewal = (c: Company) => c.service_type === 'renewal'
   const TypeBadge = ({ company }: { company: Company }) => isRenewal(company) ? (
     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">
-      <RefreshCw className="w-2.5 h-2.5" /> Renewal / Other
+      <RefreshCw className="w-2.5 h-2.5" /> Renewal Company
     </span>
   ) : (
     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200">
@@ -122,7 +122,7 @@ export default function CompaniesClient({ companies: initialCompanies, mode = 'n
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3 border-b border-slate-200">
         <div>
-          <h1 className="text-xl font-bold text-slate-900 tracking-tight">{renewalMode ? 'Renewal / Other Service Companies' : 'Corporate Directory & Master Data'}</h1>
+          <h1 className="text-xl font-bold text-slate-900 tracking-tight">{renewalMode ? 'Renewal Companies' : 'Corporate Directory & Master Data'}</h1>
           <p className="text-xs text-slate-500 mt-0.5">Central repository for statutory entity profiles, identifiers, and compliance dossiers</p>
         </div>
         <div className="flex items-center gap-2">

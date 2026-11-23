@@ -256,7 +256,7 @@ export default function MasterMatrixDashboard({ initialCompanies, kpiStats, stag
                           <span className="font-mono text-slate-500 font-semibold">{row.company_id}</span>
                           {row.country_of_origin && <span> • {row.country_of_origin}</span>}
                           {row.inactive && <span className="ml-1.5 px-1.5 py-px rounded-full bg-slate-100 text-slate-500 border border-slate-300 font-semibold">Inactive</span>}
-                          {row.isRenewal && <span className="ml-1.5 px-1.5 py-px rounded-full bg-violet-50 text-violet-700 border border-violet-200 font-semibold">Renewal / Other</span>}
+                          {row.isRenewal && <span className="ml-1.5 px-1.5 py-px rounded-full bg-violet-50 text-violet-700 border border-violet-200 font-semibold">Renewal Company</span>}
                         </div>
                       </div>
                     </div>
