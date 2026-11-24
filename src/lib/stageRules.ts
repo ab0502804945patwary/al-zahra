@@ -94,6 +94,12 @@ export function isEligibleForStage(stageId: string, company: { company_id: strin
     }
     return true
   }
+  // Service to Trade (ticked on the form): no Parent Entity Verification and no Company Name Clearance.
+  // MISA opens when Activity Classification and every ticked Foreign Subsidiary phase are complete.
+  if (picked && category === 'Service to Trade') {
+    if (stageId === '1' || stageId === '8') return false
+    if (stageId === '4') return dk('2') && picked.filter(s => OPTIONAL_PHASES.includes(s)).every(sid => dk(sid))
+  }
   switch (stageId) {
     case '1':
       // Service License (ticked on the form): Parent Entity Verification starts only after every ticked phase is complete.
