@@ -4,6 +4,9 @@ import { X, Loader2, Trash2 } from 'lucide-react'
 import { createClient, isSupabaseConfigured } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import BdFields from './BdFields'
+import CountrySelect from '@/components/ui/CountrySelect'
+import ComboInput from '@/components/ui/ComboInput'
+import { placesFor } from '@/lib/regions'
 import ForeignFields from './ForeignFields'
 import { triggerPush } from '@/lib/pushClient'
 import { FormCtx, Field, Select as Sel } from './formFields'
@@ -33,7 +36,9 @@ export default function EditEntryModal({ stageId, entry, companies, employees, o
   const [loading, setLoading] = useState(false)
   const [portals, setPortals] = useState<PortalAccount[]>(() => (Array.isArray((entry as any).portal_accounts) ? (entry as any).portal_accounts : []))
   const [deleting, setDeleting] = useState(false)
-  const [form, setForm] = useState<Record<string, string>>(() => (stageId === '7' ? { ...entry, ...statutoryFrom(companies.find(c => c.company_id === entry.company_id)) } : entry))
+  const [form, setForm] = useState<Record<string, string>>(() => (stageId === '7' ? { ...entry, ...statutoryFrom(companies.find(c => c.company_id === entry.company_id)) }
+    : stageId === '1' ? (() => { const c0 = companies.find(c => c.company_id === entry.company_id); return { ...entry, country: entry.country || c0?.country_of_origin || '', city: entry.city || c0?.province || '' } })()
+    : entry))
   const set = (k: string, v: string) => setForm(prev => ({ ...prev, [k]: v }))
   const comp = companies.find(c => c.company_id === form.company_id)
   const clientInfo = {
@@ -135,8 +140,14 @@ export default function EditEntryModal({ stageId, entry, companies, employees, o
               {COUNTRY_CITY_STAGES.includes(stageId) && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {stageId === '1' ? (<>
-                    <Field label="Country" name="country" />
-                    <Field label="City" name="city" />
+                    <div>
+                      <label className="text-xs font-medium text-slate-700 mb-1 block">Country</label>
+                      <CountrySelect value={form.country || ''} onChange={v => setForm(p => ({ ...p, country: v, city: '' }))} />
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-slate-700 mb-1 block">City</label>
+                      <ComboInput value={form.city || ''} onChange={v => set('city', v)} options={(() => { const pl = placesFor(form.country); return pl ? [...new Set([...pl.cities, ...pl.regions])] : [] })()} className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" placeholder="Pick or type a city" />
+                    </div>
                   </>) : (<>
                     <div>
                       <label className="text-xs font-medium text-slate-700 mb-1 block">Country</label>
