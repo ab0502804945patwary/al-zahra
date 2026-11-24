@@ -4,6 +4,7 @@ import { X, Loader2, Globe, Building2, User, FileText, CheckCircle2, Sparkles } 
 import { createClient, isSupabaseConfigured } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import BdFields from './BdFields'
+import ParentChecks from './ParentChecks'
 import CountrySelect from '@/components/ui/CountrySelect'
 import ComboInput from '@/components/ui/ComboInput'
 import { placesFor } from '@/lib/regions'
@@ -195,6 +196,7 @@ export default function AddEntryModal({ stageId, companies, employees, onClose, 
                   </>)}
                 </div>
               )}
+              {stageId === '1' && <ParentChecks form={form} set={set} />}
               {stageId !== '6' && <Select label="Workflow Phase Status" name="current_stage" options={toOptions(PHASE_OPTIONS[stageId] || [])} />}
               {stageId === '6' && <PortalAccountsEditor value={portals} onChange={setPortals} />}
             </>
