@@ -11,6 +11,7 @@ export default async function EditInvoicePage({ params }: { params: Promise<{ id
   if (!isSupabaseConfigured) redirect('/login')
   const { employee } = await getSessionInfo()
   if (!canAccessModule(employee, 'invoices')) redirect(homeFor(employee))
+  if (employee?.role !== 'admin') redirect(`/dashboard/invoices/${id}`)
   const supabase = await createClient()
   const [inv, items, pays, cus, svc] = await Promise.all([
     supabase.from('invoices').select('*').eq('id', id).single(),
