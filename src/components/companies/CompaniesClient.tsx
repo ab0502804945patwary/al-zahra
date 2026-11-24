@@ -30,6 +30,8 @@ export default function CompaniesClient({ companies: initialCompanies, mode = 'n
   const [selected, setSelected] = useState<Company | null>(null)
   const [showAdd, setShowAdd] = useState(false)
   const [shown, setShown] = useState(10)
+  const [ownerSel, setOwnerSel] = useState('')
+  const [licSel, setLicSel] = useState('')
   const [view, setView] = useState<'grid' | 'list'>(mode === 'renewal' ? 'list' : 'grid')
 
   useEffect(() => {
@@ -94,6 +96,8 @@ export default function CompaniesClient({ companies: initialCompanies, mode = 'n
   // newest first on screen; SL numbers stay fixed (oldest = 1)
   const serialOf = (c: Company) => modeList.length - modeList.indexOf(c)
   const filtered = modeList.filter(c =>
+    (!ownerSel || (ownerSel === '__none' ? !c.created_by : c.created_by === ownerSel)) &&
+    (!licSel || c.entity_type === licSel) &&
     (statusFilter === 'all' || (statusFilter === 'Inactive') === (c.account_status === 'Inactive')) &&
     matchesQuery(search, serialOf(c), [
       c.company_id, c.company_name, c.country_of_origin, c.entity_type, c.client_name, c.client_phone,
@@ -159,6 +163,19 @@ export default function CompaniesClient({ companies: initialCompanies, mode = 'n
           <div className="hidden md:block text-xs text-slate-500 font-medium">
             Showing <span className="font-bold text-slate-800">{filtered.length}</span> of {modeList.length}
           </div>
+          {!renewalMode && isAdmin && (
+            <select value={ownerSel} onChange={e => { setOwnerSel(e.target.value); setShown(10) }} className="px-2.5 py-1.5 text-xs border border-slate-200 rounded-lg bg-white text-slate-700">
+              <option value="">All employees</option>
+              {Object.entries(owners).filter(([id]) => modeList.some(c => c.created_by === id)).sort((a, b) => a[1].localeCompare(b[1])).map(([id, name]) => <option key={id} value={id}>{name}</option>)}
+              {modeList.some(c => !c.created_by) && <option value="__none">AL ZAHRA (no person)</option>}
+            </select>
+          )}
+          {!renewalMode && (
+            <select value={licSel} onChange={e => { setLicSel(e.target.value); setShown(10) }} className="px-2.5 py-1.5 text-xs border border-slate-200 rounded-lg bg-white text-slate-700">
+              <option value="">All license types</option>
+              {['Trading License', 'Service License', 'Service to Trade'].map(l => <option key={l} value={l}>{l} ({modeList.filter(c => c.entity_type === l).length})</option>)}
+            </select>
+          )}
           <select value={statusFilter} onChange={e => { setStatusFilter(e.target.value as any); setShown(10) }} className="px-2.5 py-1.5 text-xs border border-slate-200 rounded-lg bg-white text-slate-700">
             <option value="all">All status</option>
             <option value="Active">Active ({modeList.filter(c => c.account_status !== 'Inactive').length})</option>
