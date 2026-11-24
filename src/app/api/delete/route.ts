@@ -28,7 +28,7 @@ export async function POST(request: Request) {
   if (!isAdmin) {
     // staff may only delete inside a stage they are assigned to
     const okStage = !!stageEntry && canAccessStage(me, Number(stageEntry[0]))
-    const okLead = table === 'leads' && canAccessModule(me, 'leads')
+    const okLead = false // leads: only an admin can delete
     const okVideo = table === 'videos' && canAccessModule(me, 'videos')
     if (!okStage && !okLead && !okVideo) return NextResponse.json({ error: 'You cannot delete this.' }, { status: 403 })
   }

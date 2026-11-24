@@ -16,5 +16,5 @@ export default async function LeadsPage() {
     supabase.from('leads').select('*').order('created_at', { ascending: false }),
     names.from('employees').select('name, avatar_url').eq('is_active', true).order('name'),
   ])
-  return <LeadsClient leads={(lRes.data as any[]) || []} staff={((eRes.data as any[]) || []).map(e => ({ name: e.name as string, avatar: (e.avatar_url as string) || null }))} />
+  return <LeadsClient isAdmin={employee?.role === 'admin'} leads={(lRes.data as any[]) || []} staff={((eRes.data as any[]) || []).map(e => ({ name: e.name as string, avatar: (e.avatar_url as string) || null }))} />
 }

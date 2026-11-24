@@ -16,7 +16,7 @@ interface Lead { id: string; lead_date?: string | null; lead_name: string; mobil
 const PAGE = 10
 const sel = 'px-3 py-2 text-xs border border-slate-200 rounded-lg bg-white text-slate-700'
 
-export default function LeadsClient({ leads, staff }: { leads: Lead[]; staff: { name: string; avatar: string | null }[] }) {
+export default function LeadsClient({ leads, staff, isAdmin = false }: { leads: Lead[]; isAdmin?: boolean; staff: { name: string; avatar: string | null }[] }) {
   const avatarOf = new Map(staff.map(x => [x.name, x.avatar] as const))
   const router = useRouter()
   const { askDelete, dialog } = useSecureDelete()
@@ -115,7 +115,7 @@ export default function LeadsClient({ leads, staff }: { leads: Lead[]; staff: { 
                   <div className="flex items-center gap-1.5">
                     <Link href={`/dashboard/leads/${l.id}?view=1`} title="View" className="p-1.5 rounded-md bg-blue-50 text-blue-600 hover:bg-blue-100"><Eye className="w-3.5 h-3.5" /></Link>
                     <Link href={`/dashboard/leads/${l.id}`} title="Edit" className="p-1.5 rounded-md bg-blue-600 text-white hover:bg-blue-700"><Pencil className="w-3.5 h-3.5" /></Link>
-                    <button onClick={() => remove(l)} title="Delete" className="p-1.5 rounded-md bg-rose-50 text-rose-600 hover:bg-rose-100"><Trash2 className="w-3.5 h-3.5" /></button>
+                    {isAdmin && <button onClick={() => remove(l)} title="Delete" className="p-1.5 rounded-md bg-rose-50 text-rose-600 hover:bg-rose-100"><Trash2 className="w-3.5 h-3.5" /></button>}
                   </div>
                 </td>
               </tr>) })}
