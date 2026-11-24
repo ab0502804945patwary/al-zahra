@@ -329,6 +329,8 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
                 <th className="py-3 px-4">Incorporation</th>
                 <th className="py-3 px-4">Auditor / Firm</th>
                 <th className="py-3 px-4">Annual Return Due</th>
+                <th className="py-3 px-4">Audit Report</th>
+                <th className="py-3 px-4">Incorporation Update</th>
               </>)}
               {(stageId === '3' || stageId === '10' || stageId === '11') && (<>
                 <th className="py-3 px-4">Foreign Company Name</th>
@@ -390,6 +392,8 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
                   <td className="py-3 px-4 whitespace-nowrap">{formatDate(e.incorporation_date)}</td>
                   <td className="py-3 px-4 whitespace-nowrap">{e.auditor_firm || '—'}</td>
                   <td className="py-3 px-4 whitespace-nowrap">{formatDate(e.rjsc_return_due_date)}</td>
+                  <td className="py-3 px-4">{e.audit_report_done ? <span className="text-emerald-600 font-bold">✓</span> : <span className="text-slate-300">—</span>}</td>
+                  <td className="py-3 px-4">{e.incorporation_update_done ? <span className="text-emerald-600 font-bold">✓</span> : <span className="text-slate-300">—</span>}</td>
                 </>)}
                 <td className="py-3 px-4">
                   <div className="font-semibold text-slate-900">{e.company_id}</div>

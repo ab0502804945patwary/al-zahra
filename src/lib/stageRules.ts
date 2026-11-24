@@ -171,7 +171,7 @@ const COMMON = ['company_id', 'client_name', 'client_phone', 'category', 'priori
 export const TABLE_COLUMNS: Record<string, string[]> = {
   '10': [...COMMON, 'foreign_company_name', 'country', 'city', 'registration_no'],
   '11': [...COMMON, 'foreign_company_name', 'country', 'city', 'registration_no', 'account_email', 'account_username', 'account_password'],
-  '9': [...COMMON, 'approval_status', 'bd_company_name', 'country', 'rjsc_reg_no', 'issue_no', 'incorporation_date', 'auditor_firm', 'rjsc_return_due_date'],
+  '9': [...COMMON, 'approval_status', 'bd_company_name', 'country', 'rjsc_reg_no', 'issue_no', 'incorporation_date', 'auditor_firm', 'rjsc_return_due_date', 'audit_report_done', 'incorporation_update_done'],
   '1': [...COMMON, 'country', 'city'], '2': [...COMMON, 'country', 'city'], '4': [...COMMON, 'country', 'city'], '5': [...COMMON, 'country', 'city', 'cr_status', 'cr_status_date'], '6': [...COMMON, 'country', 'city', 'portal_accounts'], '7': [...COMMON, 'country', 'city'],
   '3': [...COMMON, 'foreign_company_name', 'country', 'city', 'registration_no', 'account_email', 'account_username', 'account_password'],
   '8': ['company_id', 'entity_type', 'company_name_english', 'arabic_name', 'name_clearance_number', 'submit_date', 'approval_date', 'expire_date', 'remaining_days', 'status', 'cr_status', 'notes'],
