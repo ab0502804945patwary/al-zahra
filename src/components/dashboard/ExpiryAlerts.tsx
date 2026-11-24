@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { CalendarClock, MessageCircle, Mail, Phone, RefreshCw } from 'lucide-react'
 import { Company } from '@/lib/types'
+import OwnerTag from '@/components/ui/OwnerTag'
 
 type Win = 'expired' | 7 | 15 | 30 | 60 | 90
 
@@ -34,8 +35,10 @@ const waLink = (n?: string) => {
   return digits ? `https://wa.me/${digits}` : ''
 }
 
-export default function ExpiryAlerts({ companies: initial }: { companies: Company[] }) {
-  const companies = initial
+export default function ExpiryAlerts({ companies: initial, isAdmin = false, owners = {}, ownerAvatars = {} }: { companies: Company[]; isAdmin?: boolean; owners?: Record<string, string>; ownerAvatars?: Record<string, string> }) {
+  // admin: filter by the person who registered the company
+  const [who, setWho] = useState('')
+  const companies = who ? initial.filter(c => (who === '__none' ? !c.created_by : c.created_by === who)) : initial
   const [win, setWin] = useState<Win>(30)
   // Day counts depend on today's date, which differs between server and browser: compute after mount only
   const [mounted, setMounted] = useState(false)
@@ -82,6 +85,13 @@ export default function ExpiryAlerts({ companies: initial }: { companies: Compan
           <h2 className="text-sm font-bold text-slate-900">Upcoming Expiries — Contact List</h2>
           <span className="text-[11px] text-slate-400">CR, MISA, RJSC &amp; audit due dates</span>
         </div>
+        {isAdmin && (
+          <select value={who} onChange={ev => setWho(ev.target.value)} className="px-2.5 py-1.5 text-xs border border-slate-200 rounded-lg bg-white text-slate-700 font-semibold">
+            <option value="">All employees</option>
+            {Object.entries(owners).filter(([id]) => initial.some(c => c.created_by === id)).sort((a, b) => a[1].localeCompare(b[1])).map(([id, name]) => <option key={id} value={id}>{name}</option>)}
+            {initial.some(c => !c.created_by) && <option value="__none">AL ZAHRA (no person)</option>}
+          </select>
+        )}
         <div className="inline-flex flex-wrap rounded-lg border border-slate-200 bg-white p-0.5 text-xs font-semibold">
           {wins.map(w => {
             const n = all.filter(i => inWindow(i, w.key)).length
@@ -100,7 +110,7 @@ export default function ExpiryAlerts({ companies: initial }: { companies: Compan
         <table className="w-full text-xs min-w-[760px]">
           <thead className="bg-slate-50 text-slate-500 uppercase text-[10px] tracking-wide">
             <tr>
-              {['Company', 'Service', 'Document', 'Expiry Date', 'Days Left', 'Contact'].map(h => (
+              {['Company', 'Service', ...(isAdmin ? ['Registered by'] : []), 'Document', 'Expiry Date', 'Days Left', 'Contact'].map(h => (
                 <th key={h} className="text-left font-semibold px-3 py-2.5 whitespace-nowrap">{h}</th>
               ))}
             </tr>
@@ -120,6 +130,7 @@ export default function ExpiryAlerts({ companies: initial }: { companies: Compan
                       ? <span className="inline-flex items-center gap-1 text-amber-700"><RefreshCw className="w-3 h-3" />Renewal Company</span>
                       : <span className="text-indigo-700">New Company</span>}
                   </td>
+                  {isAdmin && <td className="px-3 py-2.5"><OwnerTag name={c.created_by ? (owners[c.created_by] || 'Unknown') : null} avatar={c.created_by ? ownerAvatars[c.created_by] : null} /></td>}
                   <td className="px-3 py-2.5 font-semibold text-slate-700">{i.doc}</td>
                   <td className="px-3 py-2.5 font-mono text-slate-600">{i.date}</td>
                   <td className="px-3 py-2.5">
@@ -139,7 +150,7 @@ export default function ExpiryAlerts({ companies: initial }: { companies: Compan
               )
             })}
             {rows.length === 0 && (
-              <tr><td colSpan={6} className="text-center py-10 text-slate-400">Nothing in this window. Make sure CR / MISA expiry dates are filled in the company profile.</td></tr>
+              <tr><td colSpan={isAdmin ? 7 : 6} className="text-center py-10 text-slate-400">Nothing in this window. Make sure CR / MISA expiry dates are filled in the company profile.</td></tr>
             )}
           </tbody>
         </table>

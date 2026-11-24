@@ -143,7 +143,7 @@ export default function CompaniesClient({ companies: initialCompanies, mode = 'n
       </div>
 
       {/* Search and filters */}
-      {renewalMode && <ExpiryAlerts companies={modeList} />}
+      {renewalMode && <ExpiryAlerts companies={modeList} isAdmin={isAdmin} owners={owners} ownerAvatars={ownerAvatars} />}
 
       <div className="flex items-center justify-between gap-4">
         <div className="relative max-w-md w-full">

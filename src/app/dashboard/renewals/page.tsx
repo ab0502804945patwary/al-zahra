@@ -14,7 +14,7 @@ export default async function RenewalCompaniesPage() {
   const supabase = await createClient()
   const isAdmin = employee?.role === 'admin'
   // Staff see only the companies they registered themselves; an admin sees every company
-  let query = supabase.from('companies').select('*').order('company_id')
+  let query = supabase.from('companies').select('*').order('created_at', { ascending: false }).order('company_id', { ascending: false })
   if (!isAdmin) query = query.eq('created_by', user?.id ?? '00000000-0000-0000-0000-000000000000')
   const { data } = await query
   // admin: who registered each company
