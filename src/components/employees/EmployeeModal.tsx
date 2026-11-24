@@ -16,7 +16,7 @@ import { createClient, isSupabaseConfigured } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { Employee, SalaryType } from '@/lib/types'
 import MultiSelect from '@/components/ui/MultiSelect'
-import { MODULES } from '@/lib/access'
+import { MODULES, PERMISSIONS } from '@/lib/access'
 
 interface Props {
   employee?: Employee
@@ -612,6 +612,7 @@ export default function EmployeeModal({ employee, onClose, onSave, onDelete }: P
                   options={[
                     ...MODULE_OPTIONS.map(m => ({ value: String(m.value), label: m.label, group: 'Workflow phases' })),
                     ...MODULES.map(m => ({ value: 'm:' + m.key, label: m.label, group: 'Other modules' })),
+                    ...PERMISSIONS.map(m => ({ value: 'm:' + m.key, label: m.label, group: 'Edit / special permissions (off unless ticked)' })),
                   ]}
                   value={form.assigned_stages}
                   onChange={next => setForm(p => ({ ...p, assigned_stages: next }))}

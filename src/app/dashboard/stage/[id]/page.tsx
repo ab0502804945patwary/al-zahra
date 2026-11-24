@@ -6,7 +6,7 @@ import StatusGuide from '@/components/ui/StatusGuide'
 import { enrichTiming, enrichExpiry } from '@/lib/utils'
 import { STAGE_CONFIG } from '@/lib/stageData'
 import { getSessionInfo } from '@/lib/session'
-import { canAccessStage } from '@/lib/access'
+import { canAccessStage, canDo } from '@/lib/access'
 import { isEligibleForStage, eligibilityColumns, ELIGIBILITY_HINT, type StageEntriesMap } from '@/lib/stageRules'
 
 export const dynamic = 'force-dynamic'
@@ -28,6 +28,8 @@ export default async function StagePage({ params }: { params: Promise<{ id: stri
   // Staff may only open the stages they are assigned to (admins: all stages)
   if (!canAccessStage(me, Number(id))) redirect('/dashboard')
   const canEdit = true
+  // editing an existing entry needs the per-phase permission (admin always)
+  const canEditRows = canDo(me, `edit_stage_${id}`)
   const isAdmin = me?.role === 'admin'
 
   const gated = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11'].includes(id)
@@ -110,7 +112,7 @@ export default async function StagePage({ params }: { params: Promise<{ id: stri
         employees={employees}
         isUSACanada={config.hasUSACanada}
         isNameClearance={config.isNameClearance}
-        canEdit={canEdit}
+        canEdit={canEditRows}
         isAdmin={isAdmin}
       />
       {!config.isNameClearance && <StatusGuide />}

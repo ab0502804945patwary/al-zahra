@@ -1,7 +1,7 @@
 import { createClient, isSupabaseConfigured } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
 import { getSessionInfo } from '@/lib/session'
-import { canAccessModule, homeFor } from '@/lib/access'
+import { canAccessModule, canDo, homeFor } from '@/lib/access'
 import InvoiceView from '@/components/invoices/InvoiceView'
 
 export const dynamic = 'force-dynamic'
@@ -18,5 +18,5 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
     supabase.from('payments').select('*').eq('invoice_id', id).order('created_at'),
   ])
   if (!inv.data) notFound()
-  return <InvoiceView invoice={inv.data as any} items={(items.data as any[]) || []} payments={(pays.data as any[]) || []} isAdmin={employee?.role === 'admin'} />
+  return <InvoiceView invoice={inv.data as any} items={(items.data as any[]) || []} payments={(pays.data as any[]) || []} canEdit={canDo(employee, 'perm_invoice_edit')} canCancel={canDo(employee, 'perm_invoice_cancel')} />
 }

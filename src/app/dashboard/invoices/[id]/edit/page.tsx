@@ -1,7 +1,7 @@
 import { createClient, isSupabaseConfigured } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
 import { getSessionInfo } from '@/lib/session'
-import { canAccessModule, homeFor } from '@/lib/access'
+import { canAccessModule, canDo, homeFor } from '@/lib/access'
 import InvoiceEditor from '@/components/invoices/InvoiceEditor'
 
 export const dynamic = 'force-dynamic'
@@ -11,7 +11,7 @@ export default async function EditInvoicePage({ params }: { params: Promise<{ id
   if (!isSupabaseConfigured) redirect('/login')
   const { employee } = await getSessionInfo()
   if (!canAccessModule(employee, 'invoices')) redirect(homeFor(employee))
-  if (employee?.role !== 'admin') redirect(`/dashboard/invoices/${id}`)
+  if (!canDo(employee, 'perm_invoice_edit')) redirect(`/dashboard/invoices/${id}`)
   const supabase = await createClient()
   const [inv, items, pays, cus, svc] = await Promise.all([
     supabase.from('invoices').select('*').eq('id', id).single(),

@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { createClient, isSupabaseConfigured } from '@/lib/supabase/server'
 import { adminDb, verifyMasterPassword } from '@/lib/masterPassword'
 import { STAGE_CONFIG } from '@/lib/stageData'
-import { canAccessStage, canAccessModule } from '@/lib/access'
+import { canAccessStage, canAccessModule, canDo } from '@/lib/access'
 
 export const dynamic = 'force-dynamic'
 
@@ -28,7 +28,7 @@ export async function POST(request: Request) {
   if (!isAdmin) {
     // staff may only delete inside a stage they are assigned to
     const okStage = !!stageEntry && canAccessStage(me, Number(stageEntry[0]))
-    const okLead = false // leads: only an admin can delete
+    const okLead = table === 'leads' && canDo(me, 'perm_lead_delete') // own leads only (checked below)
     const okVideo = table === 'videos' && canAccessModule(me, 'videos')
     if (!okStage && !okLead && !okVideo) return NextResponse.json({ error: 'You cannot delete this.' }, { status: 403 })
   }
@@ -38,6 +38,11 @@ export async function POST(request: Request) {
 
   const db = adminDb()
   if (!db) return NextResponse.json({ error: 'SUPABASE_SERVICE_ROLE_KEY is missing.' }, { status: 503 })
+
+  if (table === 'leads' && !isAdmin) {
+    const { data: lead } = await db.from('leads').select('created_by').eq('id', id).maybeSingle()
+    if (!lead || lead.created_by !== user.id) return NextResponse.json({ error: 'You can delete only your own leads.' }, { status: 403 })
+  }
 
   if (table === 'employees') {
     const { data: target } = await db.from('employees').select('user_id').eq('id', id).maybeSingle()

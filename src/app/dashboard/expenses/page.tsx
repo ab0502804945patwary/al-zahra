@@ -1,7 +1,7 @@
 import { createClient, isSupabaseConfigured } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { getSessionInfo } from '@/lib/session'
-import { canAccessModule, homeFor } from '@/lib/access'
+import { canAccessModule, canDo, homeFor } from '@/lib/access'
 import ExpensesClient from '@/components/expenses/ExpensesClient'
 
 export const dynamic = 'force-dynamic'
@@ -12,5 +12,5 @@ export default async function ExpensesPage() {
   if (!canAccessModule(employee, 'expenses')) redirect(homeFor(employee))
   const supabase = await createClient()
   const { data } = await supabase.from('expenses').select('*').order('expense_date', { ascending: false }).order('expense_no', { ascending: false })
-  return <ExpensesClient expenses={(data as any[]) || []} isAdmin={employee?.role === 'admin'} />
+  return <ExpensesClient expenses={(data as any[]) || []} isAdmin={canDo(employee, 'perm_expense_approve')} />
 }
