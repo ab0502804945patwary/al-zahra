@@ -59,7 +59,7 @@ const AUDIT_STATUSES = ['Not Started', 'In Progress', 'Completed', 'Overdue']
 
 // Work categories that can be ticked for each License Type (stage ids: 9 Bangladesh Company, 10 Foreign Mother, 3 / 11 Foreign Subsidiary 1 / 2)
 // Service License: Foreign Company must be ticked (cannot be removed), Bangladesh Company is optional
-const MANDATORY_FOR: Record<string, string[]> = { 'Service License': ['10'], 'Trading License': ['10'], 'Service to Trade': ['10'] }
+const MANDATORY_FOR: Record<string, string[]> = { 'Service License': ['10'], 'Trading License': ['10'] }
 const labelFor = (id: string, license?: string) => (license === 'Service License' && id === '10' ? 'Foreign Company' : license === 'Service License' && id === '9' ? 'Bangladesh Company' : PHASE_LABEL[id])
 const PHASE_LABEL: Record<string, string> = { '9': 'Bangladesh Company Name', '10': 'Foreign Mother Company', '3': '1 Foreign Subsidiary Company', '11': '2 Foreign Subsidiary Company' }
 const PHASES_FOR: Record<string, string[]> = {
