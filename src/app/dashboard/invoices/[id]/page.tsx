@@ -18,5 +18,5 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
     supabase.from('payments').select('*').eq('invoice_id', id).order('created_at'),
   ])
   if (!inv.data) notFound()
-  return <InvoiceView invoice={inv.data as any} items={(items.data as any[]) || []} payments={(pays.data as any[]) || []} />
+  return <InvoiceView invoice={inv.data as any} items={(items.data as any[]) || []} payments={(pays.data as any[]) || []} isAdmin={employee?.role === 'admin'} />
 }

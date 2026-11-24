@@ -10,7 +10,7 @@ import { INVOICE_COMPANY as CO } from '@/lib/invoiceConfig'
 const inputCls = 'w-full px-3 py-2 text-sm text-slate-900 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white'
 const METHODS = ['Cash', 'Bank Transfer', 'bKash', 'Nagad', 'Cheque', 'Other']
 
-export default function InvoiceView({ invoice, items, payments }: { invoice: any; items: any[]; payments: any[] }) {
+export default function InvoiceView({ invoice, items, payments, isAdmin = false }: { invoice: any; items: any[]; payments: any[]; isAdmin?: boolean }) {
   const router = useRouter()
   const supabase = createClient()
   const paid = payments.reduce((s, p) => s + Number(p.amount), 0)
@@ -52,7 +52,7 @@ export default function InvoiceView({ invoice, items, payments }: { invoice: any
         <Link href="/dashboard/invoices" className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900"><ArrowLeft className="w-4 h-4" /> All invoices</Link>
         <div className="flex gap-2">
           {!cancelled && <Link href={`/dashboard/invoices/${invoice.id}/edit`} className="inline-flex items-center gap-1.5 px-3 py-2 border border-slate-200 text-slate-700 text-xs font-medium rounded-lg hover:bg-slate-50"><Pencil className="w-3.5 h-3.5" /> Edit invoice</Link>}
-          {!cancelled && <button onClick={cancelInvoice} className="inline-flex items-center gap-1.5 px-3 py-2 border border-rose-200 text-rose-600 text-xs font-medium rounded-lg hover:bg-rose-50"><Ban className="w-3.5 h-3.5" /> Cancel invoice</button>}
+          {!cancelled && isAdmin && <button onClick={cancelInvoice} className="inline-flex items-center gap-1.5 px-3 py-2 border border-rose-200 text-rose-600 text-xs font-medium rounded-lg hover:bg-rose-50"><Ban className="w-3.5 h-3.5" /> Cancel invoice</button>}
           <button onClick={() => window.print()} className="inline-flex items-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg"><Printer className="w-3.5 h-3.5" /> Print / Save as PDF</button>
         </div>
       </div>
