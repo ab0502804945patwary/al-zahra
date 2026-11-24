@@ -198,7 +198,7 @@ export default function CompaniesClient({ companies: initialCompanies, mode = 'n
           <table className="w-full text-xs min-w-[900px]">
             <thead className="bg-slate-50 text-slate-500 uppercase text-[10px] tracking-wide">
               <tr>
-                {['SL', 'ID', 'Company', ...(isAdmin ? ['Registered by'] : []), 'Country', 'Service Type', 'License', 'CR No.', 'MISA No.', renewalMode ? 'Next Due' : 'CR Expiry', 'Status', 'Folder', ''].map(h => (
+                {['SL', 'ID', 'Company', ...(isAdmin ? ['Registered by'] : []), 'Nationality', 'Service Type', 'License', 'CR No.', 'MISA No.', renewalMode ? 'Next Due' : 'CR Expiry', 'Status', 'Folder', ''].map(h => (
                   <th key={h} className="text-left font-semibold px-3 py-2.5 whitespace-nowrap">{h}</th>
                 ))}
               </tr>
