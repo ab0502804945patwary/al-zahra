@@ -163,7 +163,7 @@ export default function ExpensesClient({ expenses, isAdmin = false }: { expenses
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {[['This month', money(stats.thisMonth)], ['All time (not rejected)', money(stats.total)], ['Pending approval', String(stats.pending)]].map(([l, v]) => (
+        {[['This month', money(stats.thisMonth)], ['All time (approved)', money(stats.total)], ['Pending approval', String(stats.pending)]].map(([l, v]) => (
           <div key={l} className="bg-white rounded-xl p-4 border border-slate-200/90 shadow-sm"><p className="text-xs font-medium text-slate-500">{l}</p><p className="text-xl font-bold text-slate-900 mt-1">{v}</p></div>
         ))}
       </div>
