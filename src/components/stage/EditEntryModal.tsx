@@ -146,7 +146,7 @@ export default function EditEntryModal({ stageId, entry, companies, employees, o
                     </div>
                     <div>
                       <label className="text-xs font-medium text-slate-700 mb-1 block">City</label>
-                      <ComboInput value={form.city || ''} onChange={v => set('city', v)} options={(() => { const pl = placesFor(form.country); return pl ? [...new Set([...pl.cities, ...pl.regions])] : [] })()} className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" placeholder="Pick or type a city" />
+                      <ComboInput value={form.city || ''} onChange={v => set('city', v)} options={(() => { const pl = placesFor(form.country); return pl ? [...new Set([...pl.cities, ...pl.regions])] : [] })()} disabled={!form.country} className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" placeholder={!form.country ? 'Select a country first' : placesFor(form.country) ? 'Pick a city from the list' : 'Type the city'} />
                     </div>
                   </>) : (<>
                     <div>
