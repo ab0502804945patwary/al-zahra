@@ -12,5 +12,5 @@ export default async function ExpensesPage() {
   if (!canAccessModule(employee, 'expenses')) redirect(homeFor(employee))
   const supabase = await createClient()
   const { data } = await supabase.from('expenses').select('*').order('expense_date', { ascending: false }).order('expense_no', { ascending: false })
-  return <ExpensesClient expenses={(data as any[]) || []} />
+  return <ExpensesClient expenses={(data as any[]) || []} isAdmin={employee?.role === 'admin'} />
 }

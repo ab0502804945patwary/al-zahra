@@ -24,7 +24,7 @@ function previewNumber(date: string, expenses: Expense[]) {
   return `${prefix}${String((used.length ? Math.max(...used) : 0) + 1).padStart(4, '0')}`
 }
 
-export default function ExpensesClient({ expenses }: { expenses: Expense[] }) {
+export default function ExpensesClient({ expenses, isAdmin = false }: { expenses: Expense[]; isAdmin?: boolean }) {
   const router = useRouter()
   const supabase = createClient()
   const fileRef = useRef<HTMLInputElement>(null)
@@ -41,7 +41,7 @@ export default function ExpensesClient({ expenses }: { expenses: Expense[] }) {
   const categoryOptions = useMemo(() => [...new Set([...expenses.map(e => e.category), ...EXPENSE_CATEGORIES])].sort((a, b) => a.localeCompare(b)), [expenses])
   const month = new Date().toISOString().slice(0, 7)
   const stats = useMemo(() => {
-    const live = expenses.filter(e => e.status !== 'Rejected')
+    const live = expenses.filter(e => e.status === 'Approved') // only approved expenses count in the accounts
     return {
       thisMonth: live.filter(e => e.expense_date.startsWith(month)).reduce((s, e) => s + Number(e.amount), 0),
       total: live.reduce((s, e) => s + Number(e.amount), 0),
@@ -197,8 +197,8 @@ export default function ExpensesClient({ expenses }: { expenses: Expense[] }) {
                 </td>
                 <td className="px-3 py-2.5"><span className={`px-2 py-0.5 rounded-full border text-[10px] font-semibold ${tone(e.status)}`}>{e.status}</span></td>
                 <td className="px-3 py-2.5 text-right whitespace-nowrap">
-                  {e.status !== 'Approved' && <button onClick={() => setExpenseStatus(e.id, 'Approved')} title="Approve" className="p-1.5 text-slate-400 hover:text-emerald-600"><Check className="w-4 h-4" /></button>}
-                  {e.status !== 'Rejected' && <button onClick={() => setExpenseStatus(e.id, 'Rejected')} title="Reject" className="p-1.5 text-slate-400 hover:text-rose-600"><Ban className="w-4 h-4" /></button>}
+                  {isAdmin && e.status !== 'Approved' && <button onClick={() => setExpenseStatus(e.id, 'Approved')} title="Approve" className="p-1.5 text-slate-400 hover:text-emerald-600"><Check className="w-4 h-4" /></button>}
+                  {isAdmin && e.status !== 'Rejected' && <button onClick={() => setExpenseStatus(e.id, 'Rejected')} title="Reject" className="p-1.5 text-slate-400 hover:text-rose-600"><Ban className="w-4 h-4" /></button>}
                 </td>
               </tr>
             ))}

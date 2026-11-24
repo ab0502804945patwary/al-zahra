@@ -17,8 +17,8 @@ export default function AccountsSummary({ invoices, expenses = [] }: { invoices:
   const due = invoiced - received
   const month = new Date().toISOString().slice(0, 7)
   const receivedThisMonth = live.flatMap(i => i.payments || []).filter(p => String(p.paid_on).startsWith(month)).reduce((s, p) => s + Number(p.amount), 0)
-  // expenses reduce the money received (rejected expenses are ignored)
-  const liveExpenses = expenses.filter(e => e.status !== 'Rejected')
+  // expenses reduce the money received (only approved expenses count)
+  const liveExpenses = expenses.filter(e => e.status === 'Approved')
   const expenseTotal = liveExpenses.reduce((s, e) => s + Number(e.amount), 0)
   const expenseThisMonth = liveExpenses.filter(e => String(e.expense_date).startsWith(month)).reduce((s, e) => s + Number(e.amount), 0)
   const net = received - expenseTotal

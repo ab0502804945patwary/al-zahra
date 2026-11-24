@@ -31,7 +31,7 @@ export default function ReportsClient({ invoices, expenses, customers, companies
 
   const data = useMemo(() => {
     const liveInv = invoices.filter(i => i.status !== 'Cancelled')
-    const liveExp = expenses.filter(e => e.status !== 'Rejected')
+    const liveExp = expenses.filter(e => e.status === 'Approved')
     const payments = liveInv.flatMap(i => (i.payments || []).map((p: any) => ({ ...p, customer: i.customer_name })))
 
     const invoicedP = liveInv.filter(i => inPeriod(i.invoice_date))
