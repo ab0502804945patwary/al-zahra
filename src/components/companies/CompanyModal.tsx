@@ -38,6 +38,7 @@ import { createClient, isSupabaseConfigured } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { Company } from '@/lib/types'
 import CountrySelect from '@/components/ui/CountrySelect'
+import ComboInput from '@/components/ui/ComboInput'
 import { placesFor } from '@/lib/regions'
 import { triggerPush } from '@/lib/pushClient'
 import { STAGE_CONFIG } from '@/lib/stageData'
@@ -293,31 +294,9 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
         </div>
       </div>
 
-      <div className={SPAN[3]}>
+      <div className={SPAN[6]}>
         <Lbl name="country_of_origin">Nationality</Lbl>
-        <CountrySelect value={form.country_of_origin} onChange={v => setForm(p => ({ ...p, country_of_origin: v, province: '' }))} />
-      </div>
-
-      <div className={SPAN[3]}>
-        <Lbl name="province">Province / State</Lbl>
-        {placesFor(form.country_of_origin) ? (
-          <select value={form.province || ''} onChange={e => set('province', e.target.value)} className={inputCls}>
-            <option value="">Select province / city</option>
-            {(() => {
-              const pl = placesFor(form.country_of_origin)!
-              const known = new Set([...pl.regions, ...pl.cities])
-              return (
-                <>
-                  {form.province && !known.has(form.province) && <option value={form.province}>{form.province}</option>}
-                  {pl.regions.length > 0 && <optgroup label="Provinces / regions">{pl.regions.map(r => <option key={r} value={r}>{r}</option>)}</optgroup>}
-                  {pl.cities.length > 0 && <optgroup label="Cities">{pl.cities.map(c => <option key={c} value={c}>{c}</option>)}</optgroup>}
-                </>
-              )
-            })()}
-          </select>
-        ) : (
-          <input value={form.province || ''} onChange={e => set('province', e.target.value)} placeholder="Type province / state" className={inputCls} />
-        )}
+        <CountrySelect value={form.country_of_origin} onChange={v => set('country_of_origin', v)} />
       </div>
 
       <div className={`col-span-2 ${SPAN[2]}`}>
@@ -398,9 +377,13 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
         <label className="block"><Lbl name="client_phone">Client Phone</Lbl></label>
         <input type="text" required value={form.client_phone || ''} onChange={e => set('client_phone', e.target.value)} placeholder="e.g. 05xxxxxxxx" className={inputCls} />
       </div>
-      <div className={SPAN[6]}>
+      <div className={SPAN[12]}>
         <label className="block"><Lbl name="client_present_address">Client Present Address</Lbl></label>
-        <input type="text" value={form.client_present_address || ''} onChange={e => set('client_present_address', e.target.value)} placeholder="Where the client is right now (city, area, country)" className={inputCls} />
+        <div className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_2fr] gap-3">
+          <CountrySelect value={form.present_country || ''} onChange={v => setForm(p => ({ ...p, present_country: v, present_city: '' }))} />
+          <ComboInput value={form.present_city || ''} onChange={v => set('present_city', v)} options={(() => { const pl = placesFor(form.present_country); return pl ? [...new Set([...pl.cities, ...pl.regions])] : [] })()} disabled={!form.present_country} className={inputCls} placeholder={!form.present_country ? 'Select a country first' : placesFor(form.present_country) ? 'Pick a city from the list' : 'Type the city'} />
+          <input type="text" value={form.client_present_address || ''} onChange={e => set('client_present_address', e.target.value)} placeholder="Area / street" className={inputCls} />
+        </div>
       </div>
       {ownerOptions && company && (
         <div className={SPAN[6]}>
