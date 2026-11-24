@@ -38,6 +38,7 @@ const waLink = (n?: string) => {
 export default function ExpiryAlerts({ companies: initial, isAdmin = false, owners = {}, ownerAvatars = {} }: { companies: Company[]; isAdmin?: boolean; owners?: Record<string, string>; ownerAvatars?: Record<string, string> }) {
   // admin: filter by the person who registered the company
   const [who, setWho] = useState('')
+  const [docSel, setDocSel] = useState('')
   const companies = who ? initial.filter(c => (who === '__none' ? !c.created_by : c.created_by === who)) : initial
   const [win, setWin] = useState<Win>(30)
   // Day counts depend on today's date, which differs between server and browser: compute after mount only
@@ -54,11 +55,12 @@ export default function ExpiryAlerts({ companies: initial, isAdmin = false, owne
         if (!date) continue
         const days = daysLeft(date)
         if (days === null) continue
+        if (docSel && doc !== docSel) continue
         out.push({ company, doc, date, days })
       }
     }
     return out.sort((a, b) => a.days - b.days)
-  }, [companies, mounted])
+  }, [companies, mounted, docSel])
 
   const inWindow = (i: Item, w: Win) => (w === 'expired' ? i.days < 0 : i.days >= 0 && i.days <= w)
   const wins: { key: Win; label: string }[] = [
@@ -85,6 +87,10 @@ export default function ExpiryAlerts({ companies: initial, isAdmin = false, owne
           <h2 className="text-sm font-bold text-slate-900">Upcoming Expiries — Contact List</h2>
           <span className="text-[11px] text-slate-400">CR, MISA, RJSC &amp; audit due dates</span>
         </div>
+        <select value={docSel} onChange={ev => setDocSel(ev.target.value)} className="px-2.5 py-1.5 text-xs border border-slate-200 rounded-lg bg-white text-slate-700 font-semibold">
+          <option value="">All documents</option>
+          {DOC_FIELDS.map(d => <option key={d.doc} value={d.doc}>{d.doc}</option>)}
+        </select>
         {isAdmin && (
           <select value={who} onChange={ev => setWho(ev.target.value)} className="px-2.5 py-1.5 text-xs border border-slate-200 rounded-lg bg-white text-slate-700 font-semibold">
             <option value="">All employees</option>
