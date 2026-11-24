@@ -294,7 +294,7 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
       </div>
 
       <div className={SPAN[3]}>
-        <Lbl name="country_of_origin">Country</Lbl>
+        <Lbl name="country_of_origin">Nationality</Lbl>
         <CountrySelect value={form.country_of_origin} onChange={v => setForm(p => ({ ...p, country_of_origin: v, province: '' }))} />
       </div>
 
