@@ -215,7 +215,7 @@ export default function EditEntryModal({ stageId, entry, companies, employees, o
                 <Field label="Target SLA Date" name="target_date" type="date" />
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <Field label="Completion Date" name="complete_date" type="date" required={stageId === '10'} />
+                <Field label="Completion Date" name="complete_date" type="date" required={['1', '9', '10'].includes(stageId)} />
                 <Sel
                   label="Payment Status"
                   name="payment_status"
@@ -230,7 +230,7 @@ export default function EditEntryModal({ stageId, entry, companies, employees, o
                   <p className="text-[11px] text-slate-500 self-end pb-2">Complete stops the Company Name Clearance countdown of this company.</p>
                 </div>
               )}
-              <Field label="Electronic Dossier Link (Google Drive)" name="drive_link" required={stageId === '10'} />
+              <Field label="Electronic Dossier Link (Google Drive)" name="drive_link" required={['1', '9', '10'].includes(stageId)} />
               <Field label="Operational Remarks" name="remarks" />
             </>
           )}
