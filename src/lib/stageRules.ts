@@ -88,7 +88,8 @@ export function isEligibleForStage(stageId: string, company: { company_id: strin
   const dk = (sid: string, field: 'complete_date' | 'usa_complete_date' | 'approval_date' = 'complete_date') => skipped.includes(sid) || done(all[sid], id, field)
   if (picked && OPTIONAL_PHASES.includes(stageId)) {
     if (!picked.includes(stageId)) return false
-    if (stageId === '10' && category === 'Service License' && picked.includes('9') && !skipped.includes('9')) {
+    // Bangladesh Company ticked: Foreign Mother / Foreign Subsidiary phases open only after its name is Approved
+    if (['10', '3', '11'].includes(stageId) && picked.includes('9') && !skipped.includes('9')) {
       return (all['9'] || []).some(e => e.company_id === id && (e as any).approval_status === 'Approved')
     }
     return true
@@ -101,6 +102,12 @@ export function isEligibleForStage(stageId: string, company: { company_id: strin
         // Bangladesh Company ticked: an Approved name is enough, Foreign may still be in progress
         if (picked.includes('9') && !skipped.includes('9')) return (all['9'] || []).some(e => e.company_id === id && (e as any).approval_status === 'Approved')
         return picked.filter(s => OPTIONAL_PHASES.includes(s)).every(sid => dk(sid))
+      }
+      // Trading License (and Service to Trade): Parent opens when Foreign Mother is complete (Subsidiaries may still be running).
+      // Without Foreign Mother ticked: when every ticked phase is complete. Bangladesh counts as done once its name is Approved.
+      if (picked && needsForeign(category)) {
+        if (picked.includes('10') && !skipped.includes('10')) return dk('10')
+        return picked.filter(s => OPTIONAL_PHASES.includes(s)).every(sid => sid === '9' ? (skipped.includes('9') || (all['9'] || []).some(e => e.company_id === id && (e as any).approval_status === 'Approved')) : dk(sid))
       }
       return true
     case '4': {
@@ -140,7 +147,7 @@ export function isEligibleForStage(stageId: string, company: { company_id: strin
 }
 
 export const ELIGIBILITY_HINT: Record<string, string> = {
-  '1': 'Service License: opens when the Bangladesh Company Name is Approved (Foreign Company may still be in progress); with only Foreign Company ticked, after it is complete.',
+  '1': 'Trading License: opens when Foreign Mother Company is complete. Service License: opens when the Bangladesh Company Name is Approved (Foreign Company may still be in progress); with only Foreign Company ticked, after it is complete.',
   '2': 'Starts together with Stage 1 and Company Name Clearance.',
   '3': 'Work arrives when 1 Foreign Subsidiary Company is ticked on the Company Register form.',
   '10': 'Work arrives when Foreign Mother Company is ticked on the Company Register form.',
