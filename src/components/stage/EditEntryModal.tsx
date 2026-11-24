@@ -11,7 +11,7 @@ import PortalAccountsEditor from './PortalAccountsEditor'
 import type { PortalAccount } from '@/lib/portals'
 import Link from 'next/link'
 import StatutoryFields, { STATUTORY_KEYS, statutoryFrom } from './StatutoryFields'
-import { COUNTRIES, CATEGORIES, PAYMENT_STATUSES, PRIORITIES, PHASE_OPTIONS, FOREIGN_FILING_OPTIONS, CANADA_OPTIONS, CR_STATUSES, toOptions, pickColumns, validateDates } from '@/lib/stageRules'
+import { COUNTRY_CITY_STAGES, COUNTRIES, CATEGORIES, PAYMENT_STATUSES, PHASE_OPTIONS, FOREIGN_FILING_OPTIONS, CANADA_OPTIONS, CR_STATUSES, toOptions, pickColumns, validateDates } from '@/lib/stageRules'
 import { assessExpiry, assessTiming } from '@/lib/utils'
 
 const STAGE_TABLES: Record<string, string> = {
@@ -46,7 +46,7 @@ export default function EditEntryModal({ stageId, entry, companies, employees, o
     const dateError = validateDates(form)
     if (dateError) { alert(dateError); return }
     setLoading(true)
-    let payload: Record<string, any> = { ...form, ...(stageId === '6' ? { portal_accounts: portals.filter(p => p.portal) } : {}), client_name: clientInfo.name || form.client_name, client_phone: clientInfo.phone || form.client_phone, category: comp?.entity_type || form.category, ...(stageId !== '1' ? { priority: comp?.stage1_priority || form.priority } : {}) }
+    let payload: Record<string, any> = { ...form, ...(stageId === '6' ? { portal_accounts: portals.filter(p => p.portal) } : {}), client_name: clientInfo.name || form.client_name, client_phone: clientInfo.phone || form.client_phone, category: comp?.entity_type || form.category, ...(COUNTRY_CITY_STAGES.includes(stageId) && stageId !== '1' ? { country: comp?.stage1_country || form.country, city: comp?.stage1_city || form.city } : {}) }
     if (!isUSACanada && !isNameClearance && stageId !== '6') {
       const t = assessTiming(form.submit_date, form.target_date, form.complete_date)
       payload = { ...payload, days_taken: t.days, status: t.status, completion_percent: t.completion, overdue_status: t.overdue }
@@ -131,15 +131,24 @@ export default function EditEntryModal({ stageId, entry, companies, employees, o
                   <label className="text-xs font-medium text-slate-700 mb-1 block">Licensing Category</label>
                   <div className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg bg-slate-50 text-slate-700 min-h-[34px]">{(comp?.entity_type || form.category) || '—'}</div>
                 </div>
-                {stageId === '1' ? (
-                  <Sel label="Priority Tier" name="priority" options={toOptions(PRIORITIES)} />
-                ) : (
-                  <div>
-                  <label className="text-xs font-medium text-slate-700 mb-1 block">Priority Tier</label>
-                  <div className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg bg-slate-50 text-slate-700 min-h-[34px]">{(comp?.stage1_priority || form.priority) || '—'}</div>
-                </div>
-                )}
               </div>
+              {COUNTRY_CITY_STAGES.includes(stageId) && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {stageId === '1' ? (<>
+                    <Field label="Country" name="country" />
+                    <Field label="City" name="city" />
+                  </>) : (<>
+                    <div>
+                      <label className="text-xs font-medium text-slate-700 mb-1 block">Country</label>
+                      <div className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg bg-slate-50 text-slate-700 min-h-[34px]">{(comp?.stage1_country || form.country) || '—'}</div>
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-slate-700 mb-1 block">City</label>
+                      <div className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg bg-slate-50 text-slate-700 min-h-[34px]">{(comp?.stage1_city || form.city) || '—'}</div>
+                    </div>
+                  </>)}
+                </div>
+              )}
               {stageId !== '6' && <Sel label="Workflow Phase Status" name="current_stage" options={toOptions(PHASE_OPTIONS[stageId] || [])} />}
               {stageId === '6' && (
                 <>

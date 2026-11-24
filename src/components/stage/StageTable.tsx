@@ -115,7 +115,7 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
     const comp = companies.find(c => c.company_id === e.company_id)
     return matchesQuery(search, i + 1, [
       e.bd_company_name, e.approval_status, e.foreign_company_name, e.city, e.registration_no, e.account_email, e.account_username, e.rjsc_reg_no, e.issue_no, e.auditor_firm, e.company_id, e.companies?.company_name, e.companies?.country_of_origin, comp?.client_name, comp?.client_phone,
-      e.client_name, e.client_phone, e.category, e.priority, e.current_stage, e.name_clearance_number, e.entity_type,
+      e.client_name, e.client_phone, e.category, e.country, e.city, e.current_stage, e.name_clearance_number, e.entity_type,
     ])
   })
 
@@ -218,7 +218,6 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
               <tr className="bg-slate-50/80 text-slate-500 font-semibold uppercase tracking-wider border-b border-slate-200">
                 <th className="py-3 px-4">Entity</th>
                 <th className="py-3 px-4">Category</th>
-                <th className="py-3 px-4">Priority Tier</th>
                 <th className="py-3 px-4 bg-blue-50/50">
                   <span className="inline-flex items-center gap-1.5">
                     <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-700">USA</span>
@@ -258,7 +257,6 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
                     <div className="text-slate-500 text-[11px]">{e.companies?.company_name}{e.companies?.original_company_name && <span className="block text-[10px] text-slate-400">Previously: {e.companies.original_company_name}</span>}</div>
                   </td>
                   <td className="py-3 px-4">{e.category || '—'}</td>
-                  <td className="py-3 px-4 text-slate-500">{e.priority || '—'}</td>
                   <td className="py-3 px-4 bg-blue-50/20 font-medium text-blue-700">{e.usa_type || '—'}</td>
                   <td className="py-3 px-4 bg-blue-50/20">{formatDate(e.usa_submit_date)}</td>
                   <td className="py-3 px-4 bg-blue-50/20">{formatDate(e.usa_target_date)}</td>
@@ -346,7 +344,10 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
               <th className="py-3 px-4">Entity Portfolio</th>
               <th className="py-3 px-4">Authorized Contact</th>
               <th className="py-3 px-4">Classification</th>
-              <th className="py-3 px-4">Priority Tier</th>
+              {['1', '2', '4', '5', '6', '7'].includes(stageId) && (<>
+                <th className="py-3 px-4">Country</th>
+                <th className="py-3 px-4">City</th>
+              </>)}
               {!noDates && <th className="py-3 px-4">Workflow Status</th>}
               {!noDates && <th className="py-3 px-4">Submission</th>}
               {!noDates && <th className="py-3 px-4">Target Date</th>}
@@ -400,7 +401,10 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
                   <div className="text-slate-400 text-[11px] font-mono">{companies.find(c => c.company_id === e.company_id)?.client_phone || e.client_phone || ''}</div>
                 </td>
                 <td className="py-3 px-4">{e.category || '—'}</td>
-                <td className="py-3 px-4 text-slate-500">{e.priority || '—'}</td>
+                {['1', '2', '4', '5', '6', '7'].includes(stageId) && (<>
+                  <td className="py-3 px-4 text-slate-600">{e.country || '—'}</td>
+                  <td className="py-3 px-4 text-slate-600">{e.city || '—'}</td>
+                </>)}
                 {!noDates && (                <td className="py-3 px-4">
                   <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-slate-100 text-slate-700 border border-slate-200">
                     {e.current_stage || '—'}

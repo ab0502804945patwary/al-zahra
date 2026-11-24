@@ -10,7 +10,7 @@ import PortalAccountsEditor from './PortalAccountsEditor'
 import type { PortalAccount } from '@/lib/portals'
 import StatutoryFields, { STATUTORY_KEYS, statutoryFrom } from './StatutoryFields'
 import { FormCtx, Field, Select } from './formFields'
-import { COUNTRIES, CATEGORIES, PAYMENT_STATUSES, PRIORITIES, PHASE_OPTIONS, FOREIGN_FILING_OPTIONS, CANADA_OPTIONS, CR_STATUSES, toOptions, pickColumns, validateDates } from '@/lib/stageRules'
+import { COUNTRY_CITY_STAGES, COUNTRIES, CATEGORIES, PAYMENT_STATUSES, PHASE_OPTIONS, FOREIGN_FILING_OPTIONS, CANADA_OPTIONS, CR_STATUSES, toOptions, pickColumns, validateDates } from '@/lib/stageRules'
 import { assessExpiry, assessTiming } from '@/lib/utils'
 
 const STAGE_TABLES: Record<string, string> = {
@@ -67,7 +67,9 @@ export default function AddEntryModal({ stageId, companies, employees, onClose, 
       client_name: comp?.client_name || comp?.ceo_gm_name || '',
       client_phone: comp?.client_phone || comp?.whatsapp_number || '',
       category: comp?.entity_type || comp?.stage1_category || 'Trading License',
-      priority: stageId === '1' ? prev.priority : (comp?.stage1_priority || prev.priority || ''),
+      ...(COUNTRY_CITY_STAGES.includes(stageId) ? (stageId === '1'
+        ? { country: prev.country || comp?.country_of_origin || '', city: prev.city || '' }
+        : { country: comp?.stage1_country || prev.country || comp?.country_of_origin || '', city: comp?.stage1_city || prev.city || '' }) : {}),
       drive_link: prev.drive_link || comp?.drive_link || '',
       company_name_english: prev.company_name_english || comp?.company_name || '',
       ...(stageId === '7' ? statutoryFrom(comp) : {}),
@@ -166,15 +168,24 @@ export default function AddEntryModal({ stageId, companies, employees, onClose, 
                   <label className="text-xs font-medium text-slate-700 mb-1 block">Licensing Category</label>
                   <div className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg bg-slate-50 text-slate-700 min-h-[34px]">{form.category || '—'}</div>
                 </div>
-                {stageId === '1' ? (
-                  <Select label="Priority Tier" name="priority" options={toOptions(PRIORITIES)} />
-                ) : (
-                  <div>
-                  <label className="text-xs font-medium text-slate-700 mb-1 block">Priority Tier</label>
-                  <div className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg bg-slate-50 text-slate-700 min-h-[34px]">{form.priority || '—'}</div>
-                </div>
-                )}
               </div>
+              {COUNTRY_CITY_STAGES.includes(stageId) && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {stageId === '1' ? (<>
+                    <Field label="Country" name="country" />
+                    <Field label="City" name="city" />
+                  </>) : (<>
+                    <div>
+                      <label className="text-xs font-medium text-slate-700 mb-1 block">Country</label>
+                      <div className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg bg-slate-50 text-slate-700 min-h-[34px]">{form.country || '—'}</div>
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-slate-700 mb-1 block">City</label>
+                      <div className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg bg-slate-50 text-slate-700 min-h-[34px]">{form.city || '—'}</div>
+                    </div>
+                  </>)}
+                </div>
+              )}
               {stageId !== '6' && <Select label="Workflow Phase Status" name="current_stage" options={toOptions(PHASE_OPTIONS[stageId] || [])} />}
               {stageId === '6' && <PortalAccountsEditor value={portals} onChange={setPortals} />}
             </>

@@ -75,7 +75,7 @@ export default async function StagePage({ params }: { params: Promise<{ id: stri
     const s1 = (dbEntries['1'] || []) as any[]
     companies = companies.map(c => {
       const e = s1.find(x => x.company_id === c.company_id)
-      return e ? { ...c, stage1_priority: e.priority, stage1_category: e.category } : c
+      return e ? { ...c, stage1_priority: e.priority, stage1_category: e.category, stage1_country: e.country, stage1_city: e.city } : c
     })
   }
   const eligibleCompanies = gated
