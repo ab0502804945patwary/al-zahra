@@ -27,9 +27,13 @@ export default async function DashboardPage() {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
     try {
-      const inv = await supabase.from('invoices').select('id, invoice_no, customer_id, customer_name, total, status, payments(amount, paid_on)')
+      // admin: everything; staff: only the invoices and expenses they created themselves
+      let invQ = supabase.from('invoices').select('id, invoice_no, customer_id, customer_name, total, status, payments(amount, paid_on)')
+      let expQ = supabase.from('expenses').select('expense_date, amount, status')
+      if (!isAdmin) { invQ = invQ.eq('created_by', user?.id ?? ''); expQ = expQ.eq('created_by', user?.id ?? '') }
+      const inv = await invQ
       invoices = (inv.data as any[]) || []
-      const exp = await supabase.from('expenses').select('expense_date, amount, status')
+      const exp = await expQ
       expenses = (exp.data as any[]) || []
     } catch {}
     try {
@@ -116,7 +120,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      {isAdmin && <AccountsSummary invoices={invoices} expenses={expenses} />}
+      {(isAdmin || canAccessModule(employee, 'invoices') || canAccessModule(employee, 'expenses')) && <AccountsSummary invoices={invoices} expenses={expenses} />}
       <MasterMatrixDashboard initialCompanies={companies} kpiStats={kpiStats} stageMap={stageMap} />
       <StageSummaryTable rows={summary} />
     </div>

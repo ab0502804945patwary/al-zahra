@@ -11,11 +11,16 @@ export default async function ReportsPage() {
   const { employee } = await getSessionInfo()
   if (!canAccessModule(employee, 'reports')) redirect(homeFor(employee))
   const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  const isAdmin = employee?.role === 'admin'
+  const uid = user?.id ?? '00000000-0000-0000-0000-000000000000'
+  // admin: everything; staff: only the invoices, expenses and companies they created themselves
+  const mine = (q: any): any => (isAdmin ? q : q.eq('created_by', uid))
   const [inv, exp, cus, com, agt] = await Promise.all([
-    supabase.from('invoices').select('id, invoice_no, customer_id, customer_name, invoice_date, total, status, payments(amount, paid_on)'),
-    supabase.from('expenses').select('id, expense_no, expense_date, category, payment_method, amount, status'),
+    mine(supabase.from('invoices').select('id, invoice_no, customer_id, customer_name, invoice_date, total, status, payments(amount, paid_on)')),
+    mine(supabase.from('expenses').select('id, expense_no, expense_date, category, payment_method, amount, status')),
     supabase.from('customers').select('id, created_at, customer_type, status'),
-    supabase.from('companies').select('id, company_id, company_name, service_type, created_at, cr_expire_date, misa_expire_date, rjsc_annual_return_due, bd_next_audit_due, sa_next_audit_due'),
+    mine(supabase.from('companies').select('id, company_id, company_name, service_type, created_at, cr_expire_date, misa_expire_date, rjsc_annual_return_due, bd_next_audit_due, sa_next_audit_due')),
     supabase.from('agents').select('id, category'),
   ])
   return (
