@@ -29,7 +29,8 @@ export default function CompaniesClient({ companies: initialCompanies, mode = 'n
   const [toggling, setToggling] = useState<string | null>(null)
   const [selected, setSelected] = useState<Company | null>(null)
   const [showAdd, setShowAdd] = useState(false)
-  const [shown, setShown] = useState(10)
+  const [page, setPage] = useState(1)
+  const PAGE = 10
   const [ownerSel, setOwnerSel] = useState('')
   const [licSel, setLicSel] = useState('')
   const [view, setView] = useState<'grid' | 'list'>(mode === 'renewal' ? 'list' : 'grid')
@@ -106,6 +107,9 @@ export default function CompaniesClient({ companies: initialCompanies, mode = 'n
       c.rjsc_reg_no,
     ])
   )
+  const pages = Math.max(1, Math.ceil(filtered.length / PAGE))
+  const cur = Math.min(page, pages)
+  const pageRows = filtered.slice((cur - 1) * PAGE, cur * PAGE)
 
   // soonest upcoming (or already passed) due date of a renewal company
   const nextExpiry = (c: Company) => {
@@ -154,7 +158,7 @@ export default function CompaniesClient({ companies: initialCompanies, mode = 'n
           <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             value={search}
-            onChange={e => { setSearch(e.target.value); setShown(10) }}
+            onChange={e => { setSearch(e.target.value); setPage(1) }}
             placeholder={renewalMode ? 'Search name, ID, serial no., phone, country, CR, RJSC...' : 'Search name, ID, serial no., phone, country, CR, MISA...'}
             className="w-full pl-9 pr-4 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
           />
@@ -164,19 +168,19 @@ export default function CompaniesClient({ companies: initialCompanies, mode = 'n
             Showing <span className="font-bold text-slate-800">{filtered.length}</span> of {modeList.length}
           </div>
           {!renewalMode && isAdmin && (
-            <select value={ownerSel} onChange={e => { setOwnerSel(e.target.value); setShown(10) }} className="px-2.5 py-1.5 text-xs border border-slate-200 rounded-lg bg-white text-slate-700">
+            <select value={ownerSel} onChange={e => { setOwnerSel(e.target.value); setPage(1) }} className="px-2.5 py-1.5 text-xs border border-slate-200 rounded-lg bg-white text-slate-700">
               <option value="">All employees</option>
               {Object.entries(owners).filter(([id]) => modeList.some(c => c.created_by === id)).sort((a, b) => a[1].localeCompare(b[1])).map(([id, name]) => <option key={id} value={id}>{name}</option>)}
               {modeList.some(c => !c.created_by) && <option value="__none">AL ZAHRA (no person)</option>}
             </select>
           )}
           {!renewalMode && (
-            <select value={licSel} onChange={e => { setLicSel(e.target.value); setShown(10) }} className="px-2.5 py-1.5 text-xs border border-slate-200 rounded-lg bg-white text-slate-700">
+            <select value={licSel} onChange={e => { setLicSel(e.target.value); setPage(1) }} className="px-2.5 py-1.5 text-xs border border-slate-200 rounded-lg bg-white text-slate-700">
               <option value="">All license types</option>
               {['Trading License', 'Service License', 'Service to Trade'].map(l => <option key={l} value={l}>{l} ({modeList.filter(c => c.entity_type === l).length})</option>)}
             </select>
           )}
-          <select value={statusFilter} onChange={e => { setStatusFilter(e.target.value as any); setShown(10) }} className="px-2.5 py-1.5 text-xs border border-slate-200 rounded-lg bg-white text-slate-700">
+          <select value={statusFilter} onChange={e => { setStatusFilter(e.target.value as any); setPage(1) }} className="px-2.5 py-1.5 text-xs border border-slate-200 rounded-lg bg-white text-slate-700">
             <option value="all">All status</option>
             <option value="Active">Active ({modeList.filter(c => c.account_status !== 'Inactive').length})</option>
             <option value="Inactive">Inactive ({modeList.filter(c => c.account_status === 'Inactive').length})</option>
@@ -200,7 +204,7 @@ export default function CompaniesClient({ companies: initialCompanies, mode = 'n
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {filtered.slice(0, shown).map(c => (
+              {pageRows.map(c => (
                 <tr key={c.id} className={`hover:bg-slate-50/70 ${c.account_status === 'Inactive' ? 'opacity-60' : ''}`}>
                   <td className="px-3 py-2.5 text-slate-400 font-mono">{serialOf(c)}</td>
                   <td className="px-3 py-2.5 font-mono font-bold text-blue-700">{c.company_id}</td>
@@ -236,7 +240,7 @@ export default function CompaniesClient({ companies: initialCompanies, mode = 'n
 
       {/* Grid */}
       {view === 'grid' && <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-        {filtered.slice(0, shown).map(company => (
+        {pageRows.map(company => (
           <div
             key={company.id}
             className="bg-white rounded-xl border border-slate-200/90 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden flex flex-col justify-between"
@@ -330,10 +334,19 @@ export default function CompaniesClient({ companies: initialCompanies, mode = 'n
         )}
       </div>}
 
-      {filtered.length > shown && (
-        <div className="flex flex-col items-center gap-1 py-2">
-          <button onClick={() => setShown(n => n + 10)} className="px-5 py-2 text-xs font-semibold border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 rounded-lg shadow-sm">Show 10 more</button>
-          <span className="text-[11px] text-slate-400">Showing {Math.min(shown, filtered.length)} of {filtered.length}</span>
+      {filtered.length > PAGE && (
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-600">
+          <span>Showing <b>{(cur - 1) * PAGE + 1}</b> to <b>{Math.min(cur * PAGE, filtered.length)}</b> of <b>{filtered.length}</b></span>
+          <div className="flex items-center gap-1">
+            <button disabled={cur === 1} onClick={() => setPage(cur - 1)} className="px-2.5 py-1.5 rounded-md border border-slate-200 bg-white disabled:opacity-40 hover:bg-slate-50">‹</button>
+            {Array.from({ length: pages }, (_, k) => k + 1).filter(n => n === 1 || n === pages || Math.abs(n - cur) <= 1).map((n, idx, arr) => (
+              <span key={n} className="flex items-center">
+                {idx > 0 && arr[idx - 1] !== n - 1 && <span className="px-1 text-slate-400">…</span>}
+                <button onClick={() => setPage(n)} className={`min-w-8 px-2.5 py-1.5 rounded-md border text-xs font-semibold ${n === cur ? 'bg-blue-600 text-white border-blue-600' : 'border-slate-200 bg-white hover:bg-slate-50'}`}>{n}</button>
+              </span>
+            ))}
+            <button disabled={cur === pages} onClick={() => setPage(cur + 1)} className="px-2.5 py-1.5 rounded-md border border-slate-200 bg-white disabled:opacity-40 hover:bg-slate-50">›</button>
+          </div>
         </div>
       )}
 
