@@ -78,7 +78,8 @@ export const OPTIONAL_PHASES = ['9', '10', '3', '11']
 
 export function isEligibleForStage(stageId: string, company: { company_id: string; entity_type?: string; category?: string; service_type?: string; selected_phases?: string[] | null; skipped_phases?: string[] | null }, all: StageEntriesMap): boolean {
   // Existing companies that only need renewal skip the handoff chain entirely.
-  if (company.service_type === 'renewal') return true
+  // They are not offered MISA, CR, Portals or Final Dossier unless they really go through the chain.
+  if (company.service_type === 'renewal') return !['4', '5', '6', '7'].includes(stageId)
   const id = company.company_id
   const category = company.category || company.entity_type
   // Ticked on the form: work goes only to the phases that were ticked. Older companies (nothing saved) keep the earlier rules.
