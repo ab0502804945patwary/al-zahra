@@ -72,8 +72,8 @@ export default function AddEntryModal({ stageId, companies, employees, onClose, 
       client_phone: comp?.client_phone || comp?.whatsapp_number || '',
       category: comp?.entity_type || comp?.stage1_category || 'Trading License',
       ...(COUNTRY_CITY_STAGES.includes(stageId) ? (stageId === '1'
-        ? { country: prev.country || comp?.country_of_origin || '', city: prev.city || comp?.province || '' }
-        : { country: comp?.stage1_country || prev.country || comp?.country_of_origin || '', city: comp?.stage1_city || prev.city || comp?.province || '' }) : {}),
+        ? { country: prev.country || '', city: prev.city || '' }
+        : { country: comp?.stage1_country || prev.country || '', city: comp?.stage1_city || prev.city || '' }) : {}),
       drive_link: prev.drive_link || comp?.drive_link || '',
       company_name_english: prev.company_name_english || comp?.company_name || '',
       ...(stageId === '7' ? statutoryFrom(comp) : {}),

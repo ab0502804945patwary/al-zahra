@@ -38,7 +38,6 @@ export default function EditEntryModal({ stageId, entry, companies, employees, o
   const [portals, setPortals] = useState<PortalAccount[]>(() => (Array.isArray((entry as any).portal_accounts) ? (entry as any).portal_accounts : []))
   const [deleting, setDeleting] = useState(false)
   const [form, setForm] = useState<Record<string, string>>(() => (stageId === '7' ? { ...entry, ...statutoryFrom(companies.find(c => c.company_id === entry.company_id)) }
-    : stageId === '1' ? (() => { const c0 = companies.find(c => c.company_id === entry.company_id); return { ...entry, country: entry.country || c0?.country_of_origin || '', city: entry.city || c0?.province || '' } })()
     : entry))
   const set = (k: string, v: string) => setForm(prev => ({ ...prev, [k]: v }))
   const comp = companies.find(c => c.company_id === form.company_id)
