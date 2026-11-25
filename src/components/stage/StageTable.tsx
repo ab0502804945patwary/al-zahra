@@ -3,8 +3,6 @@ import Link from 'next/link'
 import { matchesQuery } from '@/lib/search'
 import PortalLogo from './PortalLogo'
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
 import { ExternalLink, Eye, EyeOff, Lock, Edit2, Search, CheckCircle2, Clock, AlertTriangle, AlertCircle, FileText } from 'lucide-react'
 import { cn, formatDate } from '@/lib/utils'
 import { Flag } from '@/components/ui/CountrySelect'
@@ -107,34 +105,6 @@ function SecretCell({ value }: { value?: string | null }) {
 
 const PAGE = 10
 
-/** Bangladesh Company Name: change Pending / Approved straight from the list (no form, nothing else is required). */
-function BdApprovalCell({ entry, canEdit }: { entry: any; canEdit: boolean }) {
-  const router = useRouter()
-  const supabase = createClient()
-  const [busy, setBusy] = useState(false)
-  const approved = entry.approval_status === 'Approved'
-  const badge = cn('px-2 py-0.5 rounded-full text-[11px] font-semibold border', approved ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-700 border-amber-200')
-  if (!canEdit) return <span className={badge}>{approved ? 'Approved' : 'Pending'}</span>
-  async function change(next: string) {
-    if (next === (approved ? 'Approved' : 'Pending')) return
-    if (next === 'Approved' && !String(entry.bd_company_name || '').trim()) { alert('Add the Bangladesh company name first (Edit), then approve it.'); return }
-    const msg = next === 'Approved'
-      ? `Mark the name "${entry.bd_company_name || ''}" as Approved? The next phases will open for this company.`
-      : `Change "${entry.bd_company_name || ''}" back to Pending? The company goes back to its earlier name and the next phases close again.`
-    if (!confirm(msg)) return
-    setBusy(true)
-    const { error } = await supabase.from('stage9_bd_company').update({ approval_status: next }).eq('id', entry.id)
-    setBusy(false)
-    if (error) { alert(error.message); return }
-    router.refresh()
-  }
-  return (
-    <select value={approved ? 'Approved' : 'Pending'} disabled={busy} onChange={e => change(e.target.value)} className={cn(badge, 'cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500', busy && 'opacity-60')}>
-      <option value="Pending">Pending</option>
-      <option value="Approved">Approved</option>
-    </select>
-  )
-}
 
 /** Page numbers like the Leads list: ‹ 1 2 … 6 › */
 function Pager({ total, cur, pages, onPage }: { total: number; cur: number; pages: number; onPage: (n: number) => void }) {
@@ -170,8 +140,8 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
   // Bangladesh phase, Completed tab: the company details are hidden to keep the list short
   const hideBd = () => stageId === '9' && bdTab === 'completed'
   // Name Approved tab: RJSC no., Issue No, Incorporation and the company block are hidden too
-  const hideCo = () => stageId === '9' && (bdTab === 'completed' || bdTab === 'approved')
-  const hideRjsc = () => stageId === '9' && bdTab === 'approved'
+  const hideCo = () => stageId === '9'
+  const hideRjsc = () => stageId === '9' && bdTab !== 'completed'
   const bdGroup = (e: any): 'pending' | 'approved' | 'completed' => (e.complete_date ? 'completed' : e.approval_status === 'Approved' ? 'approved' : 'pending')
   const entries = serverEntries
 
@@ -459,7 +429,7 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
                 </>)}
                 {stageId === '9' && (<>
                   <td className="py-3 px-4 font-semibold text-slate-900 whitespace-nowrap">{e.bd_company_name || '—'}</td>
-                  <td className="py-3 px-4"><BdApprovalCell entry={e} canEdit={canEdit} /></td>
+                  <td className="py-3 px-4"><span className={cn('px-2 py-0.5 rounded-full text-[11px] font-semibold border', e.approval_status === 'Approved' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-700 border-amber-200')}>{e.approval_status === 'Approved' ? 'Approved' : 'Pending'}</span></td>
                   <td className="py-3 px-4"><span className="inline-flex items-center gap-1.5 whitespace-nowrap"><Flag country={e.country} />{e.country || '—'}</span></td>
                   {!hideRjsc() && <td className="py-3 px-4 font-mono">{e.rjsc_reg_no || '—'}</td>}
                   {!hideRjsc() && <td className="py-3 px-4 font-mono">{e.issue_no || '—'}</td>}
