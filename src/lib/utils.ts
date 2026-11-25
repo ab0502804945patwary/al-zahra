@@ -122,3 +122,12 @@ export function enrichExpiry<T extends Record<string, any>>(e: T, stoppedOn?: st
   const x = assessExpiry(e.expire_date, stoppedOn)
   return x ? ({ ...e, remaining_days: x.remaining_days, status: x.status, expiry_stopped: Boolean(stoppedOn) } as T) : e
 }
+
+/** A date (YYYY-MM-DD) plus some days, e.g. the 60-day validity of a name clearance. Empty in, empty out. */
+export function addDaysISO(date: string | null | undefined, days: number): string {
+  if (!date) return ''
+  const [y, m, d] = String(date).slice(0, 10).split('-').map(Number)
+  if (!y || !m || !d) return ''
+  const t = new Date(Date.UTC(y, m - 1, d + days))
+  return t.toISOString().slice(0, 10)
+}

@@ -15,7 +15,7 @@ import type { PortalAccount } from '@/lib/portals'
 import StatutoryFields, { STATUTORY_KEYS, statutoryFrom } from './StatutoryFields'
 import { FormCtx, Field, Select } from './formFields'
 import { COUNTRY_CITY_STAGES, COUNTRIES, CATEGORIES, PAYMENT_STATUSES, PHASE_OPTIONS, FOREIGN_FILING_OPTIONS, CANADA_OPTIONS, CR_STATUSES, toOptions, pickColumns, validateDates } from '@/lib/stageRules'
-import { assessExpiry, assessTiming } from '@/lib/utils'
+import { assessExpiry, assessTiming, addDaysISO } from '@/lib/utils'
 
 const STAGE_TABLES: Record<string, string> = {
   '1': 'stage1_mother_company', '2': 'stage2_activity_list', '3': 'stage3_foreign_company',
@@ -58,6 +58,12 @@ export default function AddEntryModal({ stageId, companies, employees, onClose, 
   })
 
   const set = (k: string, v: string) => setForm(prev => ({ ...prev, [k]: v }))
+  // Company Name Clearance: the expiry date is always 60 days after the Approval Date
+  useEffect(() => {
+    if (!isNameClearance) return
+    const next = addDaysISO(form.approval_date, 60)
+    setForm(prev => ((prev.expire_date || '') === next ? prev : { ...prev, expire_date: next }))
+  }, [form.approval_date, isNameClearance]) // eslint-disable-line react-hooks/exhaustive-deps
   const clientInfo = { name: form.client_name, phone: form.client_phone }
 
   // Opened from the "Waiting for you" list: pre-select that company
@@ -101,7 +107,7 @@ export default function AddEntryModal({ stageId, companies, employees, onClose, 
     }
     if (isNameClearance) {
       const nc = assessExpiry(form.expire_date)
-      if (nc) payload = { ...payload, ...nc }
+      payload = nc ? { ...payload, ...nc } : { ...payload, remaining_days: null }
     }
 
     if (isUSACanada) {
@@ -249,7 +255,7 @@ export default function AddEntryModal({ stageId, companies, employees, onClose, 
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <Field label="Entity Structure" name="entity_type" />
-                <Field label="Clearance Number" name="name_clearance_number" required />
+                <Field label="Clearance Number" name="name_clearance_number" required={!!form.approval_date} />
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <Field label="Official English Name" name="company_name_english" required />
@@ -258,7 +264,7 @@ export default function AddEntryModal({ stageId, companies, employees, onClose, 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <Field label="Submission Date" name="submit_date" type="date" disabled={!isAdmin} hint={!isAdmin ? "Set automatically to today" : undefined} />
                 <Field label="Approval Date" name="approval_date" type="date" />
-                <Field label="Expire Date" name="expire_date" type="date" required hint="Remaining days and status are calculated from this date" />
+                <Field label="Expire Date" name="expire_date" type="date" disabled hint="Automatic: 60 days after the Approval Date" />
                 
               </div>
               <Field label="Regulatory Notes" name="notes" />

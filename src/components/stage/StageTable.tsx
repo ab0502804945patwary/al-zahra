@@ -147,6 +147,7 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
 
   const filtered = entries.filter((e, i) => {
     if (['9', '10', '2', '3', '11'].includes(stageId) && bdGroup(e) !== bdTab) return false
+    if (stageId === '8' && (e.approval_date ? 'completed' : 'pending') !== bdTab) return false
     const comp = companies.find(c => c.company_id === e.company_id)
     return matchesQuery(search, i + 1, [
       e.bd_company_name, e.approval_status, e.foreign_company_name, e.city, e.registration_no, e.account_email, e.account_username, e.rjsc_reg_no, e.issue_no, e.auditor_firm, e.company_id, e.companies?.company_name, e.companies?.country_of_origin, comp?.client_name, comp?.client_phone,
@@ -176,6 +177,14 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
               className="pl-8 pr-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-48"
             />
           </div>
+        </div>
+
+        <div className="px-4 sm:px-6 pt-3 flex flex-wrap gap-2 border-b border-slate-100">
+          {([['pending', 'Pending / Others', entries.filter(e => !e.approval_date).length], ['completed', 'Completed', entries.filter(e => e.approval_date).length]] as const).map(([k, label, n]) => (
+            <button key={k} onClick={() => { setBdTab(k); setPage(1) }} className={`px-3.5 py-2 text-xs font-semibold rounded-t-lg border-b-2 -mb-px transition ${bdTab === k ? 'border-blue-600 text-blue-700' : 'border-transparent text-slate-500 hover:text-slate-700'}`}>
+              {label} <span className={`ml-1 px-1.5 py-0.5 rounded-full text-[10px] ${bdTab === k ? 'bg-blue-50 text-blue-700' : 'bg-slate-100 text-slate-500'}`}>{n}</span>
+            </button>
+          ))}
         </div>
 
         <div className="overflow-x-auto">
