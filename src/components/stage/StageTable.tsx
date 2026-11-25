@@ -117,6 +117,7 @@ function BdApprovalCell({ entry, canEdit }: { entry: any; canEdit: boolean }) {
   if (!canEdit) return <span className={badge}>{approved ? 'Approved' : 'Pending'}</span>
   async function change(next: string) {
     if (next === (approved ? 'Approved' : 'Pending')) return
+    if (next === 'Approved' && !String(entry.bd_company_name || '').trim()) { alert('Add the Bangladesh company name first (Edit), then approve it.'); return }
     const msg = next === 'Approved'
       ? `Mark the name "${entry.bd_company_name || ''}" as Approved? The next phases will open for this company.`
       : `Change "${entry.bd_company_name || ''}" back to Pending? The company goes back to its earlier name and the next phases close again.`
