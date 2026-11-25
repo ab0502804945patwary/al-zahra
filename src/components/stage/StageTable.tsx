@@ -346,20 +346,12 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
               <th className="py-3 px-4">Classification</th>
               {['1', '2', '4', '5', '6', '7'].includes(stageId) && (<>
                 <th className="py-3 px-4">Country</th>
-                <th className="py-3 px-4">City</th>
-              </>)}
-              {stageId === '1' && (<>
-                <th className="py-3 px-4">Audit Report</th>
-                <th className="py-3 px-4">Incorporation Update</th>
               </>)}
               {!noDates && <th className="py-3 px-4">Workflow Status</th>}
               {!noDates && <th className="py-3 px-4">Submission</th>}
               {!noDates && stageId !== '1' && <th className="py-3 px-4">Target Date</th>}
               {!noDates && <th className="py-3 px-4">Completion</th>}
-              {!noDates && <th className="py-3 px-4">Milestone</th>}
               {!noDates && <th className="py-3 px-4">Elapsed</th>}
-              {!noDates && <th className="py-3 px-4">SLA Compliance</th>}
-              {!noDates && <th className="py-3 px-4">Fulfillment %</th>}
               {!noDates && stageId !== '1' && <th className="py-3 px-4">Payment</th>}
               {noDates && <th className="py-3 px-4">Portal Accounts</th>}
               {stageId === '5' && <th className="py-3 px-4">CR Association</th>}
@@ -407,11 +399,6 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
                 <td className="py-3 px-4">{e.category || '—'}</td>
                 {['1', '2', '4', '5', '6', '7'].includes(stageId) && (<>
                   <td className="py-3 px-4 text-slate-600">{e.country || '—'}</td>
-                  <td className="py-3 px-4 text-slate-600">{e.city || '—'}</td>
-                </>)}
-                {stageId === '1' && (<>
-                  <td className="py-3 px-4">{e.audit_report_done ? <span className="text-emerald-600 font-bold">✓</span> : <span className="text-slate-300">—</span>}</td>
-                  <td className="py-3 px-4">{e.incorporation_update_done ? <span className="text-emerald-600 font-bold">✓</span> : <span className="text-slate-300">—</span>}</td>
                 </>)}
                 {!noDates && (                <td className="py-3 px-4">
                   <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-slate-100 text-slate-700 border border-slate-200">
@@ -421,24 +408,8 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
                 {!noDates && <td className="py-3 px-4">{formatDate(e.submit_date)}</td>}
                 {!noDates && stageId !== '1' && <td className="py-3 px-4">{formatDate(e.target_date)}</td>}
                 {!noDates && <td className="py-3 px-4">{formatDate(e.complete_date)}</td>}
-                {!noDates && <td className="py-3 px-4"><MilestoneBadge status={e.overdue_status} /></td>}
                 {!noDates && (<td className="py-3 px-4 font-mono font-medium text-slate-800">
                   {e.days_taken != null ? `${e.days_taken}d` : '—'}
-                </td>)}
-                {!noDates && <td className="py-3 px-4"><StatusBadge status={e.status} /></td>}
-                {!noDates && (<td className="py-3 px-4">
-                  <div className="flex items-center gap-2">
-                    <div className="w-16 bg-slate-100 rounded-full h-1.5">
-                      <div
-                        className={cn(
-                          'h-1.5 rounded-full',
-                          e.status === 'Green' ? 'bg-emerald-500' : e.status === 'Yellow' ? 'bg-amber-500' : 'bg-rose-500'
-                        )}
-                        style={{ width: `${e.completion_percent || 0}%` }}
-                      />
-                    </div>
-                    <span className="text-[11px] font-semibold text-slate-600">{e.completion_percent || 0}%</span>
-                  </div>
                 </td>)}
                 {!noDates && stageId !== '1' && (<td className="py-3 px-4">
                   <span
