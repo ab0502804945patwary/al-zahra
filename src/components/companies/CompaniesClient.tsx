@@ -201,7 +201,7 @@ export default function CompaniesClient({ companies: initialCompanies, mode = 'n
           <table className="w-full text-xs min-w-[900px]">
             <thead className="bg-slate-50 text-slate-500 uppercase text-[10px] tracking-wide">
               <tr>
-                {['SL', 'ID', 'Company', 'Registered on', ...(isAdmin ? ['Registered by'] : []), 'Nationality', 'Service Type', 'License', 'CR No.', 'MISA No.', renewalMode ? 'Next Due' : 'CR Expiry', 'Status', 'Folder', ''].map(h => (
+                {['SL', 'ID', 'Company', 'Registered on', ...(isAdmin ? ['Registered by'] : []), 'Nationality', 'Service Type', 'License', 'CR No.', 'MISA No.', renewalMode ? 'Next Due' : 'CR Expiry', 'Status', ''].map(h => (
                   <th key={h} className="text-left font-semibold px-3 py-2.5 whitespace-nowrap">{h}</th>
                 ))}
               </tr>
@@ -226,16 +226,13 @@ export default function CompaniesClient({ companies: initialCompanies, mode = 'n
                       {isAdmin && <StatusSwitch on={c.account_status !== 'Inactive'} busy={toggling === c.id} onClick={() => toggleStatus(c)} />}
                     </div>
                   </td>
-                  <td className="px-3 py-2.5">
-                    {c.drive_link ? <a href={c.drive_link} target="_blank" rel="noreferrer" className="text-blue-600 hover:text-blue-800 inline-flex items-center gap-1"><ExternalLink className="w-3 h-3" />Open</a> : <span className="text-slate-300">—</span>}
-                  </td>
                   <td className="px-3 py-2.5 text-right">
                     {isAdmin && <button onClick={() => setSelected(c)} className="p-1.5 hover:bg-slate-200/60 rounded-md text-slate-400 hover:text-slate-700"><Edit2 className="w-4 h-4" /></button>}
                   </td>
                 </tr>
               ))}
               {filtered.length === 0 && (
-                <tr><td colSpan={14} className="text-center py-12 text-slate-400">No matching corporate entities located</td></tr>
+                <tr><td colSpan={13} className="text-center py-12 text-slate-400">No matching corporate entities located</td></tr>
               )}
             </tbody>
           </table>
@@ -314,18 +311,6 @@ export default function CompaniesClient({ companies: initialCompanies, mode = 'n
                 <TypeBadge company={company} />
               </div>
 
-              {company.drive_link ? (
-                <a
-                  href={company.drive_link}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-1 text-[11px] text-blue-600 hover:text-blue-800 font-medium"
-                >
-                  <ExternalLink className="w-3 h-3" /> Electronic Folder
-                </a>
-              ) : (
-                <span className="text-[11px] text-slate-400">Electronic Folder Ready</span>
-              )}
             </div>
           </div>
         ))}

@@ -4,6 +4,7 @@ import { X, Loader2, Globe, Building2, User, FileText, CheckCircle2, Sparkles } 
 import { createClient, isSupabaseConfigured } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import BdFields from './BdFields'
+import DossierFiles from './DossierFiles'
 import MisaAccounts from './MisaAccounts'
 import ParentChecks from './ParentChecks'
 import CountrySelect from '@/components/ui/CountrySelect'
@@ -82,17 +83,21 @@ export default function AddEntryModal({ stageId, companies, employees, onClose, 
       ...(COUNTRY_CITY_STAGES.includes(stageId) ? (stageId === '1'
         ? { country: prev.country || '', city: prev.city || '' }
         : { country: comp?.stage1_country || prev.country || '', city: comp?.stage1_city || prev.city || '' }) : {}),
-      drive_link: prev.drive_link || comp?.drive_link || '',
       company_name_english: prev.company_name_english || comp?.company_name || '',
       ...(stageId === '7' ? statutoryFrom(comp) : {}),
       entity_type: prev.entity_type || comp?.entity_type || 'Trading License',
     }))
   }
 
+  // at least one file: always for Parent Entity Verification, and for the other phases once a Completion Date is entered
+  const needFiles = stageId === '1' || (['9', '10', '2', '3', '11'].includes(stageId) && !!form.complete_date)
+  const fileCount = Array.isArray((form as any).dossier_files) ? (form as any).dossier_files.length : 0
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     const dateError = validateDates(form)
     if (dateError) { alert(dateError); return }
+    if (needFiles && !['4', '5'].includes(stageId) && fileCount === 0) { alert('Upload at least one file in the Electronic Dossier.'); return }
     setLoading(true)
 
     let payload: Record<string, any> = { ...form }
@@ -310,7 +315,7 @@ export default function AddEntryModal({ stageId, companies, employees, onClose, 
                   <p className="text-[11px] text-slate-500 self-end pb-2">Complete stops the Company Name Clearance countdown of this company.</p>
                 </div>
               )}
-              {!['4', '5'].includes(stageId) && <Field label="Electronic Dossier Link (Google Drive)" name="drive_link" required={stageId === '1' || (['9', '10', '2', '3', '11'].includes(stageId) && !!form.complete_date)} />}
+              {!['4', '5'].includes(stageId) && <DossierFiles required={needFiles} folder={`${form.company_id || 'unassigned'}_dossier`} value={(form as any).dossier_files} onChange={v => setForm(prev => ({ ...prev, dossier_files: v as any }))} />}
               <Field label="Operational Remarks" name="remarks" />
             </>
           )}

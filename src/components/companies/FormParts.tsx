@@ -1,4 +1,5 @@
 'use client'
+import { uploadToR2 } from '@/lib/compress'
 import { useRef, useState } from 'react'
 import { Copy, ExternalLink, FileText, Link2, Loader2, Plus, Trash2, Upload, X } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
@@ -158,7 +159,7 @@ export interface DocCheck { status?: 'Received' | 'Pending' | ''; remarks?: stri
 export interface CompanyDoc { id: string; type: string; shareholder: number | null; name: string; path?: string; url?: string; store?: 'r2'; added_at: string }
 
 const ACCEPT = 'image/jpeg,image/png,image/webp,application/pdf'
-const MAX_BYTES = 10 * 1024 * 1024
+const MAX_BYTES = 5 * 1024 * 1024
 
 export function DocumentVerification({ checks, onChecks, docs, onDocs, folder, shareholderNames }: {
   checks: Record<string, DocCheck>; onChecks: (c: Record<string, DocCheck>) => void
@@ -184,15 +185,11 @@ export function DocumentVerification({ checks, onChecks, docs, onDocs, folder, s
     if (!file) return
     setMsg('')
     if (!ACCEPT.split(',').includes(file.type)) { setMsg('Only JPG, PNG, WebP images or PDF files are allowed.'); return }
-    if (file.size > MAX_BYTES) { setMsg('The file is larger than 10 MB.'); return }
+    
     setBusy(true)
     try {
-      const res = await fetch('/api/r2/sign', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'upload', folder: folder || 'unassigned', name: file.name, type: file.type, size: file.size }) })
-      const sign = await res.json().catch(() => ({} as any))
-      if (!res.ok || !sign.url) throw new Error(sign.error || 'Could not start the upload.')
-      const put = await fetch(sign.url, { method: 'PUT', headers: { 'Content-Type': file.type }, body: file })
-      if (!put.ok) throw new Error('The file could not be saved (' + put.status + ').')
-      onDocs([...docs, { id: `${Date.now()}`, type, shareholder: perHolder ? holder : null, name: file.name, path: sign.key, store: 'r2', added_at: new Date().toISOString() }])
+      const saved = await uploadToR2(file, folder || 'unassigned')
+      onDocs([...docs, { id: `${Date.now()}`, type, shareholder: perHolder ? holder : null, name: saved.name, path: saved.key, store: 'r2', added_at: saved.added_at }])
     } catch (err: any) {
       setBusy(false)
       setMsg('Upload failed: ' + (err?.message || 'unknown error'))
@@ -296,7 +293,7 @@ export function DocumentVerification({ checks, onChecks, docs, onDocs, folder, s
             <input ref={fileRef} type="file" accept={ACCEPT} className="hidden" onChange={upload} />
             <button type="button" onClick={() => fileRef.current?.click()} disabled={busy}
               className="w-full inline-flex items-center justify-center gap-2 px-3 py-2.5 text-sm font-semibold text-blue-700 border border-dashed border-blue-300 bg-blue-50/60 rounded-lg hover:bg-blue-50 disabled:opacity-60">
-              {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />} Choose file (JPG, PNG, PDF · max 10 MB)
+              {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />} Choose file (JPG, PNG, PDF · pictures are made small automatically · PDF max 5 MB)
             </button>
           </div>
           <div>

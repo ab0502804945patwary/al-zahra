@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { matchesQuery } from '@/lib/search'
 import PortalLogo from './PortalLogo'
 import { useState } from 'react'
+import { openFromR2 } from '@/lib/compress'
 import { ExternalLink, Eye, EyeOff, Lock, Edit2, Search, CheckCircle2, Clock, AlertTriangle, AlertCircle, FileText } from 'lucide-react'
 import { cn, formatDate } from '@/lib/utils'
 import { Flag } from '@/components/ui/CountrySelect'
@@ -104,6 +105,31 @@ function SecretCell({ value }: { value?: string | null }) {
 }
 
 const PAGE = 10
+
+/** Dossier column: how many files are attached, click to see and open them. */
+function DossierCell({ files }: { files: any }) {
+  const [open, setOpen] = useState(false)
+  const [msg, setMsg] = useState('')
+  const list: any[] = Array.isArray(files) ? files : []
+  if (!list.length) return <>—</>
+  return (
+    <div className="relative inline-block">
+      <button type="button" onClick={() => setOpen(v => !v)} className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md border border-blue-200 bg-blue-50 text-blue-700 text-[11px] font-semibold hover:bg-blue-100">
+        <FileText className="w-3.5 h-3.5" /> {list.length} {list.length === 1 ? 'file' : 'files'}
+      </button>
+      {open && (
+        <div className="absolute right-0 top-full mt-1 z-30 w-64 bg-white border border-slate-200 rounded-lg shadow-lg p-1.5 text-xs">
+          {list.map((f: any) => (
+            <button key={f.key} type="button" onClick={async () => { setMsg(''); try { await openFromR2(f.key) } catch (e: any) { setMsg(e?.message || 'Could not open the file.') } }} className="w-full flex items-center gap-2 px-2 py-1.5 rounded hover:bg-slate-50 text-left">
+              <ExternalLink className="w-3 h-3 text-blue-600 shrink-0" /><span className="truncate flex-1 text-slate-700">{f.name}</span>
+            </button>
+          ))}
+          {msg && <div className="px-2 py-1 text-rose-600">{msg}</div>}
+        </div>
+      )}
+    </div>
+  )
+}
 
 
 /** Page numbers like the Leads list: ‹ 1 2 … 6 › */
@@ -511,11 +537,7 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
                 <td className="py-3 px-4 text-slate-400 max-w-28 truncate">{e.remarks || '—'}</td>
                 {!['4', '5'].includes(stageId) && (
                 <td className="py-3 px-4">
-                  {e.drive_link ? (
-                    <a href={e.drive_link} target="_blank" className="p-1 hover:bg-blue-50 rounded transition inline-flex text-blue-600">
-                      <ExternalLink className="w-3.5 h-3.5" />
-                    </a>
-                  ) : '—'}
+                  <DossierCell files={e.dossier_files} />
                 </td>
                 )}
                 <td className="py-3 px-4 text-right">

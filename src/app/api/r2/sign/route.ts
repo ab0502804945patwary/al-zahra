@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient, isSupabaseConfigured } from '@/lib/supabase/server'
-import { canAccessModule } from '@/lib/access'
+import { canAccessModule, stagesOf } from '@/lib/access'
 import { r2Configured, uploadUrl, downloadUrl, removeObject, ALLOWED_TYPES, MAX_BYTES, DOC_PREFIX, cleanName, cleanFolder } from '@/lib/r2'
 
 export const dynamic = 'force-dynamic'
@@ -10,7 +10,7 @@ export const dynamic = 'force-dynamic'
  *   { action: 'upload', folder, name, type, size }  -> { key, url }   (browser then PUTs the file to url)
  *   { action: 'download', key }                     -> { url }
  *   { action: 'remove', key }                       -> { ok: true }
- * Needs a signed-in staff member who has the Company Register or Renewal Companies module (admins always).
+ * Needs a signed-in staff member who has the Company Register / Renewal Companies module or a workflow phase (admins always).
  */
 export async function POST(request: Request) {
   if (!isSupabaseConfigured) return NextResponse.json({ error: 'Supabase is not configured.' }, { status: 503 })
@@ -19,8 +19,9 @@ export async function POST(request: Request) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Not signed in.' }, { status: 401 })
-  const { data: me } = await supabase.from('employees').select('role, modules, is_active').eq('user_id', user.id).single()
-  if (!me || me.is_active === false || !(canAccessModule(me, 'companies') || canAccessModule(me, 'renewals'))) {
+  const { data: me } = await supabase.from('employees').select('role, modules, assigned_stage, assigned_stages, is_active').eq('user_id', user.id).single()
+  const hasStage = (stagesOf(me) || []).length > 0 || me?.role === 'admin'
+  if (!me || me.is_active === false || !(hasStage || canAccessModule(me, 'companies') || canAccessModule(me, 'renewals'))) {
     return NextResponse.json({ error: 'You cannot use company documents.' }, { status: 403 })
   }
 
@@ -30,7 +31,7 @@ export async function POST(request: Request) {
       const type = String(body.type || '')
       const size = Number(body.size || 0)
       if (!ALLOWED_TYPES.includes(type)) return NextResponse.json({ error: 'Only JPG, PNG, WebP images or PDF files are allowed.' }, { status: 400 })
-      if (!(size > 0) || size > MAX_BYTES) return NextResponse.json({ error: 'The file must be smaller than 10 MB.' }, { status: 400 })
+      if (!(size > 0) || size > MAX_BYTES) return NextResponse.json({ error: 'The file must be 5 MB or smaller.' }, { status: 400 })
       const key = `${DOC_PREFIX}${cleanFolder(body.folder)}/${Date.now()}_${cleanName(body.name)}`
       return NextResponse.json({ key, url: await uploadUrl(key, type) })
     }

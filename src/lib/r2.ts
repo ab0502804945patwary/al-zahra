@@ -35,7 +35,7 @@ export async function removeObject(key: string) {
 }
 
 export const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf']
-export const MAX_BYTES = 10 * 1024 * 1024
+export const MAX_BYTES = 5 * 1024 * 1024
 
 /** Folder every company document lives in: company-docs/<company folder>/<time>_<file name> */
 export const DOC_PREFIX = 'company-docs/'

@@ -168,7 +168,7 @@ export const ELIGIBILITY_HINT: Record<string, string> = {
 }
 
 // ---- Columns that really exist in each Supabase stage table (see supabase-schema.sql) ----
-const COMMON = ['company_id', 'client_name', 'client_phone', 'category', 'priority', 'current_stage', 'submit_date', 'target_date', 'complete_date', 'payment_status', 'remarks', 'employee_id', 'drive_link', 'overdue_status', 'days_taken', 'status', 'completion_percent']
+const COMMON = ['company_id', 'client_name', 'client_phone', 'category', 'priority', 'current_stage', 'submit_date', 'target_date', 'complete_date', 'payment_status', 'remarks', 'employee_id', 'dossier_files', 'overdue_status', 'days_taken', 'status', 'completion_percent']
 export const TABLE_COLUMNS: Record<string, string[]> = {
   '10': [...COMMON, 'foreign_company_name', 'country', 'city', 'registration_no', 'payment_bank'],
   '11': [...COMMON, 'foreign_company_name', 'country', 'city', 'registration_no', 'payment_bank', 'account_email', 'account_username', 'account_password'],
