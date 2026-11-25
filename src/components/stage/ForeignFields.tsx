@@ -6,7 +6,7 @@ import { placesFor } from '@/lib/regions'
 const input = 'w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white'
 
 /** Foreign company details for Foreign Mother Company and both Foreign Subsidiary phases (add and edit forms). */
-export default function ForeignFields({ form, set, title, withAccount = false }: { form: Record<string, string>; set: (k: string, v: string) => void; title: string; withAccount?: boolean }) {
+export default function ForeignFields({ form, set, title, withAccount = false, requireAll = false }: { form: Record<string, string>; set: (k: string, v: string) => void; title: string; withAccount?: boolean; requireAll?: boolean }) {
   const L = ({ children, req }: { children: React.ReactNode; req?: boolean }) => (
     <label className="text-xs font-medium text-slate-700 mb-1 block">{children}{req && <span className="text-rose-500 ml-0.5">*</span>}</label>
   )
@@ -14,21 +14,21 @@ export default function ForeignFields({ form, set, title, withAccount = false }:
     <div className="bg-sky-50/50 border border-sky-200 rounded-xl p-4 space-y-3">
       <h3 className="text-xs font-semibold text-slate-800">{title}</h3>
       <div>
-        <L>Foreign Company Name</L>
-        <input className={input} value={form.foreign_company_name || ''} onChange={e => set('foreign_company_name', e.target.value)} />
+        <L req={requireAll}>Foreign Company Name</L>
+        <input required={requireAll} className={input} value={form.foreign_company_name || ''} onChange={e => set('foreign_company_name', e.target.value)} />
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
-          <L>Country</L>
-          <CountrySelect value={form.country || ''} onChange={v => { set('country', v); set('city', '') }} />
+          <L req={requireAll}>Country</L>
+          <CountrySelect required={requireAll} value={form.country || ''} onChange={v => { set('country', v); set('city', '') }} />
         </div>
         <div>
-          <L>City</L>
-          <ComboInput value={form.city || ''} onChange={v => set('city', v)} options={(() => { const pl = placesFor(form.country); return pl ? [...new Set([...pl.cities, ...pl.regions])] : [] })()} className={input} placeholder="Type or pick a city" />
+          <L req={requireAll}>City</L>
+          <ComboInput required={requireAll} value={form.city || ''} onChange={v => set('city', v)} options={(() => { const pl = placesFor(form.country); return pl ? [...new Set([...pl.cities, ...pl.regions])] : [] })()} className={input} placeholder="Type or pick a city" />
         </div>
         <div className="sm:col-span-2">
-          <L>Registration No.</L>
-          <input className={input} value={form.registration_no || ''} onChange={e => set('registration_no', e.target.value)} />
+          <L req={requireAll}>Registration No.</L>
+          <input required={requireAll} className={input} value={form.registration_no || ''} onChange={e => set('registration_no', e.target.value)} />
         </div>
       </div>
       {withAccount && (
