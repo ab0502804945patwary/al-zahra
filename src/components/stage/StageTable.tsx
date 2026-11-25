@@ -449,7 +449,7 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
               {noDates && <th className="py-3 px-4">Portal Accounts</th>}
               {stageId === '5' && <th className="py-3 px-4">CR Association</th>}
               <th className="py-3 px-4">Notes</th>
-              {!['4', '5'].includes(stageId) && <th className="py-3 px-4">Dossier</th>}
+              {!['4', '5', '7'].includes(stageId) && <th className="py-3 px-4">Dossier</th>}
               <th className="py-3 px-4 text-right">Actions</th>
             </tr>
           </thead>
@@ -537,7 +537,7 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
                 )}
                 {stageId === '5' && <td className="py-3 px-4">{e.cr_status ? <span className={cn('px-2 py-0.5 rounded-full text-[11px] font-semibold border', e.cr_status === 'Complete' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-700 border-amber-200')}>{e.cr_status}</span> : '—'}</td>}
                 <td className="py-3 px-4 text-slate-400 max-w-28 truncate">{e.remarks || '—'}</td>
-                {!['4', '5'].includes(stageId) && (
+                {!['4', '5', '7'].includes(stageId) && (
                 <td className="py-3 px-4">
                   <DossierCell files={e.dossier_files} />
                 </td>

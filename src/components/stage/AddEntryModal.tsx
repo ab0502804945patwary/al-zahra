@@ -98,7 +98,7 @@ export default function AddEntryModal({ stageId, companies, employees, onClose, 
     e.preventDefault()
     const dateError = validateDates(form)
     if (dateError) { alert(dateError); return }
-    if (needFiles && !['4', '5'].includes(stageId) && fileCount === 0) { alert('Upload at least one file in the Electronic Dossier.'); return }
+    if (needFiles && !['4', '5', '7'].includes(stageId) && fileCount === 0) { alert('Upload at least one file in the Electronic Dossier.'); return }
     setLoading(true)
 
     let payload: Record<string, any> = { ...form }
@@ -321,7 +321,7 @@ export default function AddEntryModal({ stageId, companies, employees, onClose, 
                   <p className="text-[11px] text-slate-500 self-end pb-2">Complete stops the Company Name Clearance countdown of this company.</p>
                 </div>
               )}
-              {!['4', '5'].includes(stageId) && <DossierFiles required={needFiles} folder={`${form.company_id || 'unassigned'}_dossier`} value={(form as any).dossier_files} onChange={v => setForm(prev => ({ ...prev, dossier_files: v as any }))} />}
+              {!['4', '5', '7'].includes(stageId) && <DossierFiles required={needFiles} folder={`${form.company_id || 'unassigned'}_dossier`} value={(form as any).dossier_files} onChange={v => setForm(prev => ({ ...prev, dossier_files: v as any }))} />}
               <Field label="Operational Remarks" name="remarks" />
             </>
           )}
