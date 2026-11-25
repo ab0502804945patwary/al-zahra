@@ -165,6 +165,8 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
   // Bangladesh Company Name: two groups, names that are Approved and the rest (Pending etc.)
   const [bdTab, setBdTab] = useState<'pending' | 'approved' | 'completed'>('pending')
   // completed = the whole Bangladesh company work is finished (Completion Date); approved = name Approved, work still running
+  // Bangladesh phase, Completed tab: the company details are hidden to keep the list short
+  const hideBd = () => stageId === '9' && bdTab === 'completed'
   const bdGroup = (e: any): 'pending' | 'approved' | 'completed' => (e.complete_date ? 'completed' : e.approval_status === 'Approved' ? 'approved' : 'pending')
   const entries = serverEntries
 
@@ -414,13 +416,13 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
                   <th className="py-3 px-4">Password</th>
                 </>)}
               </>)}
-              <th className="py-3 px-4">Company Name</th>
-              <th className="py-3 px-4">Authorized Contact</th>
-              <th className="py-3 px-4">License Type</th>
+              {!hideBd() && <th className="py-3 px-4">Company Name</th>}
+              {!hideBd() && <th className="py-3 px-4">Authorized Contact</th>}
+              {!hideBd() && <th className="py-3 px-4">License Type</th>}
               {['1', '2', '4', '5', '6', '7'].includes(stageId) && (<>
                 <th className="py-3 px-4">Country</th>
               </>)}
-              {!noDates && <th className="py-3 px-4">Status</th>}
+              {!noDates && !hideBd() && <th className="py-3 px-4">Status</th>}
               {!noDates && <th className="py-3 px-4">Submission</th>}
               {!noDates && !['1', '9'].includes(stageId) && <th className="py-3 px-4">Target Date</th>}
               {!noDates && <th className="py-3 px-4">Completion</th>}
@@ -458,6 +460,7 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
                   <td className="py-3 px-4 font-mono">{e.issue_no || '—'}</td>
                   <td className="py-3 px-4 whitespace-nowrap">{formatDate(e.incorporation_date)}</td>
                 </>)}
+                {!hideBd() && (<>
                 <td className="py-3 px-4">
                   <div className="font-semibold text-slate-900">{e.company_id}</div>
                   <div className="text-slate-500 text-[11px]">{e.companies?.company_name}{e.companies?.original_company_name && <span className="block text-[10px] text-slate-400">Previously: {e.companies.original_company_name}</span>}</div>
@@ -468,10 +471,11 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
                   <div className="text-slate-400 text-[11px] font-mono">{companies.find(c => c.company_id === e.company_id)?.client_phone || e.client_phone || ''}</div>
                 </td>
                 <td className="py-3 px-4">{e.category || '—'}</td>
+                </>)}
                 {['1', '2', '4', '5', '6', '7'].includes(stageId) && (<>
                   <td className="py-3 px-4 text-slate-600">{e.country || '—'}</td>
                 </>)}
-                {!noDates && (                <td className="py-3 px-4">
+                {!noDates && !hideBd() && (                <td className="py-3 px-4">
                   <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-slate-100 text-slate-700 border border-slate-200">
                     {e.current_stage || '—'}
                   </span>
