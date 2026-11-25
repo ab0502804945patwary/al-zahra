@@ -17,7 +17,7 @@ export default function BdFields({ form, set }: { form: Record<string, string>; 
           <input required className={input} value={form.bd_company_name || ''} onChange={e => set('bd_company_name', e.target.value)} />
         </div>
         <div>
-          <L>Status</L>
+          <L>Name Approval</L>
           <select className={input} value={form.approval_status || 'Pending'} onChange={e => set('approval_status', e.target.value)}>
             <option value="Pending">Pending</option>
             <option value="Approved">Approved</option>
@@ -40,14 +40,6 @@ export default function BdFields({ form, set }: { form: Record<string, string>; 
         <div>
           <L>Incorporation Date</L>
           <input type="date" className={input} value={form.incorporation_date || ''} onChange={e => set('incorporation_date', e.target.value)} />
-        </div>
-        <div>
-          <L>Auditor / Firm</L>
-          <input className={input} value={form.auditor_firm || ''} onChange={e => set('auditor_firm', e.target.value)} />
-        </div>
-        <div>
-          <L>RJSC Annual Return Due Date</L>
-          <input type="date" className={input} value={form.rjsc_return_due_date || ''} onChange={e => set('rjsc_return_due_date', e.target.value)} />
         </div>
       </div>
     </div>

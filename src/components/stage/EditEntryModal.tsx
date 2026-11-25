@@ -233,10 +233,10 @@ export default function EditEntryModal({ stageId, entry, companies, employees, o
                 <>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <Field label="Submission Date" name="submit_date" type="date" disabled={stageId === '1' || !isAdmin} hint={stageId === '1' ? 'Fixed: the day this company reached this phase' : !isAdmin ? 'Fixed — only an admin can change it' : undefined} />
-                {stageId !== '1' && <Field label="Target SLA Date" name="target_date" type="date" />}
-                {stageId === '1' && <Field label="Completion Date" name="complete_date" type="date" required />}
+                {!['1', '9'].includes(stageId) && <Field label="Target SLA Date" name="target_date" type="date" />}
+                {['1', '9'].includes(stageId) && <Field label="Completion Date" name="complete_date" type="date" required />}
               </div>
-              {stageId !== '1' && (
+              {!['1', '9'].includes(stageId) && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <Field label="Completion Date" name="complete_date" type="date" required={['1', '9', '10'].includes(stageId)} />
                 <Sel

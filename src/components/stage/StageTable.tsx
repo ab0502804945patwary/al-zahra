@@ -352,13 +352,11 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
               <th className="py-3 px-4">No.</th>
               {stageId === '9' && (<>
                 <th className="py-3 px-4">Bangladesh Company Name</th>
-                <th className="py-3 px-4">Status</th>
+                <th className="py-3 px-4">Name Approval</th>
                 <th className="py-3 px-4">Country</th>
                 <th className="py-3 px-4">RJSC Reg. No.</th>
                 <th className="py-3 px-4">Issue No</th>
                 <th className="py-3 px-4">Incorporation</th>
-                <th className="py-3 px-4">Auditor / Firm</th>
-                <th className="py-3 px-4">Annual Return Due</th>
               </>)}
               {(stageId === '3' || stageId === '10' || stageId === '11') && (<>
                 <th className="py-3 px-4">Foreign Company Name</th>
@@ -379,10 +377,10 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
               </>)}
               {!noDates && <th className="py-3 px-4">Status</th>}
               {!noDates && <th className="py-3 px-4">Submission</th>}
-              {!noDates && stageId !== '1' && <th className="py-3 px-4">Target Date</th>}
+              {!noDates && !['1', '9'].includes(stageId) && <th className="py-3 px-4">Target Date</th>}
               {!noDates && <th className="py-3 px-4">Completion</th>}
               {!noDates && <th className="py-3 px-4">Elapsed</th>}
-              {!noDates && stageId !== '1' && <th className="py-3 px-4">Payment</th>}
+              {!noDates && !['1', '9'].includes(stageId) && <th className="py-3 px-4">Payment</th>}
               {noDates && <th className="py-3 px-4">Portal Accounts</th>}
               {stageId === '5' && <th className="py-3 px-4">CR Association</th>}
               <th className="py-3 px-4">Notes</th>
@@ -414,8 +412,6 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
                   <td className="py-3 px-4 font-mono">{e.rjsc_reg_no || '—'}</td>
                   <td className="py-3 px-4 font-mono">{e.issue_no || '—'}</td>
                   <td className="py-3 px-4 whitespace-nowrap">{formatDate(e.incorporation_date)}</td>
-                  <td className="py-3 px-4 whitespace-nowrap">{e.auditor_firm || '—'}</td>
-                  <td className="py-3 px-4 whitespace-nowrap">{formatDate(e.rjsc_return_due_date)}</td>
                 </>)}
                 <td className="py-3 px-4">
                   <div className="font-semibold text-slate-900">{e.company_id}</div>
@@ -436,12 +432,12 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
                   </span>
                 </td>)}
                 {!noDates && <td className="py-3 px-4">{formatDate(e.submit_date)}</td>}
-                {!noDates && stageId !== '1' && <td className="py-3 px-4">{formatDate(e.target_date)}</td>}
+                {!noDates && !['1', '9'].includes(stageId) && <td className="py-3 px-4">{formatDate(e.target_date)}</td>}
                 {!noDates && <td className="py-3 px-4">{formatDate(e.complete_date)}</td>}
                 {!noDates && (<td className="py-3 px-4 font-mono font-medium text-slate-800">
                   {e.days_taken != null ? `${e.days_taken}d` : '—'}
                 </td>)}
-                {!noDates && stageId !== '1' && (<td className="py-3 px-4">
+                {!noDates && !['1', '9'].includes(stageId) && (<td className="py-3 px-4">
                   <span
                     className={cn(
                       'px-2 py-0.5 rounded text-[11px] font-medium',
