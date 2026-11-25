@@ -4,16 +4,16 @@ import { useRouter } from 'next/navigation'
 import { Plus, Edit2, Search, Loader2, Save, X, Handshake } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { matchesQuery } from '@/lib/search'
-import { CITIES, regionsFor } from '@/lib/regions'
+import { placesFor } from '@/lib/regions'
+import CountrySelect from '@/components/ui/CountrySelect'
+import ComboInput from '@/components/ui/ComboInput'
 
-interface Agent { id: string; agent_code: string; company_name?: string | null; agent_name: string; mobile?: string | null; address?: string | null; category?: string | null; remarks?: string | null; created_by?: string | null }
+interface Agent { id: string; agent_code: string; company_name?: string | null; agent_name: string; mobile?: string | null; address?: string | null; country?: string | null; city?: string | null; category?: string | null; remarks?: string | null; created_by?: string | null }
 
 const inputCls = 'w-full px-3 py-2.5 text-sm text-slate-900 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white placeholder:text-slate-400'
 // agents: every Saudi city (including the big ones that are also region names) plus the provinces
-const SAUDI = { cities: CITIES['Saudi Arabia'], regions: regionsFor('Saudi Arabia') || [] }
-const SAUDI_ALL = [...SAUDI.cities, ...SAUDI.regions, 'Other']
 const CATEGORY_OPTIONS = ['Travel Agency', 'Consultancy', 'Maktab Al Khadamat']
-const EMPTY = { company_name: '', agent_name: '', mobile: '', address: '', category: '', remarks: '' }
+const EMPTY = { company_name: '', agent_name: '', mobile: '', country: '', city: '', category: '', remarks: '' }
 
 function nextCode(agents: Agent[]) {
   let max = 0
@@ -36,7 +36,7 @@ export default function AgentsClient({ agents, isAdmin = false, owners = {} }: {
 
   function open(a: Agent | 'new') {
     setError('')
-    setForm(a === 'new' ? { ...EMPTY } : { company_name: a.company_name || '', agent_name: a.agent_name, mobile: a.mobile || '', address: a.address || '', category: a.category || '', remarks: a.remarks || '' })
+    setForm(a === 'new' ? { ...EMPTY } : { company_name: a.company_name || '', agent_name: a.agent_name, mobile: a.mobile || '', country: a.country || (a.address ? 'Saudi Arabia' : ''), city: a.city || a.address || '', category: a.category || '', remarks: a.remarks || '' })
     setEditing(a)
   }
 
@@ -44,7 +44,7 @@ export default function AgentsClient({ agents, isAdmin = false, owners = {} }: {
     e.preventDefault()
     if (!form.agent_name.trim()) return setError('Enter the agent name')
     setLoading(true)
-    const base = { company_name: form.company_name.trim() || null, agent_name: form.agent_name.trim(), mobile: form.mobile.trim() || null, address: form.address.trim() || null, category: form.category.trim() || null, remarks: form.remarks.trim() || null, updated_at: new Date().toISOString() }
+    const base = { company_name: form.company_name.trim() || null, agent_name: form.agent_name.trim(), mobile: form.mobile.trim() || null, country: form.country.trim() || null, city: form.city.trim() || null, address: form.city.trim() || null, category: form.category.trim() || null, remarks: form.remarks.trim() || null, updated_at: new Date().toISOString() }
     let err: { message: string } | null = null
     if (editing === 'new') {
       // two people adding at the same time can get the same code: ask the database again and retry
@@ -65,7 +65,7 @@ export default function AgentsClient({ agents, isAdmin = false, owners = {} }: {
 
   const filtered = agents.filter((a, i) =>
     (catFilter === 'All' || a.category === catFilter) &&
-    matchesQuery(search, i + 1, [a.agent_code, a.company_name, a.agent_name, a.mobile, a.address, a.category, a.remarks])
+    matchesQuery(search, i + 1, [a.agent_code, a.company_name, a.agent_name, a.mobile, a.country, a.city, a.address, a.category, a.remarks])
   )
 
   if (editing) {
@@ -98,15 +98,13 @@ export default function AgentsClient({ agents, isAdmin = false, owners = {} }: {
               {categories.map(c => <option key={c} value={c}>{c}</option>)}
             </select>
           </div>
-          <div className="sm:col-span-2">
-            <label className="text-xs font-semibold text-slate-700 mb-1.5 block">Address / Location</label>
-            <select value={form.address} onChange={e => setForm(p => ({ ...p, address: e.target.value }))} className={inputCls}>
-              <option value="">Select location (Saudi Arabia)...</option>
-              {form.address && !SAUDI_ALL.includes(form.address) && <option value={form.address}>{form.address}</option>}
-              <optgroup label="Cities">{SAUDI.cities.map(l => <option key={l} value={l}>{l}</option>)}</optgroup>
-              <optgroup label="Provinces / regions">{SAUDI.regions.map(l => <option key={l} value={l}>{l}</option>)}</optgroup>
-              <option value="Other">Other</option>
-            </select>
+          <div>
+            <label className="text-xs font-semibold text-slate-700 mb-1.5 block">Country</label>
+            <CountrySelect value={form.country} onChange={v => setForm(p => ({ ...p, country: v, city: '' }))} />
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-slate-700 mb-1.5 block">City</label>
+            <ComboInput value={form.city} onChange={v => setForm(p => ({ ...p, city: v }))} options={(() => { const pl = placesFor(form.country); return pl ? [...new Set([...pl.cities, ...pl.regions])] : [] })()} disabled={!form.country} className={inputCls} placeholder={!form.country ? 'Select a country first' : placesFor(form.country) ? 'Pick a city from the list' : 'Type the city'} />
           </div>
           <div className="sm:col-span-2">
             <label className="text-xs font-semibold text-slate-700 mb-1.5 block">Remarks</label>
@@ -149,7 +147,7 @@ export default function AgentsClient({ agents, isAdmin = false, owners = {} }: {
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-x-auto">
         <table className="w-full text-xs min-w-[900px]">
           <thead className="bg-slate-50 text-slate-500 uppercase text-[10px] tracking-wide">
-            <tr>{['Agent ID', 'Company Name', 'Agent Name', 'Mobile No.', 'Address / Location', 'Category', 'Remarks', ...(isAdmin ? ['Created by'] : []), ''].map(h => <th key={h} className="text-left font-semibold px-3 py-2.5 whitespace-nowrap">{h}</th>)}</tr>
+            <tr>{['Agent ID', 'Company Name', 'Agent Name', 'Mobile No.', 'Country / City', 'Category', 'Remarks', ...(isAdmin ? ['Created by'] : []), ''].map(h => <th key={h} className="text-left font-semibold px-3 py-2.5 whitespace-nowrap">{h}</th>)}</tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
             {filtered.map(a => (
@@ -158,7 +156,7 @@ export default function AgentsClient({ agents, isAdmin = false, owners = {} }: {
                 <td className="px-3 py-2.5 text-slate-700">{a.company_name || '—'}</td>
                 <td className="px-3 py-2.5 font-semibold text-slate-900">{a.agent_name}</td>
                 <td className="px-3 py-2.5 font-mono text-slate-600">{a.mobile || '—'}</td>
-                <td className="px-3 py-2.5 text-slate-600">{a.address || '—'}</td>
+                <td className="px-3 py-2.5 text-slate-600">{(a.country || a.city) ? [a.city, a.country].filter(Boolean).join(', ') : (a.address || '—')}</td>
                 <td className="px-3 py-2.5">{a.category ? <span className="px-2 py-0.5 rounded-full border border-blue-200 bg-blue-50 text-blue-700 text-[10px] font-semibold">{a.category}</span> : '—'}</td>
                 <td className="px-3 py-2.5 text-slate-500 max-w-48 truncate">{a.remarks || '—'}</td>
                 {isAdmin && <td className="px-3 py-2.5 text-slate-600 whitespace-nowrap">{a.created_by ? (owners[a.created_by] || 'Unknown') : <span className="text-slate-400">Older record</span>}</td>}
