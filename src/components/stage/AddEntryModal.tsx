@@ -269,10 +269,10 @@ export default function AddEntryModal({ stageId, companies, employees, onClose, 
                 <>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <Field label="Submission Date" name="submit_date" type="date" disabled={stageId === '1' || !isAdmin} hint={stageId === '1' ? 'Set automatically: the day this company reached this phase' : !isAdmin ? 'Set automatically to today' : undefined} />
-                {!['1', '2', '9', '10'].includes(stageId) && <Field label="Target SLA Date" name="target_date" type="date" />}
-                {['1', '2', '9', '10'].includes(stageId) && <Field label="Completion Date" name="complete_date" type="date" required={stageId === '1'} hint={stageId === '2' ? 'Fill it when the work is finished: then the Drive Link is needed' : stageId === '9' ? 'Fill it when the work is finished: then RJSC no., Issue No, Incorporation Date and Drive Link are needed' : stageId === '10' ? 'Fill it when the work is finished: then everything except Operational Remarks is needed' : undefined} />}
+                {!['1', '2', '3', '9', '10'].includes(stageId) && <Field label="Target SLA Date" name="target_date" type="date" />}
+                {['1', '2', '3', '9', '10'].includes(stageId) && <Field label="Completion Date" name="complete_date" type="date" required={stageId === '1'} hint={stageId === '2' ? 'Fill it when the work is finished: then the Drive Link is needed' : stageId === '9' ? 'Fill it when the work is finished: then RJSC no., Issue No, Incorporation Date and Drive Link are needed' : stageId === '10' ? 'Fill it when the work is finished: then everything except Operational Remarks is needed' : undefined} />}
               </div>
-              {!['1', '2', '9', '10'].includes(stageId) && (
+              {!['1', '2', '3', '9', '10'].includes(stageId) && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <Field label="Completion Date" name="complete_date" type="date" required={['1', '9', '10'].includes(stageId)} />
                 <Select
@@ -282,15 +282,15 @@ export default function AddEntryModal({ stageId, companies, employees, onClose, 
                 />
               </div>
               )}
-              {stageId === '10' && (
+              {['3', '10'].includes(stageId) && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <Select
                   label="Payment Status"
                   name="payment_status"
-                  required={!!form.complete_date}
+                  required={stageId === '10' && !!form.complete_date}
                   options={toOptions(PAYMENT_STATUSES)}
                 />
-                <Field label="Payment Bank" name="payment_bank" required={!!form.complete_date} hint="Which bank the payment was made through" />
+                <Field label="Payment Bank" name="payment_bank" required={stageId === '10' && !!form.complete_date} hint="Which bank the payment was made through" />
               </div>
               )}
                 </>
