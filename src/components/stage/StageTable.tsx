@@ -432,9 +432,9 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
               {['1', '2', '4', '6', '7'].includes(stageId) && (<>
                 <th className="py-3 px-4">Country</th>
               </>)}
-              {!noDates && !hideBd() && <th className="py-3 px-4">Status</th>}
-              {!noDates && <th className="py-3 px-4">Submission</th>}
-              {!noDates && !['1', '2', '3', '4', '5', '9', '10', '11'].includes(stageId) && <th className="py-3 px-4">Target Date</th>}
+              {!noDates && !hideBd() && stageId !== '7' && <th className="py-3 px-4">Status</th>}
+              {!noDates && stageId !== '7' && <th className="py-3 px-4">Submission</th>}
+              {!noDates && !['1', '2', '3', '4', '5', '7', '9', '10', '11'].includes(stageId) && <th className="py-3 px-4">Target Date</th>}
               {stageId === '4' && (<>
                 <th className="py-3 px-4">Email</th>
                 <th className="py-3 px-4">Password</th>
@@ -443,7 +443,7 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
               </>)}
               {!noDates && <th className="py-3 px-4">Completion</th>}
               {!noDates && <th className="py-3 px-4">Elapsed</th>}
-              {!noDates && !['1', '2', '9'].includes(stageId) && <th className="py-3 px-4">Payment</th>}
+              {!noDates && !['1', '2', '7', '9'].includes(stageId) && <th className="py-3 px-4">Payment</th>}
               {['3', '10', '11'].includes(stageId) && <th className="py-3 px-4">Payment Bank</th>}
               {noDates && <th className="py-3 px-4">Submission</th>}
               {noDates && <th className="py-3 px-4">Portal Accounts</th>}
@@ -495,13 +495,13 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
                 {['1', '2', '4', '6', '7'].includes(stageId) && (<>
                   <td className="py-3 px-4 text-slate-600">{e.country || '—'}</td>
                 </>)}
-                {!noDates && !hideBd() && (                <td className="py-3 px-4">
+                {!noDates && !hideBd() && stageId !== '7' && (                <td className="py-3 px-4">
                   <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-slate-100 text-slate-700 border border-slate-200">
                     {e.current_stage || '—'}
                   </span>
                 </td>)}
-                {!noDates && <td className="py-3 px-4">{formatDate(e.submit_date)}</td>}
-                {!noDates && !['1', '2', '3', '4', '5', '9', '10', '11'].includes(stageId) && <td className="py-3 px-4">{formatDate(e.target_date)}</td>}
+                {!noDates && stageId !== '7' && <td className="py-3 px-4">{formatDate(e.submit_date)}</td>}
+                {!noDates && !['1', '2', '3', '4', '5', '7', '9', '10', '11'].includes(stageId) && <td className="py-3 px-4">{formatDate(e.target_date)}</td>}
                 {stageId === '4' && (<>
                   <td className="py-3 px-4 whitespace-nowrap">{e.misa_email || '—'}</td>
                   <td className="py-3 px-4"><SecretCell value={e.misa_email_password} /></td>
@@ -512,7 +512,7 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
                 {!noDates && (<td className="py-3 px-4 font-mono font-medium text-slate-800">
                   {e.days_taken != null ? `${e.days_taken}d` : '—'}
                 </td>)}
-                {!noDates && !['1', '2', '9'].includes(stageId) && (<td className="py-3 px-4">
+                {!noDates && !['1', '2', '7', '9'].includes(stageId) && (<td className="py-3 px-4">
                   <span
                     className={cn(
                       'px-2 py-0.5 rounded text-[11px] font-medium',

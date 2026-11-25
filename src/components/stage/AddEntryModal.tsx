@@ -55,7 +55,7 @@ export default function AddEntryModal({ stageId, companies, employees, onClose, 
   const [portals, setPortals] = useState<PortalAccount[]>([])
   const [form, setForm] = useState<Record<string, string>>({
     submit_date: new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10), // today (local)
-    current_stage: stageId === '6' ? '' : (PHASE_OPTIONS[stageId] || [])[0] || '',
+    current_stage: ['6', '7'].includes(stageId) ? '' : (PHASE_OPTIONS[stageId] || [])[0] || '',
     ...(stageId === '9' ? { country: 'Bangladesh', approval_status: 'Pending' } : {}),
     employee_id: employees.find(e => String(e.assigned_stage) === stageId)?.id || '',
   })
@@ -215,7 +215,7 @@ export default function AddEntryModal({ stageId, companies, employees, onClose, 
                 </div>
               )}
               {stageId === '1' && <ParentChecks form={form} set={set} />}
-              {stageId !== '6' && <Select label="Workflow Phase Status" name="current_stage" options={toOptions(PHASE_OPTIONS[stageId] || [])} />}
+              {!['6', '7'].includes(stageId) && <Select label="Workflow Phase Status" name="current_stage" options={toOptions(PHASE_OPTIONS[stageId] || [])} />}
               {stageId === '6' && <Field label="Submission Date" name="submit_date" type="date" disabled hint="Set automatically to today" />}
               {stageId === '6' && <PortalAccountsEditor value={portals} onChange={setPortals} />}
             </>
@@ -286,19 +286,21 @@ export default function AddEntryModal({ stageId, companies, employees, onClose, 
               {stageId !== '6' && (
                 <>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <Field label="Submission Date" name="submit_date" type="date" disabled={stageId === '1' || !isAdmin} hint={stageId === '1' ? 'Set automatically: the day this company reached this phase' : !isAdmin ? 'Set automatically to today' : undefined} />
-                {!['1', '2', '3', '4', '5', '9', '10', '11'].includes(stageId) && <Field label="Target SLA Date" name="target_date" type="date" />}
+                {stageId !== '7' && <Field label="Submission Date" name="submit_date" type="date" disabled={stageId === '1' || !isAdmin} hint={stageId === '1' ? 'Set automatically: the day this company reached this phase' : !isAdmin ? 'Set automatically to today' : undefined} />}
+                {!['1', '2', '3', '4', '5', '7', '9', '10', '11'].includes(stageId) && <Field label="Target SLA Date" name="target_date" type="date" />}
                 {['1', '2', '3', '9', '10', '11'].includes(stageId) && <Field label="Completion Date" name="complete_date" type="date" required={stageId === '1'} hint={stageId === '2' ? 'Fill it when the work is finished: then the Drive Link is needed' : stageId === '9' ? 'Fill it when the work is finished: then RJSC no., Issue No, Incorporation Date and Drive Link are needed' : ['3', '10', '11'].includes(stageId) ? 'Fill it when the work is finished: then everything except Operational Remarks is needed' : undefined} />}
               </div>
               {!['1', '2', '3', '9', '10', '11'].includes(stageId) && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <Field label="Completion Date" name="complete_date" type="date" required={['1', '9', '10'].includes(stageId)} hint={['4', '5'].includes(stageId) ? 'Fill it when the work is finished: then everything except Operational Remarks is needed' : undefined} />
+                {stageId !== '7' && (
                 <Select
                   label="Payment Status"
                   name="payment_status"
                   required={['4', '5'].includes(stageId) && !!form.complete_date}
                   options={toOptions(PAYMENT_STATUSES)}
                 />
+                )}
               </div>
               )}
               {['3', '10', '11'].includes(stageId) && (

@@ -175,7 +175,7 @@ export default function EditEntryModal({ stageId, entry, companies, employees, o
                 </div>
               )}
               {stageId === '1' && <ParentChecks form={form} set={set} />}
-              {stageId !== '6' && <Sel label="Workflow Phase Status" name="current_stage" options={toOptions(PHASE_OPTIONS[stageId] || [])} />}
+              {!['6', '7'].includes(stageId) && <Sel label="Workflow Phase Status" name="current_stage" options={toOptions(PHASE_OPTIONS[stageId] || [])} />}
               {stageId === '6' && (
                 <>
                   <PortalAccountsEditor value={portals} onChange={setPortals} />
@@ -246,19 +246,21 @@ export default function EditEntryModal({ stageId, entry, companies, employees, o
               {stageId !== '6' && (
                 <>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <Field label="Submission Date" name="submit_date" type="date" disabled={stageId === '1' || !isAdmin} hint={stageId === '1' ? 'Fixed: the day this company reached this phase' : !isAdmin ? 'Fixed — only an admin can change it' : undefined} />
-                {!['1', '2', '3', '4', '5', '9', '10', '11'].includes(stageId) && <Field label="Target SLA Date" name="target_date" type="date" />}
+                {stageId !== '7' && <Field label="Submission Date" name="submit_date" type="date" disabled={stageId === '1' || !isAdmin} hint={stageId === '1' ? 'Fixed: the day this company reached this phase' : !isAdmin ? 'Fixed — only an admin can change it' : undefined} />}
+                {!['1', '2', '3', '4', '5', '7', '9', '10', '11'].includes(stageId) && <Field label="Target SLA Date" name="target_date" type="date" />}
                 {['1', '2', '3', '9', '10', '11'].includes(stageId) && <Field label="Completion Date" name="complete_date" type="date" required={stageId === '1'} hint={stageId === '2' ? 'Fill it when the work is finished: then the Drive Link is needed' : stageId === '9' ? 'Fill it when the work is finished: then RJSC no., Issue No, Incorporation Date and Drive Link are needed' : ['3', '10', '11'].includes(stageId) ? 'Fill it when the work is finished: then everything except Operational Remarks is needed' : undefined} />}
               </div>
               {!['1', '2', '3', '9', '10', '11'].includes(stageId) && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <Field label="Completion Date" name="complete_date" type="date" required={['1', '9', '10'].includes(stageId)} hint={['4', '5'].includes(stageId) ? 'Fill it when the work is finished: then everything except Operational Remarks is needed' : undefined} />
+                {stageId !== '7' && (
                 <Sel
                   label="Payment Status"
                   name="payment_status"
                   required={['4', '5'].includes(stageId) && !!form.complete_date}
                   options={toOptions(PAYMENT_STATUSES)}
                 />
+                )}
               </div>
               )}
               {['3', '10', '11'].includes(stageId) && (
