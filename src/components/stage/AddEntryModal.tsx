@@ -15,7 +15,7 @@ import ForeignFields from './ForeignFields'
 import { triggerPush } from '@/lib/pushClient'
 import PortalAccountsEditor from './PortalAccountsEditor'
 import type { PortalAccount } from '@/lib/portals'
-import StatutoryFields, { AuditFields, statutoryPayload, statutoryFrom } from './StatutoryFields'
+import StatutoryFields, { AuditFields, BdAuditFields, statutoryPayload, statutoryFrom } from './StatutoryFields'
 import { FormCtx, Field, Select } from './formFields'
 import { COUNTRY_CITY_STAGES, COUNTRIES, CATEGORIES, PAYMENT_STATUSES, PHASE_OPTIONS, FOREIGN_FILING_OPTIONS, CANADA_OPTIONS, CR_STATUSES, toOptions, pickColumns, validateDates } from '@/lib/stageRules'
 import { assessExpiry, assessTiming, addDaysISO } from '@/lib/utils'
@@ -329,6 +329,7 @@ export default function AddEntryModal({ stageId, companies, employees, onClose, 
 
           {stageId === '7' && <StatutoryFields />}
           {stageId === '7' && <AuditFields />}
+          {stageId === '7' && <BdAuditFields />}
 
           <div className="flex gap-3 pt-3 border-t border-slate-100">
             <button

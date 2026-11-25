@@ -17,7 +17,7 @@ import { FormCtx, Field, Select as Sel } from './formFields'
 import PortalAccountsEditor from './PortalAccountsEditor'
 import type { PortalAccount } from '@/lib/portals'
 import Link from 'next/link'
-import StatutoryFields, { AuditFields, statutoryPayload, statutoryFrom } from './StatutoryFields'
+import StatutoryFields, { AuditFields, BdAuditFields, statutoryPayload, statutoryFrom } from './StatutoryFields'
 import { COUNTRY_CITY_STAGES, COUNTRIES, CATEGORIES, PAYMENT_STATUSES, PHASE_OPTIONS, FOREIGN_FILING_OPTIONS, CANADA_OPTIONS, CR_STATUSES, toOptions, pickColumns, validateDates } from '@/lib/stageRules'
 import { assessExpiry, assessTiming, addDaysISO } from '@/lib/utils'
 
@@ -289,6 +289,7 @@ export default function EditEntryModal({ stageId, entry, companies, employees, o
 
           {stageId === '7' && <StatutoryFields />}
           {stageId === '7' && <AuditFields />}
+          {stageId === '7' && <BdAuditFields />}
 
           <div className="flex gap-3 pt-3 border-t border-slate-100">
             <button

@@ -9,6 +9,7 @@ export const STATUTORY_KEYS = [
   'misa_license_no', 'misa_issue_date', 'misa_expire_date',
   'tin_number',
   'sa_last_audit_date', 'sa_audit_status', 'sa_next_audit_due', 'sa_financial_year', 'sa_audit_notes',
+  'bd_last_audit_date', 'bd_audit_status', 'bd_next_audit_due', 'bd_financial_year', 'bd_audit_notes',
 ] as const
 
 const AUDIT_STATUSES = ['Not Started', 'In Progress', 'Completed', 'Overdue']
@@ -62,6 +63,25 @@ export function AuditFields() {
         <Field label="Financial Year" name="sa_financial_year" />
       </div>
       <Field label="Additional Information" name="sa_audit_notes" />
+    </div>
+  )
+}
+
+/** Bangladesh audit information, saved to the company profile like the Saudi one. */
+export function BdAuditFields() {
+  return (
+    <div className="rounded-xl border border-emerald-200 bg-emerald-50/40 p-4 space-y-3">
+      <div className="flex items-center gap-2">
+        <ClipboardCheck className="w-4 h-4 text-emerald-600" />
+        <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wide">Bangladesh Audit Information</h3>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <Field label="Last Audit Date" name="bd_last_audit_date" type="date" required />
+        <Select label="Audit Status" name="bd_audit_status" options={AUDIT_STATUSES.map(v => ({ value: v, label: v }))} />
+        <Field label="Next Audit Due Date" name="bd_next_audit_due" type="date" />
+        <Field label="Financial Year" name="bd_financial_year" />
+      </div>
+      <Field label="Additional Information" name="bd_audit_notes" />
     </div>
   )
 }
