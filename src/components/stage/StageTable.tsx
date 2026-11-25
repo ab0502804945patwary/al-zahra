@@ -408,7 +408,13 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
               </>)}
               {!noDates && !hideBd() && <th className="py-3 px-4">Status</th>}
               {!noDates && <th className="py-3 px-4">Submission</th>}
-              {!noDates && !['1', '2', '3', '9', '10', '11'].includes(stageId) && <th className="py-3 px-4">Target Date</th>}
+              {!noDates && !['1', '2', '3', '4', '9', '10', '11'].includes(stageId) && <th className="py-3 px-4">Target Date</th>}
+              {stageId === '4' && (<>
+                <th className="py-3 px-4">Email</th>
+                <th className="py-3 px-4">Password</th>
+                <th className="py-3 px-4">User Name</th>
+                <th className="py-3 px-4">Password</th>
+              </>)}
               {!noDates && <th className="py-3 px-4">Completion</th>}
               {!noDates && <th className="py-3 px-4">Elapsed</th>}
               {!noDates && !['1', '2', '9'].includes(stageId) && <th className="py-3 px-4">Payment</th>}
@@ -468,7 +474,13 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
                   </span>
                 </td>)}
                 {!noDates && <td className="py-3 px-4">{formatDate(e.submit_date)}</td>}
-                {!noDates && !['1', '2', '3', '9', '10', '11'].includes(stageId) && <td className="py-3 px-4">{formatDate(e.target_date)}</td>}
+                {!noDates && !['1', '2', '3', '4', '9', '10', '11'].includes(stageId) && <td className="py-3 px-4">{formatDate(e.target_date)}</td>}
+                {stageId === '4' && (<>
+                  <td className="py-3 px-4 whitespace-nowrap">{e.misa_email || '—'}</td>
+                  <td className="py-3 px-4"><SecretCell value={e.misa_email_password} /></td>
+                  <td className="py-3 px-4 font-mono whitespace-nowrap">{e.misa_username || '—'}</td>
+                  <td className="py-3 px-4"><SecretCell value={e.misa_username_password} /></td>
+                </>)}
                 {!noDates && <td className="py-3 px-4">{formatDate(e.complete_date)}</td>}
                 {!noDates && (<td className="py-3 px-4 font-mono font-medium text-slate-800">
                   {e.days_taken != null ? `${e.days_taken}d` : '—'}
