@@ -155,7 +155,7 @@ export const VERIFY_ITEMS: { key: string; label: string }[] = [
 ]
 
 export interface DocCheck { status?: 'Received' | 'Pending' | ''; remarks?: string }
-export interface CompanyDoc { id: string; type: string; shareholder: number | null; name: string; path?: string; url?: string; added_at: string }
+export interface CompanyDoc { id: string; type: string; shareholder: number | null; name: string; path?: string; url?: string; store?: 'r2'; added_at: string }
 
 const ACCEPT = 'image/jpeg,image/png,image/webp,application/pdf'
 const MAX_BYTES = 10 * 1024 * 1024
@@ -186,12 +186,19 @@ export function DocumentVerification({ checks, onChecks, docs, onDocs, folder, s
     if (!ACCEPT.split(',').includes(file.type)) { setMsg('Only JPG, PNG, WebP images or PDF files are allowed.'); return }
     if (file.size > MAX_BYTES) { setMsg('The file is larger than 10 MB.'); return }
     setBusy(true)
-    const safe = file.name.replace(/[^A-Za-z0-9._-]+/g, '_')
-    const path = `${folder || 'unassigned'}/${Date.now()}_${safe}`
-    const { error } = await supabase.storage.from('company-docs').upload(path, file, { contentType: file.type })
+    try {
+      const res = await fetch('/api/r2/sign', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'upload', folder: folder || 'unassigned', name: file.name, type: file.type, size: file.size }) })
+      const sign = await res.json().catch(() => ({} as any))
+      if (!res.ok || !sign.url) throw new Error(sign.error || 'Could not start the upload.')
+      const put = await fetch(sign.url, { method: 'PUT', headers: { 'Content-Type': file.type }, body: file })
+      if (!put.ok) throw new Error('The file could not be saved (' + put.status + ').')
+      onDocs([...docs, { id: `${Date.now()}`, type, shareholder: perHolder ? holder : null, name: file.name, path: sign.key, store: 'r2', added_at: new Date().toISOString() }])
+    } catch (err: any) {
+      setBusy(false)
+      setMsg('Upload failed: ' + (err?.message || 'unknown error'))
+      return
+    }
     setBusy(false)
-    if (error) { setMsg('Upload failed: ' + error.message); return }
-    onDocs([...docs, { id: `${Date.now()}`, type, shareholder: perHolder ? holder : null, name: file.name, path, added_at: new Date().toISOString() }])
     if (!checks[type]?.status) setCheck(type, { status: 'Received' })
   }
 
@@ -207,13 +214,23 @@ export function DocumentVerification({ checks, onChecks, docs, onDocs, folder, s
   async function open(d: CompanyDoc) {
     if (d.url) { window.open(d.url, '_blank', 'noopener'); return }
     if (!d.path) return
+    if (d.store === 'r2') {
+      const res = await fetch('/api/r2/sign', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'download', key: d.path }) })
+      const out = await res.json().catch(() => ({} as any))
+      if (!res.ok || !out.url) { setMsg('Could not open the file: ' + (out.error || 'unknown error')); return }
+      window.open(out.url, '_blank', 'noopener')
+      return
+    }
     const { data, error } = await supabase.storage.from('company-docs').createSignedUrl(d.path, 3600)
     if (error || !data) { setMsg('Could not open the file: ' + (error?.message || 'unknown error')); return }
     window.open(data.signedUrl, '_blank', 'noopener')
   }
 
   async function remove(d: CompanyDoc) {
-    if (d.path) await supabase.storage.from('company-docs').remove([d.path])
+    if (d.path && d.store === 'r2') {
+      const res = await fetch('/api/r2/sign', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'remove', key: d.path }) })
+      if (!res.ok) { const out = await res.json().catch(() => ({} as any)); setMsg('Could not remove the file: ' + (out.error || 'unknown error')); return }
+    } else if (d.path) await supabase.storage.from('company-docs').remove([d.path])
     onDocs(docs.filter(x => x.id !== d.id))
   }
 
