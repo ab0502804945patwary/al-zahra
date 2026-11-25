@@ -29,7 +29,7 @@ export default function StatutoryFields() {
   return (
     <div className="rounded-xl border border-blue-200 bg-blue-50/40 p-4 space-y-3">
       <div>
-        <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wide">Statutory &amp; Legal Identifiers</h3>
+        <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wide">Company License Information</h3>
         <p className="text-[11px] text-slate-500 mt-0.5">Saved to the company profile when you save this record.</p>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
