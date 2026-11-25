@@ -141,12 +141,12 @@ export default function EditEntryModal({ stageId, entry, companies, employees, o
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {stageId === '1' ? (<>
                     <div>
-                      <label className="text-xs font-medium text-slate-700 mb-1 block">Country</label>
-                      <CountrySelect value={form.country || ''} onChange={v => setForm(p => ({ ...p, country: v, city: '' }))} />
+                      <label className="text-xs font-medium text-slate-700 mb-1 block">Country<span className="text-rose-500 ml-0.5">*</span></label>
+                      <CountrySelect required value={form.country || ''} onChange={v => setForm(p => ({ ...p, country: v, city: '' }))} />
                     </div>
                     <div>
-                      <label className="text-xs font-medium text-slate-700 mb-1 block">City</label>
-                      <ComboInput value={form.city || ''} onChange={v => set('city', v)} options={(() => { const pl = placesFor(form.country); return pl ? [...new Set([...pl.cities, ...pl.regions])] : [] })()} disabled={!form.country} className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" placeholder={!form.country ? 'Select a country first' : placesFor(form.country) ? 'Pick a city from the list' : 'Type the city'} />
+                      <label className="text-xs font-medium text-slate-700 mb-1 block">City<span className="text-rose-500 ml-0.5">*</span></label>
+                      <ComboInput value={form.city || ''} onChange={v => set('city', v)} options={(() => { const pl = placesFor(form.country); return pl ? [...new Set([...pl.cities, ...pl.regions])] : [] })()} disabled={!form.country} required className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" placeholder={!form.country ? 'Select a country first' : placesFor(form.country) ? 'Pick a city from the list' : 'Type the city'} />
                     </div>
                   </>) : (<>
                     <div>
@@ -232,9 +232,11 @@ export default function EditEntryModal({ stageId, entry, companies, employees, o
               {stageId !== '6' && (
                 <>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <Field label="Submission Date" name="submit_date" type="date" disabled={!isAdmin} hint={!isAdmin ? "Fixed — only an admin can change it" : undefined} />
-                <Field label="Target SLA Date" name="target_date" type="date" />
+                <Field label="Submission Date" name="submit_date" type="date" disabled={stageId === '1' || !isAdmin} hint={stageId === '1' ? 'Fixed: the day this company reached this phase' : !isAdmin ? 'Fixed — only an admin can change it' : undefined} />
+                {stageId !== '1' && <Field label="Target SLA Date" name="target_date" type="date" />}
+                {stageId === '1' && <Field label="Completion Date" name="complete_date" type="date" required />}
               </div>
+              {stageId !== '1' && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <Field label="Completion Date" name="complete_date" type="date" required={['1', '9', '10'].includes(stageId)} />
                 <Sel
@@ -243,6 +245,7 @@ export default function EditEntryModal({ stageId, entry, companies, employees, o
                   options={toOptions(PAYMENT_STATUSES)}
                 />
               </div>
+              )}
                 </>
               )}
               {stageId === '5' && (

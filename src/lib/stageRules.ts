@@ -172,15 +172,38 @@ const COMMON = ['company_id', 'client_name', 'client_phone', 'category', 'priori
 export const TABLE_COLUMNS: Record<string, string[]> = {
   '10': [...COMMON, 'foreign_company_name', 'country', 'city', 'registration_no'],
   '11': [...COMMON, 'foreign_company_name', 'country', 'city', 'registration_no', 'account_email', 'account_username', 'account_password'],
-  '9': [...COMMON, 'approval_status', 'bd_company_name', 'country', 'rjsc_reg_no', 'issue_no', 'incorporation_date', 'auditor_firm', 'rjsc_return_due_date'],
+  '9': [...COMMON, 'approval_status', 'bd_company_name', 'country', 'rjsc_reg_no', 'issue_no', 'incorporation_date', 'auditor_firm', 'rjsc_return_due_date', 'approved_at'],
   '1': [...COMMON, 'country', 'city', 'audit_report_done', 'incorporation_update_done'], '2': [...COMMON, 'country', 'city'], '4': [...COMMON, 'country', 'city'], '5': [...COMMON, 'country', 'city', 'cr_status', 'cr_status_date'], '6': [...COMMON, 'country', 'city', 'portal_accounts'], '7': [...COMMON, 'country', 'city'],
   '3': [...COMMON, 'foreign_company_name', 'country', 'city', 'registration_no', 'account_email', 'account_username', 'account_password'],
   '8': ['company_id', 'entity_type', 'company_name_english', 'arabic_name', 'name_clearance_number', 'submit_date', 'approval_date', 'expire_date', 'remaining_days', 'status', 'cr_status', 'notes'],
 }
 
+/**
+ * The day a company reached Parent Entity Verification: the day the step before it finished
+ * (Foreign Mother complete / Bangladesh name Approved / the latest ticked phase). Falls back to the day the company was registered.
+ */
+export function parentReadyDate(company: { company_id: string; entity_type?: string; category?: string; created_at?: string; selected_phases?: string[] | null; skipped_phases?: string[] | null }, all: StageEntriesMap): string | null {
+  const id = company.company_id
+  const category = company.category || company.entity_type
+  const picked = Array.isArray(company.selected_phases) ? company.selected_phases : null
+  const skipped = Array.isArray(company.skipped_phases) ? company.skipped_phases : []
+  const ticked = picked ? picked.filter(s => OPTIONAL_PHASES.includes(s) && !skipped.includes(s)) : []
+  const last = (xs: (string | null | undefined)[]) => xs.filter((x): x is string => !!x).map(x => String(x).slice(0, 10)).sort().pop() || null
+  const dateOf = (sid: string) => {
+    const rows = (all[sid] || []).filter(e => e.company_id === id) as any[]
+    return sid === '9' ? last(rows.map(e => e.approved_at || e.complete_date)) : last(rows.map(e => e.complete_date))
+  }
+  let sids: string[] = []
+  if (picked && category === 'Service License') sids = ticked.includes('9') ? ['9'] : ticked
+  else if (picked && needsForeign(category)) sids = ticked.includes('10') ? ['10'] : ticked
+  const found = last(sids.map(dateOf))
+  if (found) return found
+  return company.created_at ? new Date(company.created_at).toLocaleDateString('en-CA', { timeZone: 'Asia/Riyadh' }) : null
+}
+
 /** Columns the eligibility check needs, limited to those that exist in the given stage table. */
 export function eligibilityColumns(stageId: string, extra: string[] = []): string {
-  const wanted = ['company_id', 'submit_date', 'complete_date', 'usa_complete_date', 'approval_date', 'approval_status', ...extra]
+  const wanted = ['company_id', 'submit_date', 'complete_date', 'usa_complete_date', 'approval_date', 'approval_status', 'approved_at', ...extra]
   const real = new Set(TABLE_COLUMNS[stageId] || [])
   return wanted.filter(c => real.has(c)).join(', ')
 }

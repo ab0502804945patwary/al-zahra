@@ -3,7 +3,7 @@ import { useMemo, useState } from 'react'
 import { ChevronDown, Plus } from 'lucide-react'
 
 /** Text box with a suggestion list that opens right under it. Anything typed is kept as the value. */
-export default function ComboInput({ value, onChange, options, placeholder, className, renderIcon, disabled = false }: {
+export default function ComboInput({ value, onChange, options, placeholder, className, renderIcon, disabled = false, required = false }: {
   value: string
   onChange: (v: string) => void
   options: string[]
@@ -12,6 +12,7 @@ export default function ComboInput({ value, onChange, options, placeholder, clas
   /** optional small logo/icon drawn for the typed value and for each option */
   renderIcon?: (value: string) => React.ReactNode
   disabled?: boolean
+  required?: boolean
 }) {
   const [open, setOpen] = useState(false)
   const q = value.trim().toLowerCase()
@@ -28,6 +29,7 @@ export default function ComboInput({ value, onChange, options, placeholder, clas
         placeholder={placeholder}
         autoComplete="off"
         disabled={disabled}
+        required={required}
         className={`${className || ''} pr-9 ${renderIcon ? 'pl-11' : ''} ${disabled ? 'bg-slate-50 cursor-not-allowed' : ''}`}
       />
       {renderIcon && <span className="absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none">{renderIcon(value)}</span>}

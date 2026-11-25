@@ -354,13 +354,13 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
               </>)}
               {!noDates && <th className="py-3 px-4">Workflow Status</th>}
               {!noDates && <th className="py-3 px-4">Submission</th>}
-              {!noDates && <th className="py-3 px-4">Target Date</th>}
+              {!noDates && stageId !== '1' && <th className="py-3 px-4">Target Date</th>}
               {!noDates && <th className="py-3 px-4">Completion</th>}
               {!noDates && <th className="py-3 px-4">Milestone</th>}
               {!noDates && <th className="py-3 px-4">Elapsed</th>}
               {!noDates && <th className="py-3 px-4">SLA Compliance</th>}
               {!noDates && <th className="py-3 px-4">Fulfillment %</th>}
-              {!noDates && <th className="py-3 px-4">Payment</th>}
+              {!noDates && stageId !== '1' && <th className="py-3 px-4">Payment</th>}
               {noDates && <th className="py-3 px-4">Portal Accounts</th>}
               {stageId === '5' && <th className="py-3 px-4">CR Association</th>}
               <th className="py-3 px-4">Notes</th>
@@ -419,7 +419,7 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
                   </span>
                 </td>)}
                 {!noDates && <td className="py-3 px-4">{formatDate(e.submit_date)}</td>}
-                {!noDates && <td className="py-3 px-4">{formatDate(e.target_date)}</td>}
+                {!noDates && stageId !== '1' && <td className="py-3 px-4">{formatDate(e.target_date)}</td>}
                 {!noDates && <td className="py-3 px-4">{formatDate(e.complete_date)}</td>}
                 {!noDates && <td className="py-3 px-4"><MilestoneBadge status={e.overdue_status} /></td>}
                 {!noDates && (<td className="py-3 px-4 font-mono font-medium text-slate-800">
@@ -440,7 +440,7 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
                     <span className="text-[11px] font-semibold text-slate-600">{e.completion_percent || 0}%</span>
                   </div>
                 </td>)}
-                {!noDates && (<td className="py-3 px-4">
+                {!noDates && stageId !== '1' && (<td className="py-3 px-4">
                   <span
                     className={cn(
                       'px-2 py-0.5 rounded text-[11px] font-medium',

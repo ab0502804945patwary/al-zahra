@@ -7,7 +7,7 @@ import { enrichTiming, enrichExpiry } from '@/lib/utils'
 import { STAGE_CONFIG } from '@/lib/stageData'
 import { getSessionInfo } from '@/lib/session'
 import { canAccessStage, canDo } from '@/lib/access'
-import { isEligibleForStage, eligibilityColumns, ELIGIBILITY_HINT, type StageEntriesMap } from '@/lib/stageRules'
+import { isEligibleForStage, eligibilityColumns, parentReadyDate, ELIGIBILITY_HINT, type StageEntriesMap } from '@/lib/stageRules'
 
 export const dynamic = 'force-dynamic'
 
@@ -46,7 +46,7 @@ export default async function StagePage({ params }: { params: Promise<{ id: stri
 
     const [eRes, cRes, empRes, crRes, ...upRes] = await Promise.all([
       entriesQuery,
-      supabase.from('companies').select('id, company_id, company_name, country_of_origin, province, entity_type, service_type, client_name, client_phone, cr_number, cr_issue_date, cr_expire_date, misa_license_no, misa_issue_date, misa_expire_date, tin_number, vat_number, chamber_registration_no, gosi_qiwa_status, account_status, selected_phases, skipped_phases').order('company_id'),
+      supabase.from('companies').select('id, company_id, company_name, country_of_origin, province, entity_type, service_type, client_name, client_phone, cr_number, cr_issue_date, cr_expire_date, misa_license_no, misa_issue_date, misa_expire_date, tin_number, vat_number, chamber_registration_no, gosi_qiwa_status, account_status, selected_phases, skipped_phases, created_at').order('company_id'),
       // colleague names are read on the server: staff may only read their own staff row
       lookup.from('employees').select('id, name, assigned_stage, assigned_stages'),
       // CR Association (stage 5): when it is Complete the Company Name Clearance countdown stops on that day
@@ -78,6 +78,8 @@ export default async function StagePage({ params }: { params: Promise<{ id: stri
       return e ? { ...c, stage1_priority: e.priority, stage1_category: e.category, stage1_country: e.country, stage1_city: e.city } : c
     })
   }
+  // Parent Entity Verification: Submission Date = the day the company reached this phase
+  if (id === '1') companies = companies.map(c => ({ ...c, ready_date: parentReadyDate(c, allEntries) }))
   const eligibleCompanies = gated
     ? companies.filter(c => isEligibleForStage(id, c, allEntries))
     : companies
