@@ -170,7 +170,7 @@ export const ELIGIBILITY_HINT: Record<string, string> = {
 // ---- Columns that really exist in each Supabase stage table (see supabase-schema.sql) ----
 const COMMON = ['company_id', 'client_name', 'client_phone', 'category', 'priority', 'current_stage', 'submit_date', 'target_date', 'complete_date', 'payment_status', 'remarks', 'employee_id', 'drive_link', 'overdue_status', 'days_taken', 'status', 'completion_percent']
 export const TABLE_COLUMNS: Record<string, string[]> = {
-  '10': [...COMMON, 'foreign_company_name', 'country', 'city', 'registration_no'],
+  '10': [...COMMON, 'foreign_company_name', 'country', 'city', 'registration_no', 'payment_bank'],
   '11': [...COMMON, 'foreign_company_name', 'country', 'city', 'registration_no', 'account_email', 'account_username', 'account_password'],
   '9': [...COMMON, 'approval_status', 'bd_company_name', 'country', 'rjsc_reg_no', 'issue_no', 'incorporation_date', 'auditor_firm', 'rjsc_return_due_date', 'approved_at'],
   '1': [...COMMON, 'country', 'city', 'audit_report_done', 'incorporation_update_done'], '2': [...COMMON, 'country', 'city'], '4': [...COMMON, 'country', 'city'], '5': [...COMMON, 'country', 'city', 'cr_status', 'cr_status_date'], '6': [...COMMON, 'country', 'city', 'portal_accounts'], '7': [...COMMON, 'country', 'city'],
