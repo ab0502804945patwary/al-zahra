@@ -169,6 +169,9 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
   // completed = the whole Bangladesh company work is finished (Completion Date); approved = name Approved, work still running
   // Bangladesh phase, Completed tab: the company details are hidden to keep the list short
   const hideBd = () => stageId === '9' && bdTab === 'completed'
+  // Name Approved tab: RJSC no., Issue No, Incorporation and the company block are hidden too
+  const hideCo = () => stageId === '9' && (bdTab === 'completed' || bdTab === 'approved')
+  const hideRjsc = () => stageId === '9' && bdTab === 'approved'
   const bdGroup = (e: any): 'pending' | 'approved' | 'completed' => (e.complete_date ? 'completed' : e.approval_status === 'Approved' ? 'approved' : 'pending')
   const entries = serverEntries
 
@@ -403,9 +406,9 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
                 <th className="py-3 px-4">Bangladesh Company Name</th>
                 <th className="py-3 px-4">Name Approval</th>
                 <th className="py-3 px-4">Country</th>
-                <th className="py-3 px-4">RJSC Reg. No.</th>
-                <th className="py-3 px-4">Issue No</th>
-                <th className="py-3 px-4">Incorporation</th>
+                {!hideRjsc() && <th className="py-3 px-4">RJSC Reg. No.</th>}
+                {!hideRjsc() && <th className="py-3 px-4">Issue No</th>}
+                {!hideRjsc() && <th className="py-3 px-4">Incorporation</th>}
               </>)}
               {(stageId === '3' || stageId === '10' || stageId === '11') && (<>
                 <th className="py-3 px-4">Foreign Company Name</th>
@@ -418,7 +421,7 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
                   <th className="py-3 px-4">Password</th>
                 </>)}
               </>)}
-              {!hideBd() && <th className="py-3 px-4">Company Name</th>}
+              {!hideCo() && <th className="py-3 px-4">Company Name</th>}
               {!hideBd() && <th className="py-3 px-4">Authorized Contact</th>}
               {!hideBd() && <th className="py-3 px-4">License Type</th>}
               {['1', '2', '4', '5', '6', '7'].includes(stageId) && (<>
@@ -458,16 +461,18 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
                   <td className="py-3 px-4 font-semibold text-slate-900 whitespace-nowrap">{e.bd_company_name || '—'}</td>
                   <td className="py-3 px-4"><BdApprovalCell entry={e} canEdit={canEdit} /></td>
                   <td className="py-3 px-4"><span className="inline-flex items-center gap-1.5 whitespace-nowrap"><Flag country={e.country} />{e.country || '—'}</span></td>
-                  <td className="py-3 px-4 font-mono">{e.rjsc_reg_no || '—'}</td>
-                  <td className="py-3 px-4 font-mono">{e.issue_no || '—'}</td>
-                  <td className="py-3 px-4 whitespace-nowrap">{formatDate(e.incorporation_date)}</td>
+                  {!hideRjsc() && <td className="py-3 px-4 font-mono">{e.rjsc_reg_no || '—'}</td>}
+                  {!hideRjsc() && <td className="py-3 px-4 font-mono">{e.issue_no || '—'}</td>}
+                  {!hideRjsc() && <td className="py-3 px-4 whitespace-nowrap">{formatDate(e.incorporation_date)}</td>}
                 </>)}
-                {!hideBd() && (<>
+                {!hideCo() && (
                 <td className="py-3 px-4">
                   <div className="font-semibold text-slate-900">{e.company_id}</div>
                   <div className="text-slate-500 text-[11px]">{e.companies?.company_name}{e.companies?.original_company_name && <span className="block text-[10px] text-slate-400">Previously: {e.companies.original_company_name}</span>}</div>
                   <div className="text-slate-400 text-[10px] flex items-center gap-1"><Flag country={e.companies?.country_of_origin} />{e.companies?.country_of_origin}</div>
                 </td>
+                )}
+                {!hideBd() && (<>
                 <td className="py-3 px-4">
                   <div className="font-medium text-slate-800">{companies.find(c => c.company_id === e.company_id)?.client_name || e.client_name || '—'}</div>
                   <div className="text-slate-400 text-[11px] font-mono">{companies.find(c => c.company_id === e.company_id)?.client_phone || e.client_phone || ''}</div>
