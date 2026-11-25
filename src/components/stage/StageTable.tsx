@@ -103,12 +103,35 @@ function SecretCell({ value }: { value?: string | null }) {
   )
 }
 
+const PAGE = 10
+
+/** Page numbers like the Leads list: ‹ 1 2 … 6 › */
+function Pager({ total, cur, pages, onPage }: { total: number; cur: number; pages: number; onPage: (n: number) => void }) {
+  if (total <= PAGE) return null
+  return (
+    <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 border-t border-slate-100 text-xs text-slate-600">
+      <span>Showing <b>{(cur - 1) * PAGE + 1}</b> to <b>{Math.min(cur * PAGE, total)}</b> of <b>{total}</b> entries</span>
+      <div className="flex items-center gap-1">
+        <button disabled={cur === 1} onClick={() => onPage(cur - 1)} className="px-2.5 py-1.5 rounded-md border border-slate-200 bg-white disabled:opacity-40 hover:bg-slate-50">‹</button>
+        {Array.from({ length: pages }, (_, k) => k + 1).filter(n => n === 1 || n === pages || Math.abs(n - cur) <= 1).map((n, idx, arr) => (
+          <span key={n} className="flex items-center">
+            {idx > 0 && arr[idx - 1] !== n - 1 && <span className="px-1 text-slate-400">…</span>}
+            <button onClick={() => onPage(n)} className={`min-w-8 px-2.5 py-1.5 rounded-md border text-xs font-semibold ${n === cur ? 'bg-blue-600 text-white border-blue-600' : 'border-slate-200 bg-white hover:bg-slate-50'}`}>{n}</button>
+          </span>
+        ))}
+        <button disabled={cur === pages} onClick={() => onPage(cur + 1)} className="px-2.5 py-1.5 rounded-md border border-slate-200 bg-white disabled:opacity-40 hover:bg-slate-50">›</button>
+      </div>
+    </div>
+  )
+}
+
 export default function StageTable({ stageId, entries: serverEntries, companies, employees, isUSACanada, isNameClearance, canEdit = true, isAdmin = false }: Props) {
   const noDates = stageId === '6' // Portals & Compliance is a checklist: no dates, timing or payment
   const [editEntry, setEditEntry] = useState<any>(null)
   // Staff cannot change a record once it is completed; admins always can
   const isLocked = (e: any) => !isAdmin && Boolean(e.complete_date || e.usa_complete_date || e.approval_date)
   const [search, setSearch] = useState('')
+  const [page, setPage] = useState(1)
   const entries = serverEntries
 
   const filtered = entries.filter((e, i) => {
@@ -118,6 +141,11 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
       e.client_name, e.client_phone, e.category, e.country, e.city, e.current_stage, e.name_clearance_number, e.entity_type,
     ])
   })
+
+  const pages = Math.max(1, Math.ceil(filtered.length / PAGE))
+  const cur = Math.min(page, pages)
+  const pageRows = filtered.slice((cur - 1) * PAGE, cur * PAGE)
+  const pager = <Pager total={filtered.length} cur={cur} pages={pages} onPage={setPage} />
 
   if (isNameClearance) {
     return (
@@ -131,7 +159,7 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
             <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               value={search}
-              onChange={e => setSearch(e.target.value)}
+              onChange={e => { setSearch(e.target.value); setPage(1) }}
               placeholder="Filter records..."
               className="pl-8 pr-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-48"
             />
@@ -157,7 +185,7 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
             <tbody className="divide-y divide-slate-100 text-slate-700">
               {filtered.length === 0 ? (
                 <tr><td colSpan={10} className="text-center py-12 text-slate-400">No records found</td></tr>
-              ) : filtered.map(e => (
+              ) : pageRows.map(e => (
                 <tr key={e.id} className="hover:bg-slate-50/60 transition-colors">
                   <td className="py-3 px-4">
                     <div className="font-semibold text-slate-900">{e.company_id}</div>
@@ -188,6 +216,7 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
             </tbody>
           </table>
         </div>
+        {pager}
         {editEntry && <EditEntryModal isAdmin={isAdmin} stageId={stageId} entry={editEntry} companies={companies} employees={employees} isNameClearance onClose={() => setEditEntry(null)} />}
       </div>
     )
@@ -205,7 +234,7 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
             <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               value={search}
-              onChange={e => setSearch(e.target.value)}
+              onChange={e => { setSearch(e.target.value); setPage(1) }}
               placeholder="Search cross-border files..."
               className="pl-8 pr-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-52"
             />
@@ -250,7 +279,7 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
             <tbody className="divide-y divide-slate-100 text-slate-700">
               {filtered.length === 0 ? (
                 <tr><td colSpan={21} className="text-center py-12 text-slate-400">No cross-border records found</td></tr>
-              ) : filtered.map(e => (
+              ) : pageRows.map(e => (
                 <tr key={e.id} className="hover:bg-slate-50/60 transition-colors">
                   <td className="py-3 px-4">
                     <div className="font-semibold text-slate-900">{e.company_id}</div>
@@ -291,6 +320,7 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
             </tbody>
           </table>
         </div>
+        {pager}
         {editEntry && <EditEntryModal isAdmin={isAdmin} stageId={stageId} entry={editEntry} companies={companies} employees={employees} isUSACanada onClose={() => setEditEntry(null)} />}
       </div>
     )
@@ -308,7 +338,7 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
           <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             value={search}
-            onChange={e => setSearch(e.target.value)}
+            onChange={e => { setSearch(e.target.value); setPage(1) }}
             placeholder="Search records..."
             className="pl-8 pr-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-56"
           />
@@ -363,9 +393,9 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
           <tbody className="divide-y divide-slate-100 text-slate-700">
             {filtered.length === 0 ? (
               <tr><td colSpan={25} className="text-center py-12 text-slate-400">No active files found in this workflow module.</td></tr>
-            ) : filtered.map((e, idx) => (
+            ) : pageRows.map((e, idx) => (
               <tr key={e.id} className="hover:bg-slate-50/60 transition-colors">
-                <td className="py-3 px-4 text-slate-400 font-mono text-[11px]">{idx + 1}</td>
+                <td className="py-3 px-4 text-slate-400 font-mono text-[11px]">{(cur - 1) * PAGE + idx + 1}</td>
                 {(stageId === '3' || stageId === '10' || stageId === '11') && (<>
                   <td className="py-3 px-4 font-semibold text-slate-900 whitespace-nowrap">{e.foreign_company_name || '—'}</td>
                   <td className="py-3 px-4"><span className="inline-flex items-center gap-1.5 whitespace-nowrap"><Flag country={e.country} />{e.country || '—'}</span></td>
@@ -451,6 +481,7 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
           </tbody>
         </table>
       </div>
+      {pager}
       {editEntry && <EditEntryModal isAdmin={isAdmin} stageId={stageId} entry={editEntry} companies={companies} employees={employees} onClose={() => setEditEntry(null)} />}
     </div>
   )
