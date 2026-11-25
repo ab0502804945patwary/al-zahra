@@ -5,6 +5,7 @@ import { createClient, isSupabaseConfigured } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import BdFields from './BdFields'
 import DossierFiles from './DossierFiles'
+import { portalsComplete } from '@/lib/portals'
 import MisaAccounts from './MisaAccounts'
 import ParentChecks from './ParentChecks'
 import CountrySelect from '@/components/ui/CountrySelect'
@@ -64,7 +65,7 @@ export default function EditEntryModal({ stageId, entry, companies, employees, o
     if (dateError) { alert(dateError); return }
     if (needFiles && !['4', '5'].includes(stageId) && fileCount === 0) { alert('Upload at least one file in the Electronic Dossier.'); return }
     setLoading(true)
-    let payload: Record<string, any> = { ...form, ...(stageId === '6' ? { portal_accounts: portals.filter(p => p.portal) } : {}), client_name: clientInfo.name || form.client_name, client_phone: clientInfo.phone || form.client_phone, category: comp?.entity_type || form.category, ...(COUNTRY_CITY_STAGES.includes(stageId) && stageId !== '1' ? { country: comp?.stage1_country || form.country, city: comp?.stage1_city || form.city } : {}) }
+    let payload: Record<string, any> = { ...form, ...(stageId === '6' ? { portal_accounts: portals.filter(p => p.portal), complete_date: portalsComplete(portals) ? (entry.complete_date || new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10)) : null } : {}), client_name: clientInfo.name || form.client_name, client_phone: clientInfo.phone || form.client_phone, category: comp?.entity_type || form.category, ...(COUNTRY_CITY_STAGES.includes(stageId) && stageId !== '1' ? { country: comp?.stage1_country || form.country, city: comp?.stage1_city || form.city } : {}) }
     if (!isUSACanada && !isNameClearance && stageId !== '6') {
       const t = assessTiming(form.submit_date, form.target_date, form.complete_date)
       payload = { ...payload, days_taken: t.days, status: t.status, completion_percent: t.completion, overdue_status: t.overdue }

@@ -172,7 +172,7 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
   const entries = serverEntries
 
   const filtered = entries.filter((e, i) => {
-    if (['9', '10', '2', '3', '4', '5', '11'].includes(stageId) && bdGroup(e) !== bdTab) return false
+    if (['9', '10', '2', '3', '4', '5', '6', '11'].includes(stageId) && bdGroup(e) !== bdTab) return false
     if (stageId === '8' && (e.approval_date ? 'completed' : 'pending') !== bdTab) return false
     const comp = companies.find(c => c.company_id === e.company_id)
     return matchesQuery(search, i + 1, [
@@ -392,7 +392,7 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
         </div>
       </div>
 
-      {['9', '10', '2', '3', '4', '5', '11'].includes(stageId) && (
+      {['9', '10', '2', '3', '4', '5', '6', '11'].includes(stageId) && (
         <div className="px-4 sm:px-6 pt-3 flex flex-wrap gap-2 border-b border-slate-100">
           {([['pending', 'Pending / Others', entries.filter(e => bdGroup(e) === 'pending').length], ...(stageId === '9' ? [['approved', 'Name Approved', entries.filter(e => bdGroup(e) === 'approved').length] as const] : []), ['completed', 'Completed', entries.filter(e => bdGroup(e) === 'completed').length]] as const).map(([k, label, n]) => (
             <button key={k} onClick={() => { setBdTab(k); setPage(1) }} className={`px-3.5 py-2 text-xs font-semibold rounded-t-lg border-b-2 -mb-px transition ${bdTab === k ? 'border-blue-600 text-blue-700' : 'border-transparent text-slate-500 hover:text-slate-700'}`}>
@@ -445,6 +445,7 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
               {!noDates && <th className="py-3 px-4">Elapsed</th>}
               {!noDates && !['1', '2', '9'].includes(stageId) && <th className="py-3 px-4">Payment</th>}
               {['3', '10', '11'].includes(stageId) && <th className="py-3 px-4">Payment Bank</th>}
+              {noDates && <th className="py-3 px-4">Submission</th>}
               {noDates && <th className="py-3 px-4">Portal Accounts</th>}
               {stageId === '5' && <th className="py-3 px-4">CR Association</th>}
               <th className="py-3 px-4">Notes</th>
@@ -524,6 +525,7 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
                   </span>
                 </td>)}
                 {['3', '10', '11'].includes(stageId) && <td className="py-3 px-4 whitespace-nowrap">{e.payment_bank || '—'}</td>}
+                {noDates && <td className="py-3 px-4">{formatDate(e.submit_date)}</td>}
                 {noDates && (
                   <td className="py-3 px-4">
                     <div className="flex items-center gap-2">

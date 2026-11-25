@@ -1,7 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { Plus, Trash2, Eye, EyeOff, KeyRound } from 'lucide-react'
-import type { PortalAccount } from '@/lib/portals'
+import { PORTALS, portalsDone, type PortalAccount } from '@/lib/portals'
 import PortalSelect from './PortalSelect'
 
 const NAFATH = 'Login with Nafath'
@@ -20,6 +20,7 @@ export default function PortalAccountsEditor({ value, onChange }: { value: Porta
         <div>
           <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wide">Portal Accounts</h3>
           <p className="text-[11px] text-slate-500">Pick a portal, write its user name and password. Add one line per portal. A PDF for the client can be downloaded after saving.</p>
+          <p className="text-[11px] font-semibold text-blue-700 mt-0.5">{portalsDone(value)} of {PORTALS.length} portals done. This phase is Completed when all {PORTALS.length} have a user name and password (or Login with Nafath).</p>
         </div>
       </div>
 

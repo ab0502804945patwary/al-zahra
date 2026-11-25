@@ -18,3 +18,14 @@ export const PORTALS: PortalDef[] = [
 export interface PortalAccount { portal: string; username: string; password: string; note?: string }
 
 export const portalByKey = (key: string) => PORTALS.find(p => p.key === key)
+
+/** A portal line counts when it has both a user name and a password (or "Login with Nafath"). */
+export const portalFilled = (a?: PortalAccount) => !!a && a.username.trim() !== '' && a.password.trim() !== ''
+
+/** How many of the portals in the list already have their account filled in. */
+export function portalsDone(accounts: PortalAccount[]) {
+  return PORTALS.filter(p => portalFilled((accounts || []).find(a => a.portal === p.key))).length
+}
+
+/** Portals & Compliance is complete when every portal in the list has its account. */
+export const portalsComplete = (accounts: PortalAccount[]) => portalsDone(accounts) === PORTALS.length

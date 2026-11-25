@@ -5,6 +5,7 @@ import { createClient, isSupabaseConfigured } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import BdFields from './BdFields'
 import DossierFiles from './DossierFiles'
+import { portalsComplete } from '@/lib/portals'
 import MisaAccounts from './MisaAccounts'
 import ParentChecks from './ParentChecks'
 import CountrySelect from '@/components/ui/CountrySelect'
@@ -101,7 +102,11 @@ export default function AddEntryModal({ stageId, companies, employees, onClose, 
     setLoading(true)
 
     let payload: Record<string, any> = { ...form }
-    if (stageId === '6') payload.portal_accounts = portals.filter(p => p.portal)
+    if (stageId === '6') {
+      payload.portal_accounts = portals.filter(p => p.portal)
+      // all portals filled in = completed (no Completion Date to type)
+      payload.complete_date = portalsComplete(portals) ? new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10) : null
+    }
 
     if (!isUSACanada && !isNameClearance && stageId !== '6') {
       const t = assessTiming(form.submit_date, form.target_date, form.complete_date)
@@ -212,6 +217,7 @@ export default function AddEntryModal({ stageId, companies, employees, onClose, 
               )}
               {stageId === '1' && <ParentChecks form={form} set={set} />}
               {stageId !== '6' && <Select label="Workflow Phase Status" name="current_stage" options={toOptions(PHASE_OPTIONS[stageId] || [])} />}
+              {stageId === '6' && <Field label="Submission Date" name="submit_date" type="date" disabled hint="Set automatically to today" />}
               {stageId === '6' && <PortalAccountsEditor value={portals} onChange={setPortals} />}
             </>
           )}
