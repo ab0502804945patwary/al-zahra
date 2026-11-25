@@ -246,11 +246,11 @@ export default function EditEntryModal({ stageId, entry, companies, employees, o
               </div>
               {!['1', '2', '3', '9', '10', '11'].includes(stageId) && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <Field label="Completion Date" name="complete_date" type="date" required={['1', '9', '10'].includes(stageId)} hint={stageId === '4' ? 'Fill it when the work is finished: then everything except Operational Remarks is needed' : undefined} />
+                <Field label="Completion Date" name="complete_date" type="date" required={['1', '9', '10'].includes(stageId)} hint={['4', '5'].includes(stageId) ? 'Fill it when the work is finished: then everything except Operational Remarks is needed' : undefined} />
                 <Sel
                   label="Payment Status"
                   name="payment_status"
-                  required={stageId === '4' && !!form.complete_date}
+                  required={['4', '5'].includes(stageId) && !!form.complete_date}
                   options={toOptions(PAYMENT_STATUSES)}
                 />
               </div>
@@ -270,7 +270,7 @@ export default function EditEntryModal({ stageId, entry, companies, employees, o
               )}
               {stageId === '5' && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <Sel label="CR Association Status" name="cr_status" options={toOptions(['Pending', 'Complete'])} />
+                  <Sel label="CR Association Status" name="cr_status" required={!!form.complete_date} options={toOptions(['Pending', 'Complete'])} />
                   <p className="text-[11px] text-slate-500 self-end pb-2">Complete stops the Company Name Clearance countdown of this company.</p>
                 </div>
               )}

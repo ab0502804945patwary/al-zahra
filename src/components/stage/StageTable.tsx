@@ -146,7 +146,7 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
   const entries = serverEntries
 
   const filtered = entries.filter((e, i) => {
-    if (['9', '10', '2', '3', '4', '11'].includes(stageId) && bdGroup(e) !== bdTab) return false
+    if (['9', '10', '2', '3', '4', '5', '11'].includes(stageId) && bdGroup(e) !== bdTab) return false
     if (stageId === '8' && (e.approval_date ? 'completed' : 'pending') !== bdTab) return false
     const comp = companies.find(c => c.company_id === e.company_id)
     return matchesQuery(search, i + 1, [
@@ -366,7 +366,7 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
         </div>
       </div>
 
-      {['9', '10', '2', '3', '4', '11'].includes(stageId) && (
+      {['9', '10', '2', '3', '4', '5', '11'].includes(stageId) && (
         <div className="px-4 sm:px-6 pt-3 flex flex-wrap gap-2 border-b border-slate-100">
           {([['pending', 'Pending / Others', entries.filter(e => bdGroup(e) === 'pending').length], ...(stageId === '9' ? [['approved', 'Name Approved', entries.filter(e => bdGroup(e) === 'approved').length] as const] : []), ['completed', 'Completed', entries.filter(e => bdGroup(e) === 'completed').length]] as const).map(([k, label, n]) => (
             <button key={k} onClick={() => { setBdTab(k); setPage(1) }} className={`px-3.5 py-2 text-xs font-semibold rounded-t-lg border-b-2 -mb-px transition ${bdTab === k ? 'border-blue-600 text-blue-700' : 'border-transparent text-slate-500 hover:text-slate-700'}`}>
