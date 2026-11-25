@@ -27,7 +27,11 @@ export const PERMISSIONS: { key: string; label: string }[] = [
   { key: 'perm_invoice_cancel', label: 'Invoices: can cancel an invoice' },
   { key: 'perm_expense_approve', label: 'Expenses: can approve / reject' },
   { key: 'perm_lead_delete', label: 'Leads: can delete own leads' },
-  ...[1, 9, 10, 2, 3, 11, 8, 4, 5, 6, 7].map(n => ({ key: `edit_stage_${n}`, label: `Workflow: can edit entries in phase (stage ${n})` })),
+  ...([
+    [1, '01: Parent Entity Verification'], [9, '02: Bangladesh Company Name'], [10, '03: Foreign Mother Company'], [2, '04: Activity Classification'],
+    [3, '05: 1 Foreign Subsidiary Company'], [11, '06: 2 Foreign Subsidiary Company'], [8, '07: Company Name Clearance'], [4, '08: MISA Investment Licensing'],
+    [5, '09: Commercial Registration (CR)'], [6, '10: Government Portals & Compliance'], [7, '11: Final Legal Dossier & Issuance'],
+  ] as [number, string][]).map(([n, name]) => ({ key: `edit_stage_${n}`, label: `Can edit phase ${name}` })),
 ]
 
 /** Stage numbers a staff member is assigned to. Returns null for admins (= every stage). */
