@@ -147,7 +147,7 @@ export default function AddEntryModal({ stageId, companies, employees, onClose, 
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          {stageId === '4' && <MisaAccounts form={form} set={set} />}
+          {stageId === '4' && <MisaAccounts required={!!form.complete_date} form={form} set={set} />}
           {stageId === '9' && <BdFields form={form} set={set} />}
           {(stageId === '3' || stageId === '10' || stageId === '11') && <ForeignFields requireAll={['3', '10', '11'].includes(stageId) && !!form.complete_date} requireAccount={['3', '11'].includes(stageId) ? !!form.complete_date : true} form={form} set={set} title={stageId === '10' ? 'Foreign Mother Company' : stageId === '3' ? '1 Foreign Subsidiary Company' : '2 Foreign Subsidiary Company'} withAccount={stageId === '3' || stageId === '11'} />}
           <Select
@@ -282,10 +282,11 @@ export default function AddEntryModal({ stageId, companies, employees, onClose, 
               </div>
               {!['1', '2', '3', '9', '10', '11'].includes(stageId) && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <Field label="Completion Date" name="complete_date" type="date" required={['1', '9', '10'].includes(stageId)} />
+                <Field label="Completion Date" name="complete_date" type="date" required={['1', '9', '10'].includes(stageId)} hint={stageId === '4' ? 'Fill it when the work is finished: then everything except Operational Remarks is needed' : undefined} />
                 <Select
                   label="Payment Status"
                   name="payment_status"
+                  required={stageId === '4' && !!form.complete_date}
                   options={toOptions(PAYMENT_STATUSES)}
                 />
               </div>
@@ -309,7 +310,7 @@ export default function AddEntryModal({ stageId, companies, employees, onClose, 
                   <p className="text-[11px] text-slate-500 self-end pb-2">Complete stops the Company Name Clearance countdown of this company.</p>
                 </div>
               )}
-              <Field label="Electronic Dossier Link (Google Drive)" name="drive_link" required={stageId === '1' || (['9', '10', '2', '3', '11'].includes(stageId) && !!form.complete_date)} />
+              <Field label="Electronic Dossier Link (Google Drive)" name="drive_link" required={stageId === '1' || (['9', '10', '2', '3', '4', '11'].includes(stageId) && !!form.complete_date)} />
               <Field label="Operational Remarks" name="remarks" />
             </>
           )}
