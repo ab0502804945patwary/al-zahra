@@ -140,7 +140,7 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
   // Bangladesh phase, Completed tab: the company details are hidden to keep the list short
   const hideBd = () => stageId === '9' && bdTab === 'completed'
   // Name Approved tab: RJSC no., Issue No, Incorporation and the company block are hidden too
-  const hideCo = () => stageId === '9' || stageId === '10'
+  const hideCo = () => ['9', '10', '3'].includes(stageId)
   const hideRjsc = () => stageId === '9' && bdTab !== 'completed'
   const bdGroup = (e: any): 'pending' | 'approved' | 'completed' => (e.complete_date ? 'completed' : e.approval_status === 'Approved' ? 'approved' : 'pending')
   const entries = serverEntries
