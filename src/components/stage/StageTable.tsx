@@ -133,12 +133,13 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
   // Bangladesh Company Name: two groups, names that are Approved and the rest (Pending etc.)
-  const [bdTab, setBdTab] = useState<'pending' | 'approved'>('pending')
-  const isApprovedBd = (e: any) => e.approval_status === 'Approved'
+  const [bdTab, setBdTab] = useState<'pending' | 'approved' | 'completed'>('pending')
+  // completed = the whole Bangladesh company work is finished (Completion Date); approved = name Approved, work still running
+  const bdGroup = (e: any): 'pending' | 'approved' | 'completed' => (e.complete_date ? 'completed' : e.approval_status === 'Approved' ? 'approved' : 'pending')
   const entries = serverEntries
 
   const filtered = entries.filter((e, i) => {
-    if (stageId === '9' && (bdTab === 'approved') !== isApprovedBd(e)) return false
+    if (stageId === '9' && bdGroup(e) !== bdTab) return false
     const comp = companies.find(c => c.company_id === e.company_id)
     return matchesQuery(search, i + 1, [
       e.bd_company_name, e.approval_status, e.foreign_company_name, e.city, e.registration_no, e.account_email, e.account_username, e.rjsc_reg_no, e.issue_no, e.auditor_firm, e.company_id, e.companies?.company_name, e.companies?.country_of_origin, comp?.client_name, comp?.client_phone,
@@ -351,7 +352,7 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
 
       {stageId === '9' && (
         <div className="px-4 sm:px-6 pt-3 flex flex-wrap gap-2 border-b border-slate-100">
-          {([['pending', 'Pending / Others', entries.filter(e => !isApprovedBd(e)).length], ['approved', 'Name Approved', entries.filter(isApprovedBd).length]] as const).map(([k, label, n]) => (
+          {([['pending', 'Pending / Others', entries.filter(e => bdGroup(e) === 'pending').length], ['approved', 'Name Approved', entries.filter(e => bdGroup(e) === 'approved').length], ['completed', 'Completed', entries.filter(e => bdGroup(e) === 'completed').length]] as const).map(([k, label, n]) => (
             <button key={k} onClick={() => { setBdTab(k); setPage(1) }} className={`px-3.5 py-2 text-xs font-semibold rounded-t-lg border-b-2 -mb-px transition ${bdTab === k ? 'border-blue-600 text-blue-700' : 'border-transparent text-slate-500 hover:text-slate-700'}`}>
               {label} <span className={`ml-1 px-1.5 py-0.5 rounded-full text-[10px] ${bdTab === k ? 'bg-blue-50 text-blue-700' : 'bg-slate-100 text-slate-500'}`}>{n}</span>
             </button>
