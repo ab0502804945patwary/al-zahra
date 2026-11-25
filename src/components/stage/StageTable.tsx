@@ -159,7 +159,8 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
   const noDates = stageId === '6' // Portals & Compliance is a checklist: no dates, timing or payment
   const [editEntry, setEditEntry] = useState<any>(null)
   // Staff cannot change a record once it is completed; admins always can
-  const isLocked = (e: any) => !isAdmin && Boolean(e.complete_date || e.usa_complete_date || e.approval_date)
+  // canEdit (the phase edit permission, or admin) also covers completed records; people without it never get an edit button
+  const isLocked = (_e: any) => false
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
   // Bangladesh Company Name: two groups, names that are Approved and the rest (Pending etc.)
