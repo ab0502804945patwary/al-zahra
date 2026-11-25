@@ -222,8 +222,8 @@ export default function EditEntryModal({ stageId, entry, companies, employees, o
                 <Field label="Clearance Number" name="name_clearance_number" required={!!form.approval_date} />
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <Field label="Official English Name" name="company_name_english" required />
-                <Field label="Official Arabic Name" name="arabic_name" required />
+                <Field label="Official English Name" name="company_name_english" required={!!form.approval_date} />
+                <Field label="Official Arabic Name" name="arabic_name" required={!!form.approval_date} />
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <Field label="Submission Date" name="submit_date" type="date" disabled={!isAdmin} hint={!isAdmin ? "Fixed — only an admin can change it" : undefined} />
