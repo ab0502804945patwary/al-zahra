@@ -403,7 +403,7 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
               {!hideCo() && <th className="py-3 px-4">Company Name</th>}
               {!hideBd() && <th className="py-3 px-4">Authorized Contact</th>}
               {!hideBd() && <th className="py-3 px-4">License Type</th>}
-              {['1', '2', '4', '5', '6', '7'].includes(stageId) && (<>
+              {['1', '2', '4', '6', '7'].includes(stageId) && (<>
                 <th className="py-3 px-4">Country</th>
               </>)}
               {!noDates && !hideBd() && <th className="py-3 px-4">Status</th>}
@@ -465,7 +465,7 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
                 </td>
                 <td className="py-3 px-4">{e.category || '—'}</td>
                 </>)}
-                {['1', '2', '4', '5', '6', '7'].includes(stageId) && (<>
+                {['1', '2', '4', '6', '7'].includes(stageId) && (<>
                   <td className="py-3 px-4 text-slate-600">{e.country || '—'}</td>
                 </>)}
                 {!noDates && !hideBd() && (                <td className="py-3 px-4">
