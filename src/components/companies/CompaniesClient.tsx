@@ -21,6 +21,9 @@ function StatusSwitch({ on, busy, onClick }: { on: boolean; busy: boolean; onCli
 interface Props { companies: Company[]; mode?: 'new' | 'renewal'; isAdmin?: boolean; owners?: Record<string, string>; ownerAvatars?: Record<string, string> }
 
 // Only an admin can edit or delete a company. Staff can look and register new ones.
+/** Date the company was registered (Saudi time), e.g. 2026-11-25 */
+const regDate = (iso?: string) => (iso ? new Date(iso).toLocaleDateString('en-CA', { timeZone: 'Asia/Riyadh' }) : '—')
+
 export default function CompaniesClient({ companies: initialCompanies, mode = 'new', isAdmin = false, owners = {}, ownerAvatars = {} }: Props) {
   const renewalMode = mode === 'renewal'
   const [companiesList, setCompaniesList] = useState<Company[]>(initialCompanies)
@@ -198,7 +201,7 @@ export default function CompaniesClient({ companies: initialCompanies, mode = 'n
           <table className="w-full text-xs min-w-[900px]">
             <thead className="bg-slate-50 text-slate-500 uppercase text-[10px] tracking-wide">
               <tr>
-                {['SL', 'ID', 'Company', ...(isAdmin ? ['Registered by'] : []), 'Nationality', 'Service Type', 'License', 'CR No.', 'MISA No.', renewalMode ? 'Next Due' : 'CR Expiry', 'Status', 'Folder', ''].map(h => (
+                {['SL', 'ID', 'Company', 'Registered on', ...(isAdmin ? ['Registered by'] : []), 'Nationality', 'Service Type', 'License', 'CR No.', 'MISA No.', renewalMode ? 'Next Due' : 'CR Expiry', 'Status', 'Folder', ''].map(h => (
                   <th key={h} className="text-left font-semibold px-3 py-2.5 whitespace-nowrap">{h}</th>
                 ))}
               </tr>
@@ -209,6 +212,7 @@ export default function CompaniesClient({ companies: initialCompanies, mode = 'n
                   <td className="px-3 py-2.5 text-slate-400 font-mono">{serialOf(c)}</td>
                   <td className="px-3 py-2.5 font-mono font-bold text-blue-700">{c.company_id}</td>
                   <td className="px-3 py-2.5 font-semibold text-slate-900">{c.company_name}{c.original_company_name && <div className="text-[10px] font-normal text-slate-400">Previously: {c.original_company_name}</div>}</td>
+                  <td className="px-3 py-2.5 text-slate-600 whitespace-nowrap font-mono">{regDate(c.created_at)}</td>
                   {isAdmin && <td className="px-3 py-2.5 text-slate-600"><OwnerTag name={c.created_by ? (owners[c.created_by] || 'Unknown') : null} avatar={c.created_by ? ownerAvatars[c.created_by] : null} /></td>}
                   <td className="px-3 py-2.5 text-slate-600"><span className="inline-flex items-center gap-1"><Flag country={c.country_of_origin} />{c.country_of_origin}</span></td>
                   <td className="px-3 py-2.5"><TypeBadge company={c} /></td>
@@ -231,7 +235,7 @@ export default function CompaniesClient({ companies: initialCompanies, mode = 'n
                 </tr>
               ))}
               {filtered.length === 0 && (
-                <tr><td colSpan={13} className="text-center py-12 text-slate-400">No matching corporate entities located</td></tr>
+                <tr><td colSpan={14} className="text-center py-12 text-slate-400">No matching corporate entities located</td></tr>
               )}
             </tbody>
           </table>
@@ -256,6 +260,7 @@ export default function CompaniesClient({ companies: initialCompanies, mode = 'n
                     <div>
                       <div className="font-bold text-sm leading-tight text-slate-900">{company.company_name}</div>
                       {company.original_company_name && <div className="text-[10px] text-slate-400">Previously: {company.original_company_name}</div>}
+                      <div className="text-[10px] text-slate-400">Registered on {regDate(company.created_at)}</div>
                       <div className="text-slate-500 text-xs mt-0.5 flex items-center gap-1.5 font-mono">
                         <span className="font-bold text-blue-700 bg-blue-50 px-1.5 py-0.2 rounded border border-blue-200 text-[11px]">
                           {company.company_id}
