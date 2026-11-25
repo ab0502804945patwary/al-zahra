@@ -233,10 +233,10 @@ export default function EditEntryModal({ stageId, entry, companies, employees, o
                 <>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <Field label="Submission Date" name="submit_date" type="date" disabled={stageId === '1' || !isAdmin} hint={stageId === '1' ? 'Fixed: the day this company reached this phase' : !isAdmin ? 'Fixed — only an admin can change it' : undefined} />
-                {!['1', '9', '10'].includes(stageId) && <Field label="Target SLA Date" name="target_date" type="date" />}
-                {['1', '9', '10'].includes(stageId) && <Field label="Completion Date" name="complete_date" type="date" required={stageId === '1'} hint={stageId === '9' ? 'Fill it when the work is finished: then RJSC no., Issue No, Incorporation Date and Drive Link are needed' : stageId === '10' ? 'Fill it when the work is finished: then everything except Operational Remarks is needed' : undefined} />}
+                {!['1', '2', '9', '10'].includes(stageId) && <Field label="Target SLA Date" name="target_date" type="date" />}
+                {['1', '2', '9', '10'].includes(stageId) && <Field label="Completion Date" name="complete_date" type="date" required={stageId === '1'} hint={stageId === '9' ? 'Fill it when the work is finished: then RJSC no., Issue No, Incorporation Date and Drive Link are needed' : stageId === '10' ? 'Fill it when the work is finished: then everything except Operational Remarks is needed' : undefined} />}
               </div>
-              {!['1', '9', '10'].includes(stageId) && (
+              {!['1', '2', '9', '10'].includes(stageId) && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <Field label="Completion Date" name="complete_date" type="date" required={['1', '9', '10'].includes(stageId)} />
                 <Sel

@@ -399,10 +399,10 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
               </>)}
               {!noDates && !hideBd() && <th className="py-3 px-4">Status</th>}
               {!noDates && <th className="py-3 px-4">Submission</th>}
-              {!noDates && !['1', '9', '10'].includes(stageId) && <th className="py-3 px-4">Target Date</th>}
+              {!noDates && !['1', '2', '9', '10'].includes(stageId) && <th className="py-3 px-4">Target Date</th>}
               {!noDates && <th className="py-3 px-4">Completion</th>}
               {!noDates && <th className="py-3 px-4">Elapsed</th>}
-              {!noDates && !['1', '9'].includes(stageId) && <th className="py-3 px-4">Payment</th>}
+              {!noDates && !['1', '2', '9'].includes(stageId) && <th className="py-3 px-4">Payment</th>}
               {stageId === '10' && <th className="py-3 px-4">Payment Bank</th>}
               {noDates && <th className="py-3 px-4">Portal Accounts</th>}
               {stageId === '5' && <th className="py-3 px-4">CR Association</th>}
@@ -459,12 +459,12 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
                   </span>
                 </td>)}
                 {!noDates && <td className="py-3 px-4">{formatDate(e.submit_date)}</td>}
-                {!noDates && !['1', '9', '10'].includes(stageId) && <td className="py-3 px-4">{formatDate(e.target_date)}</td>}
+                {!noDates && !['1', '2', '9', '10'].includes(stageId) && <td className="py-3 px-4">{formatDate(e.target_date)}</td>}
                 {!noDates && <td className="py-3 px-4">{formatDate(e.complete_date)}</td>}
                 {!noDates && (<td className="py-3 px-4 font-mono font-medium text-slate-800">
                   {e.days_taken != null ? `${e.days_taken}d` : '—'}
                 </td>)}
-                {!noDates && !['1', '9'].includes(stageId) && (<td className="py-3 px-4">
+                {!noDates && !['1', '2', '9'].includes(stageId) && (<td className="py-3 px-4">
                   <span
                     className={cn(
                       'px-2 py-0.5 rounded text-[11px] font-medium',
