@@ -7,10 +7,12 @@ export const PORTALS: PortalDef[] = [
   { key: 'MISA', name: 'Ministry of Investment (MISA)', short: 'MISA', color: '#006d46', logo: '/portals/misa.svg' },
   { key: 'QIWA', name: 'QIWA', short: 'Q', color: '#6b3fa0', logo: '/portals/qiwa.svg' },
   { key: 'MUQEEM', name: 'MUQEEM', short: 'M', color: '#b4541a', logo: '/portals/muqeem.svg' },
-  { key: 'GOSI CERTIFICATE', name: 'GOSI Certificate', short: 'G', color: '#1b6fb5', logo: '/portals/gosi.svg' },
+  { key: 'GOSI CERTIFICATE', name: 'GOSI', short: 'G', color: '#1b6fb5', logo: '/portals/gosi.svg' },
   { key: 'MOC', name: 'Ministry of Commerce', short: 'MC', color: '#03534c', logo: '/portals/moc.svg' },
   { key: 'Chamber Of Commerce', name: 'Chamber of Commerce', short: 'CC', color: '#8a6d1a' },
   { key: 'VAT', name: 'VAT (ZATCA)', short: 'VAT', color: '#a3263c', logo: '/portals/zatca.svg' },
+  { key: 'GMAIL', name: 'Gmail', short: 'G', color: '#ea4335', logo: '/portals/gmail.svg' },
+  { key: 'ABSHER', name: 'Absher', short: 'A', color: '#1a7f5a', logo: '/portals/absher.svg' },
 ]
 
 export interface PortalAccount { portal: string; username: string; password: string; note?: string }
