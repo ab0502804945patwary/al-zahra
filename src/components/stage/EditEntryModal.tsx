@@ -111,7 +111,7 @@ export default function EditEntryModal({ stageId, entry, companies, employees, o
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {stageId === '9' && <BdFields form={form} set={set} />}
-          {(stageId === '3' || stageId === '10' || stageId === '11') && <ForeignFields requireAll={['3', '10'].includes(stageId) && !!form.complete_date} requireAccount={stageId === '3' ? !!form.complete_date : true} form={form} set={set} title={stageId === '10' ? 'Foreign Mother Company' : stageId === '3' ? '1 Foreign Subsidiary Company' : '2 Foreign Subsidiary Company'} withAccount={stageId === '3' || stageId === '11'} />}
+          {(stageId === '3' || stageId === '10' || stageId === '11') && <ForeignFields requireAll={['3', '10', '11'].includes(stageId) && !!form.complete_date} requireAccount={['3', '11'].includes(stageId) ? !!form.complete_date : true} form={form} set={set} title={stageId === '10' ? 'Foreign Mother Company' : stageId === '3' ? '1 Foreign Subsidiary Company' : '2 Foreign Subsidiary Company'} withAccount={stageId === '3' || stageId === '11'} />}
           <Sel
             label={stageId === '9' ? 'Linked Client Company (optional)' : 'Corporate Entity'}
             name="company_id"
@@ -233,10 +233,10 @@ export default function EditEntryModal({ stageId, entry, companies, employees, o
                 <>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <Field label="Submission Date" name="submit_date" type="date" disabled={stageId === '1' || !isAdmin} hint={stageId === '1' ? 'Fixed: the day this company reached this phase' : !isAdmin ? 'Fixed — only an admin can change it' : undefined} />
-                {!['1', '2', '3', '9', '10'].includes(stageId) && <Field label="Target SLA Date" name="target_date" type="date" />}
-                {['1', '2', '3', '9', '10'].includes(stageId) && <Field label="Completion Date" name="complete_date" type="date" required={stageId === '1'} hint={stageId === '2' ? 'Fill it when the work is finished: then the Drive Link is needed' : stageId === '9' ? 'Fill it when the work is finished: then RJSC no., Issue No, Incorporation Date and Drive Link are needed' : ['3', '10'].includes(stageId) ? 'Fill it when the work is finished: then everything except Operational Remarks is needed' : undefined} />}
+                {!['1', '2', '3', '9', '10', '11'].includes(stageId) && <Field label="Target SLA Date" name="target_date" type="date" />}
+                {['1', '2', '3', '9', '10', '11'].includes(stageId) && <Field label="Completion Date" name="complete_date" type="date" required={stageId === '1'} hint={stageId === '2' ? 'Fill it when the work is finished: then the Drive Link is needed' : stageId === '9' ? 'Fill it when the work is finished: then RJSC no., Issue No, Incorporation Date and Drive Link are needed' : ['3', '10', '11'].includes(stageId) ? 'Fill it when the work is finished: then everything except Operational Remarks is needed' : undefined} />}
               </div>
-              {!['1', '2', '3', '9', '10'].includes(stageId) && (
+              {!['1', '2', '3', '9', '10', '11'].includes(stageId) && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <Field label="Completion Date" name="complete_date" type="date" required={['1', '9', '10'].includes(stageId)} />
                 <Sel
@@ -246,15 +246,15 @@ export default function EditEntryModal({ stageId, entry, companies, employees, o
                 />
               </div>
               )}
-              {['3', '10'].includes(stageId) && (
+              {['3', '10', '11'].includes(stageId) && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <Sel
                   label="Payment Status"
                   name="payment_status"
-                  required={['3', '10'].includes(stageId) && !!form.complete_date}
+                  required={['3', '10', '11'].includes(stageId) && !!form.complete_date}
                   options={toOptions(PAYMENT_STATUSES)}
                 />
-                <Field label="Payment Bank" name="payment_bank" required={['3', '10'].includes(stageId) && !!form.complete_date} hint="Which bank the payment was made through" />
+                <Field label="Payment Bank" name="payment_bank" required={['3', '10', '11'].includes(stageId) && !!form.complete_date} hint="Which bank the payment was made through" />
               </div>
               )}
                 </>
@@ -265,7 +265,7 @@ export default function EditEntryModal({ stageId, entry, companies, employees, o
                   <p className="text-[11px] text-slate-500 self-end pb-2">Complete stops the Company Name Clearance countdown of this company.</p>
                 </div>
               )}
-              <Field label="Electronic Dossier Link (Google Drive)" name="drive_link" required={stageId === '1' || (['9', '10', '2', '3'].includes(stageId) && !!form.complete_date)} />
+              <Field label="Electronic Dossier Link (Google Drive)" name="drive_link" required={stageId === '1' || (['9', '10', '2', '3', '11'].includes(stageId) && !!form.complete_date)} />
               <Field label="Operational Remarks" name="remarks" />
             </>
           )}

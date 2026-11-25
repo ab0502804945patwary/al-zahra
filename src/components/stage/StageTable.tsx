@@ -140,13 +140,13 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
   // Bangladesh phase, Completed tab: the company details are hidden to keep the list short
   const hideBd = () => stageId === '9' && bdTab === 'completed'
   // Name Approved tab: RJSC no., Issue No, Incorporation and the company block are hidden too
-  const hideCo = () => ['9', '10', '3'].includes(stageId)
+  const hideCo = () => ['9', '10', '3', '11'].includes(stageId)
   const hideRjsc = () => stageId === '9' && bdTab !== 'completed'
   const bdGroup = (e: any): 'pending' | 'approved' | 'completed' => (e.complete_date ? 'completed' : e.approval_status === 'Approved' ? 'approved' : 'pending')
   const entries = serverEntries
 
   const filtered = entries.filter((e, i) => {
-    if (['9', '10', '2', '3'].includes(stageId) && bdGroup(e) !== bdTab) return false
+    if (['9', '10', '2', '3', '11'].includes(stageId) && bdGroup(e) !== bdTab) return false
     const comp = companies.find(c => c.company_id === e.company_id)
     return matchesQuery(search, i + 1, [
       e.bd_company_name, e.approval_status, e.foreign_company_name, e.city, e.registration_no, e.account_email, e.account_username, e.rjsc_reg_no, e.issue_no, e.auditor_firm, e.company_id, e.companies?.company_name, e.companies?.country_of_origin, comp?.client_name, comp?.client_phone,
@@ -357,7 +357,7 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
         </div>
       </div>
 
-      {['9', '10', '2', '3'].includes(stageId) && (
+      {['9', '10', '2', '3', '11'].includes(stageId) && (
         <div className="px-4 sm:px-6 pt-3 flex flex-wrap gap-2 border-b border-slate-100">
           {([['pending', 'Pending / Others', entries.filter(e => bdGroup(e) === 'pending').length], ...(stageId === '9' ? [['approved', 'Name Approved', entries.filter(e => bdGroup(e) === 'approved').length] as const] : []), ['completed', 'Completed', entries.filter(e => bdGroup(e) === 'completed').length]] as const).map(([k, label, n]) => (
             <button key={k} onClick={() => { setBdTab(k); setPage(1) }} className={`px-3.5 py-2 text-xs font-semibold rounded-t-lg border-b-2 -mb-px transition ${bdTab === k ? 'border-blue-600 text-blue-700' : 'border-transparent text-slate-500 hover:text-slate-700'}`}>
@@ -399,11 +399,11 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
               </>)}
               {!noDates && !hideBd() && <th className="py-3 px-4">Status</th>}
               {!noDates && <th className="py-3 px-4">Submission</th>}
-              {!noDates && !['1', '2', '3', '9', '10'].includes(stageId) && <th className="py-3 px-4">Target Date</th>}
+              {!noDates && !['1', '2', '3', '9', '10', '11'].includes(stageId) && <th className="py-3 px-4">Target Date</th>}
               {!noDates && <th className="py-3 px-4">Completion</th>}
               {!noDates && <th className="py-3 px-4">Elapsed</th>}
               {!noDates && !['1', '2', '9'].includes(stageId) && <th className="py-3 px-4">Payment</th>}
-              {['3', '10'].includes(stageId) && <th className="py-3 px-4">Payment Bank</th>}
+              {['3', '10', '11'].includes(stageId) && <th className="py-3 px-4">Payment Bank</th>}
               {noDates && <th className="py-3 px-4">Portal Accounts</th>}
               {stageId === '5' && <th className="py-3 px-4">CR Association</th>}
               <th className="py-3 px-4">Notes</th>
@@ -459,7 +459,7 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
                   </span>
                 </td>)}
                 {!noDates && <td className="py-3 px-4">{formatDate(e.submit_date)}</td>}
-                {!noDates && !['1', '2', '3', '9', '10'].includes(stageId) && <td className="py-3 px-4">{formatDate(e.target_date)}</td>}
+                {!noDates && !['1', '2', '3', '9', '10', '11'].includes(stageId) && <td className="py-3 px-4">{formatDate(e.target_date)}</td>}
                 {!noDates && <td className="py-3 px-4">{formatDate(e.complete_date)}</td>}
                 {!noDates && (<td className="py-3 px-4 font-mono font-medium text-slate-800">
                   {e.days_taken != null ? `${e.days_taken}d` : '—'}
@@ -476,7 +476,7 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
                     {e.payment_status || '—'}
                   </span>
                 </td>)}
-                {['3', '10'].includes(stageId) && <td className="py-3 px-4 whitespace-nowrap">{e.payment_bank || '—'}</td>}
+                {['3', '10', '11'].includes(stageId) && <td className="py-3 px-4 whitespace-nowrap">{e.payment_bank || '—'}</td>}
                 {noDates && (
                   <td className="py-3 px-4">
                     <div className="flex items-center gap-2">
