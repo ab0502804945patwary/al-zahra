@@ -270,7 +270,7 @@ export default function AddEntryModal({ stageId, companies, employees, onClose, 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <Field label="Submission Date" name="submit_date" type="date" disabled={stageId === '1' || !isAdmin} hint={stageId === '1' ? 'Set automatically: the day this company reached this phase' : !isAdmin ? 'Set automatically to today' : undefined} />
                 {!['1', '2', '9', '10'].includes(stageId) && <Field label="Target SLA Date" name="target_date" type="date" />}
-                {['1', '2', '9', '10'].includes(stageId) && <Field label="Completion Date" name="complete_date" type="date" required={stageId === '1'} hint={stageId === '9' ? 'Fill it when the work is finished: then RJSC no., Issue No, Incorporation Date and Drive Link are needed' : stageId === '10' ? 'Fill it when the work is finished: then everything except Operational Remarks is needed' : undefined} />}
+                {['1', '2', '9', '10'].includes(stageId) && <Field label="Completion Date" name="complete_date" type="date" required={stageId === '1'} hint={stageId === '2' ? 'Fill it when the work is finished: then the Drive Link is needed' : stageId === '9' ? 'Fill it when the work is finished: then RJSC no., Issue No, Incorporation Date and Drive Link are needed' : stageId === '10' ? 'Fill it when the work is finished: then everything except Operational Remarks is needed' : undefined} />}
               </div>
               {!['1', '2', '9', '10'].includes(stageId) && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -301,7 +301,7 @@ export default function AddEntryModal({ stageId, companies, employees, onClose, 
                   <p className="text-[11px] text-slate-500 self-end pb-2">Complete stops the Company Name Clearance countdown of this company.</p>
                 </div>
               )}
-              <Field label="Electronic Dossier Link (Google Drive)" name="drive_link" required={stageId === '1' || (['9', '10'].includes(stageId) && !!form.complete_date)} />
+              <Field label="Electronic Dossier Link (Google Drive)" name="drive_link" required={stageId === '1' || (['9', '10', '2'].includes(stageId) && !!form.complete_date)} />
               <Field label="Operational Remarks" name="remarks" />
             </>
           )}
