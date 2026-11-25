@@ -377,7 +377,7 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
               {['1', '2', '4', '5', '6', '7'].includes(stageId) && (<>
                 <th className="py-3 px-4">Country</th>
               </>)}
-              {!noDates && <th className="py-3 px-4">Workflow Status</th>}
+              {!noDates && <th className="py-3 px-4">Status</th>}
               {!noDates && <th className="py-3 px-4">Submission</th>}
               {!noDates && stageId !== '1' && <th className="py-3 px-4">Target Date</th>}
               {!noDates && <th className="py-3 px-4">Completion</th>}
