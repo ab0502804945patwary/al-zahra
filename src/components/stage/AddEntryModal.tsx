@@ -310,7 +310,7 @@ export default function AddEntryModal({ stageId, companies, employees, onClose, 
                   <p className="text-[11px] text-slate-500 self-end pb-2">Complete stops the Company Name Clearance countdown of this company.</p>
                 </div>
               )}
-              <Field label="Electronic Dossier Link (Google Drive)" name="drive_link" required={stageId === '1' || (['9', '10', '2', '3', '4', '11'].includes(stageId) && !!form.complete_date)} />
+              {stageId !== '4' && <Field label="Electronic Dossier Link (Google Drive)" name="drive_link" required={stageId === '1' || (['9', '10', '2', '3', '11'].includes(stageId) && !!form.complete_date)} />}
               <Field label="Operational Remarks" name="remarks" />
             </>
           )}

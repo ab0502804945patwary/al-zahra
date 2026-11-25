@@ -422,7 +422,7 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
               {noDates && <th className="py-3 px-4">Portal Accounts</th>}
               {stageId === '5' && <th className="py-3 px-4">CR Association</th>}
               <th className="py-3 px-4">Notes</th>
-              <th className="py-3 px-4">Dossier</th>
+              {stageId !== '4' && <th className="py-3 px-4">Dossier</th>}
               <th className="py-3 px-4 text-right">Actions</th>
             </tr>
           </thead>
@@ -509,6 +509,7 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
                 )}
                 {stageId === '5' && <td className="py-3 px-4">{e.cr_status ? <span className={cn('px-2 py-0.5 rounded-full text-[11px] font-semibold border', e.cr_status === 'Complete' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-700 border-amber-200')}>{e.cr_status}</span> : '—'}</td>}
                 <td className="py-3 px-4 text-slate-400 max-w-28 truncate">{e.remarks || '—'}</td>
+                {stageId !== '4' && (
                 <td className="py-3 px-4">
                   {e.drive_link ? (
                     <a href={e.drive_link} target="_blank" className="p-1 hover:bg-blue-50 rounded transition inline-flex text-blue-600">
@@ -516,6 +517,7 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
                     </a>
                   ) : '—'}
                 </td>
+                )}
                 <td className="py-3 px-4 text-right">
                   {canEdit && isLocked(e) ? (<span title="Submitted — locked. Only an admin can edit." className="p-1.5 text-slate-300 inline-block"><Lock className="w-3.5 h-3.5" /></span>) : canEdit && (<button onClick={() => setEditEntry(e)} className="p-1.5 hover:bg-slate-100 rounded-md transition text-slate-400 hover:text-slate-600">
                     <Edit2 className="w-3.5 h-3.5" />
