@@ -33,15 +33,15 @@ export default function StatutoryFields() {
         <p className="text-[11px] text-slate-500 mt-0.5">Saved to the company profile when you save this record.</p>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <Field label="CR Number" name="cr_number" />
-        <Field label="CR Issue Date" name="cr_issue_date" type="date" />
-        <Field label="CR Expiry Date" name="cr_expire_date" type="date" />
-        <Field label="MISA License No." name="misa_license_no" />
-        <Field label="MISA Issue Date" name="misa_issue_date" type="date" />
-        <Field label="MISA Expiry Date" name="misa_expire_date" type="date" />
+        <Field label="CR Number" name="cr_number" required />
+        <Field label="CR Issue Date" name="cr_issue_date" type="date" required />
+        <Field label="CR Expiry Date" name="cr_expire_date" type="date" required />
+        <Field label="MISA License No." name="misa_license_no" required />
+        <Field label="MISA Issue Date" name="misa_issue_date" type="date" required />
+        <Field label="MISA Expiry Date" name="misa_expire_date" type="date" required />
       </div>
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <Field label="TIN Number" name="tin_number" />
+        <Field label="TIN Number" name="tin_number" required />
       </div>
     </div>
   )
@@ -56,7 +56,7 @@ export function AuditFields() {
         <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wide">Saudi Audit Information</h3>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <Field label="Last Audit Date" name="sa_last_audit_date" type="date" />
+        <Field label="Last Audit Date" name="sa_last_audit_date" type="date" required />
         <Select label="Audit Status" name="sa_audit_status" options={AUDIT_STATUSES.map(v => ({ value: v, label: v }))} />
         <Field label="Next Audit Due Date" name="sa_next_audit_due" type="date" />
         <Field label="Financial Year" name="sa_financial_year" />
