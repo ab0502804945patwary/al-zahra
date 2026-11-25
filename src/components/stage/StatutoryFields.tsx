@@ -6,7 +6,7 @@ import { Field } from './formFields'
 export const STATUTORY_KEYS = [
   'cr_number', 'cr_issue_date', 'cr_expire_date',
   'misa_license_no', 'misa_issue_date', 'misa_expire_date',
-  'tin_number', 'vat_number', 'chamber_registration_no', 'gosi_qiwa_status',
+  'tin_number',
 ] as const
 
 export function statutoryFrom(company: any): Record<string, string> {
@@ -32,9 +32,6 @@ export default function StatutoryFields() {
       </div>
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <Field label="TIN Number" name="tin_number" />
-        <Field label="VAT Number" name="vat_number" />
-        <Field label="Chamber of Commerce" name="chamber_registration_no" />
-        <Field label="GOSI / Qiwa Status" name="gosi_qiwa_status" />
       </div>
     </div>
   )
