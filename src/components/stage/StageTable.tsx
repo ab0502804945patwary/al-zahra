@@ -373,7 +373,7 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
               </>)}
               <th className="py-3 px-4">Entity Portfolio</th>
               <th className="py-3 px-4">Authorized Contact</th>
-              <th className="py-3 px-4">Classification</th>
+              <th className="py-3 px-4">License Type</th>
               {['1', '2', '4', '5', '6', '7'].includes(stageId) && (<>
                 <th className="py-3 px-4">Country</th>
               </>)}
