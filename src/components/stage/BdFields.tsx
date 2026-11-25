@@ -8,6 +8,7 @@ export default function BdFields({ form, set }: { form: Record<string, string>; 
   const L = ({ children, req }: { children: React.ReactNode; req?: boolean }) => (
     <label className="text-xs font-medium text-slate-700 mb-1 block">{children}{req && <span className="text-rose-500 ml-0.5">*</span>}</label>
   )
+  const approved = form.approval_status === 'Approved'
   return (
     <div className="bg-emerald-50/40 border border-emerald-200 rounded-xl p-4 space-y-3">
       <h3 className="text-xs font-semibold text-slate-800">Bangladesh Company (RJSC)</h3>
@@ -30,16 +31,16 @@ export default function BdFields({ form, set }: { form: Record<string, string>; 
           <CountrySelect value={form.country || 'Bangladesh'} onChange={v => set('country', v)} />
         </div>
         <div>
-          <L req={!!form.complete_date}>RJSC Registration No.</L>
-          <input required={!!form.complete_date} className={input} value={form.rjsc_reg_no || ''} onChange={e => set('rjsc_reg_no', e.target.value)} placeholder="e.g. C-208144" />
+          <L req={approved}>RJSC Registration No.</L>
+          <input required={approved} className={input} value={form.rjsc_reg_no || ''} onChange={e => set('rjsc_reg_no', e.target.value)} placeholder="e.g. C-208144" />
         </div>
         <div>
-          <L>Issue No</L>
-          <input className={input} value={form.issue_no || ''} onChange={e => set('issue_no', e.target.value)} />
+          <L req={approved}>Issue No</L>
+          <input required={approved} className={input} value={form.issue_no || ''} onChange={e => set('issue_no', e.target.value)} />
         </div>
         <div>
-          <L>Incorporation Date</L>
-          <input type="date" className={input} value={form.incorporation_date || ''} onChange={e => set('incorporation_date', e.target.value)} />
+          <L req={approved}>Incorporation Date</L>
+          <input required={approved} type="date" className={input} value={form.incorporation_date || ''} onChange={e => set('incorporation_date', e.target.value)} />
         </div>
       </div>
     </div>

@@ -234,7 +234,7 @@ export default function EditEntryModal({ stageId, entry, companies, employees, o
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <Field label="Submission Date" name="submit_date" type="date" disabled={stageId === '1' || !isAdmin} hint={stageId === '1' ? 'Fixed: the day this company reached this phase' : !isAdmin ? 'Fixed — only an admin can change it' : undefined} />
                 {!['1', '9'].includes(stageId) && <Field label="Target SLA Date" name="target_date" type="date" />}
-                {['1', '9'].includes(stageId) && <Field label="Completion Date" name="complete_date" type="date" required={stageId === '1'} hint={stageId === '9' ? 'Fill this when the Bangladesh company work is finished: then RJSC number and Drive Link are needed' : undefined} />}
+                {['1', '9'].includes(stageId) && <Field label="Completion Date" name="complete_date" type="date" required={stageId === '1' || (stageId === '9' && form.approval_status === 'Approved')} hint={stageId === '9' ? 'Needed once the name is Approved' : undefined} />}
               </div>
               {!['1', '9'].includes(stageId) && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -254,7 +254,7 @@ export default function EditEntryModal({ stageId, entry, companies, employees, o
                   <p className="text-[11px] text-slate-500 self-end pb-2">Complete stops the Company Name Clearance countdown of this company.</p>
                 </div>
               )}
-              <Field label="Electronic Dossier Link (Google Drive)" name="drive_link" required={['1', '10'].includes(stageId) || (stageId === '9' && !!form.complete_date)} />
+              <Field label="Electronic Dossier Link (Google Drive)" name="drive_link" required={['1', '10'].includes(stageId) || (stageId === '9' && form.approval_status === 'Approved')} />
               <Field label="Operational Remarks" name="remarks" />
             </>
           )}
