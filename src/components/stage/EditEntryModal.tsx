@@ -17,7 +17,7 @@ import { FormCtx, Field, Select as Sel } from './formFields'
 import PortalAccountsEditor from './PortalAccountsEditor'
 import type { PortalAccount } from '@/lib/portals'
 import Link from 'next/link'
-import StatutoryFields, { STATUTORY_KEYS, statutoryFrom } from './StatutoryFields'
+import StatutoryFields, { AuditFields, statutoryPayload, statutoryFrom } from './StatutoryFields'
 import { COUNTRY_CITY_STAGES, COUNTRIES, CATEGORIES, PAYMENT_STATUSES, PHASE_OPTIONS, FOREIGN_FILING_OPTIONS, CANADA_OPTIONS, CR_STATUSES, toOptions, pickColumns, validateDates } from '@/lib/stageRules'
 import { assessExpiry, assessTiming, addDaysISO } from '@/lib/utils'
 
@@ -88,8 +88,7 @@ export default function EditEntryModal({ stageId, entry, companies, employees, o
       const { error } = await supabase.from(STAGE_TABLES[stageId]).update(pickColumns(stageId, payload)).eq('id', entry.id)
       if (error) { alert('Could not save: ' + error.message); setLoading(false); return }
       if (stageId === '7' && form.company_id) {
-        const st: Record<string, string> = {}
-        for (const k of STATUTORY_KEYS) st[k] = form[k] || ''
+        const st = statutoryPayload(form)
         const { error: stErr } = await supabase.rpc('update_company_statutory', { p_company_id: form.company_id, p: st })
         if (stErr) alert('The record was saved, but the legal identifiers could not be saved to the company: ' + stErr.message)
       }
@@ -287,6 +286,7 @@ export default function EditEntryModal({ stageId, entry, companies, employees, o
           )}
 
           {stageId === '7' && <StatutoryFields />}
+          {stageId === '7' && <AuditFields />}
 
           <div className="flex gap-3 pt-3 border-t border-slate-100">
             <button
