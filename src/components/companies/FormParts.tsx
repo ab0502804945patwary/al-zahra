@@ -34,10 +34,13 @@ function ShareholderCard({ index, total, value, onChange, onDuplicate, onRemove 
   onDuplicate: () => void; onRemove: () => void
 }) {
   const set = (k: keyof Shareholder, v: string) => onChange({ ...value, [k]: v })
-  const text = (label: string, k: keyof Shareholder, type = 'text', placeholder = '') => (
+  // Shareholder 1 must be filled in, except TIN No. and E-mail; the other shareholders stay optional
+  const must = index === 0
+  const star = <span className="text-rose-500 ml-0.5">*</span>
+  const text = (label: string, k: keyof Shareholder, type = 'text', placeholder = '', required = must) => (
     <div>
-      <label className={labelCls}>{label}</label>
-      <input type={type} value={(value[k] as string) || ''} onChange={e => set(k, e.target.value)} placeholder={placeholder} className={inputCls} />
+      <label className={labelCls}>{label}{required && star}</label>
+      <input type={type} required={required} value={(value[k] as string) || ''} onChange={e => set(k, e.target.value)} placeholder={placeholder} className={inputCls} />
     </div>
   )
   return (
@@ -64,18 +67,18 @@ function ShareholderCard({ index, total, value, onChange, onDuplicate, onRemove 
         {text("Mother's Name", 'mother_name')}
         {text('Date of Birth', 'dob', 'date')}
         <div>
-          <label className={labelCls}>Nationality</label>
-          <CountrySelect compact value={value.nationality} onChange={v => set('nationality', v)} />
+          <label className={labelCls}>Nationality{must && star}</label>
+          <CountrySelect compact required={must} value={value.nationality} onChange={v => set('nationality', v)} />
         </div>
         {text('Passport No.', 'passport_no')}
-        {text('TIN No.', 'tin_no')}
-        {text('E-mail', 'email', 'email')}
+        {text('TIN No.', 'tin_no', 'text', '', false)}
+        {text('E-mail', 'email', 'email', '', false)}
         {text('Phone', 'phone')}
         {text('Designation', 'designation')}
         {text('Shareholding %', 'share_percent', 'number', 'e.g. 50')}
         <div className="col-span-2 md:col-span-4 xl:col-span-6">
-          <label className={labelCls}>Address</label>
-          <input value={value.address} onChange={e => set('address', e.target.value)} className={inputCls} />
+          <label className={labelCls}>Address{must && star}</label>
+          <input required={must} value={value.address} onChange={e => set('address', e.target.value)} className={inputCls} />
         </div>
       </div>
 
