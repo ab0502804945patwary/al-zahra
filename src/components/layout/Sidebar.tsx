@@ -213,7 +213,7 @@ export default function Sidebar({ employee }: SidebarProps) {
 
               {(collapsed || group.title !== 'INVESTOR WORKFLOW' || workflowOpen) && visibleItems.map(item => {
                 const Icon = item.icon
-                const isActive = (pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href))) && !(item.notPath && pathname.startsWith(item.notPath))
+                const isActive = (pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href + '/'))) && !(item.notPath && pathname.startsWith(item.notPath))
 
                 if (collapsed) {
                   return (

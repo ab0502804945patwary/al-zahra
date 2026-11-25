@@ -26,7 +26,7 @@ export default function BottomNav({ employee }: { employee?: Employee | null }) 
       <ul className="flex">
         {ITEMS.filter(i => (!i.stage || canAccessStage(employee, i.stage)) && (!i.module || canAccessModule(employee, i.module))).map(item => {
           const Icon = item.icon
-          const active = item.href === '/dashboard' ? pathname === item.href : pathname.startsWith(item.href)
+          const active = item.href === '/dashboard' ? pathname === item.href : (pathname === item.href || pathname.startsWith(item.href + '/'))
           return (
             <li key={item.href} className="flex-1 min-w-0">
               <Link
