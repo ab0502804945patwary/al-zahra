@@ -58,7 +58,7 @@ export default function DashboardShell({
 
   return (
     <SidebarContext.Provider value={{ collapsed, toggle, setCollapsed, mobileOpen, setMobileOpen }}>
-      <div className="flex h-screen bg-slate-50 overflow-hidden font-sans">
+      <div className="dash-theme flex h-screen bg-gradient-to-br from-[#f7f9fe] via-[#f3f6fc] to-[#eaf1fd] overflow-hidden font-sans">
         {mobileOpen && (
           <div className="fixed inset-0 bg-slate-900/50 z-40 lg:hidden" onClick={() => setMobileOpen(false)} />
         )}

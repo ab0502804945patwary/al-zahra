@@ -1,19 +1,10 @@
 'use client'
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
-import {
-  Building2,
-  CheckCircle2,
-  AlertCircle,
-  CalendarClock,
-  Search,
-  ChevronRight,
-  ExternalLink,
-  ShieldCheck,
-  Layers
-} from 'lucide-react'
+import { Check, ChevronLeft, ChevronRight, Clock3, Search, TriangleAlert } from 'lucide-react'
+import { MatrixIcon } from './MoneyIcons'
+import { Flag } from '@/components/ui/CountrySelect'
 import { Company } from '@/lib/types'
-import StatusGuide from '@/components/ui/StatusGuide'
 import { phaseOf, MENU_ORDER } from '@/lib/stageData'
 
 const SHORT: Record<string, string> = { '1': 'Parent', '9': 'BD Company', '10': 'Foreign Mother', '2': 'Activity', '3': 'Foreign Sub 1', '11': 'Foreign Sub 2', '8': 'Name', '4': 'MISA', '5': 'CR', '6': 'Portals', '7': 'Filing' }
@@ -39,17 +30,46 @@ interface CompanyMatrixRow {
 interface DashboardProps {
   stageMap: Record<string, Record<number, StageSummary>>
   initialCompanies: Company[]
-  kpiStats: {
-    totalCompanies: number
-    compliant: number
-    overdue: number
-    expiring: number
-  }
 }
 
 const PAGE_SIZE = 5
 
-export default function MasterMatrixDashboard({ initialCompanies, kpiStats, stageMap }: DashboardProps) {
+/** Labels that mean "this phase does not apply to the company". */
+const SKIPPED = ['N/A', 'Removed', '—']
+
+const TONE = {
+  Green: { box: 'bg-emerald-50', text: 'text-emerald-700' },
+  Yellow: { box: 'bg-amber-50', text: 'text-amber-700' },
+  Red: { box: 'bg-rose-50', text: 'text-rose-700' },
+  Pending: { box: 'bg-blue-50', text: 'text-blue-700' },
+  'Not Started': { box: '', text: 'text-slate-300' },
+} as const
+
+/** What one phase cell shows: days taken when complete, the current step while open, a small dot before it starts. */
+function PhaseBox({ stg, stage }: { stg: StageSummary; stage: number }) {
+  const base = 'w-full h-11 rounded-xl flex flex-col items-center justify-center gap-0.5 px-0.5'
+  if (stg.status === 'Not Started') {
+    return (
+      <span className={base}>
+        {SKIPPED.includes(stg.label) ? <span className="text-[10px] text-slate-300">N/A</span> : <span className="w-1.5 h-1.5 rounded-full bg-slate-200" />}
+      </span>
+    )
+  }
+  const complete = stg.label === 'Complete'
+  // Company Name Clearance (8) shows the days left until the name expires
+  const validity = stage === 8 && stg.label !== 'Expired'
+  const text = complete ? (stg.days != null ? `${stg.days}d` : '') : validity ? stg.label.replace(' Left', ' left') : stg.label
+  const Icon = stg.status === 'Red' ? TriangleAlert : complete || validity ? Check : Clock3
+  const tone = TONE[stg.status]
+  return (
+    <span className={`${base} ${tone.box} ${tone.text}`}>
+      <Icon className="w-3.5 h-3.5 shrink-0" strokeWidth={2.5} />
+      {text && <span className="max-w-full text-[9.5px] font-semibold leading-[10px] text-center break-words line-clamp-2">{text}</span>}
+    </span>
+  )
+}
+
+export default function MasterMatrixDashboard({ initialCompanies, stageMap }: DashboardProps) {
   const companiesList = initialCompanies
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
@@ -113,213 +133,144 @@ export default function MasterMatrixDashboard({ initialCompanies, kpiStats, stag
   const curPage = Math.min(page, totalPages)
   const visibleRows = showAll ? filteredRows : filteredRows.slice((curPage - 1) * PAGE_SIZE, curPage * PAGE_SIZE)
 
+  // up to five page numbers around the current page
+  const firstPage = Math.max(1, Math.min(curPage - 2, totalPages - 4))
+  const pageNumbers = Array.from({ length: Math.min(5, totalPages) }, (_, i) => firstPage + i)
+  const stepBtn = 'h-8 px-2.5 rounded-lg flex items-center gap-1 font-semibold text-slate-600 hover:bg-slate-100 hover:text-blue-700 disabled:text-slate-300 disabled:hover:bg-transparent disabled:cursor-default'
+  const attention = matrixRows.filter(r => Object.values(r.stages).some(x => x.status === 'Red')).length
+  const tabs = [
+    { key: 'new' as const, label: 'New Company', n: matrixRows.filter(r => !r.isRenewal).length },
+    { key: 'attention' as const, label: 'Needs Action', n: attention },
+  ]
+  const firstIndex = showAll ? 0 : (curPage - 1) * PAGE_SIZE
+  const th = 'py-2.5 px-1.5 text-[11px] font-medium text-slate-500 align-middle'
+  const td = 'px-1.5 py-2.5 align-middle'
+
   return (
-    <div className="space-y-6 w-full max-w-[2000px] mx-auto">
-      {/* 1. Header & Quick Overview */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-200">
-        <div>
-          <h1 className="text-xl font-bold text-slate-900 tracking-tight">Dashboard</h1>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Master lifecycle tracking matrix for active corporate investor licenses & statutory clearances
-          </p>
-        </div>
-      </div>
-
-      {/* 2. Top 4 Simple Clean Counter Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Total Companies */}
-        <div className="bg-white rounded-xl p-4 border border-slate-200/90 shadow-sm flex items-center justify-between">
-          <div>
-            <p className="text-xs font-medium text-slate-500">Active Portfolios</p>
-            <p className="text-2xl font-bold text-slate-900 mt-1">{companiesList.length}</p>
-            <p className="text-[11px] text-slate-400 mt-0.5">Registered corporate entities</p>
-          </div>
-          <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
-            <Building2 className="w-5 h-5" />
-          </div>
-        </div>
-
-        {/* On Track (Green) */}
-        <div className="bg-white rounded-xl p-4 border border-slate-200/90 shadow-sm flex items-center justify-between">
-          <div>
-            <p className="text-xs font-medium text-slate-500">Compliant & On Track</p>
-            <p className="text-2xl font-bold text-emerald-600 mt-1">{kpiStats.compliant}</p>
-            <p className="text-[11px] text-emerald-600/80 mt-0.5">On time (by target date)</p>
-          </div>
-          <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-            <CheckCircle2 className="w-5 h-5" />
-          </div>
-        </div>
-
-        {/* Overdue (Red) */}
-        <div className="bg-white rounded-xl p-4 border border-slate-200/90 shadow-sm flex items-center justify-between">
-          <div>
-            <p className="text-xs font-medium text-slate-500">Action Needed (Overdue)</p>
-            <p className="text-2xl font-bold text-rose-600 mt-1">{kpiStats.overdue}</p>
-            <p className="text-[11px] text-rose-600/80 mt-0.5">Exceeded target threshold (&gt;13d)</p>
-          </div>
-          <div className="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
-            <AlertCircle className="w-5 h-5" />
-          </div>
-        </div>
-
-        {/* Expiring Soon */}
-        <div className="bg-white rounded-xl p-4 border border-slate-200/90 shadow-sm flex items-center justify-between">
-          <div>
-            <p className="text-xs font-medium text-slate-500">Company Name Expiry Radar</p>
-            <p className="text-2xl font-bold text-amber-600 mt-1">{kpiStats.expiring}</p>
-            <p className="text-[11px] text-amber-600/80 mt-0.5">Expiring within 60 days</p>
-          </div>
-          <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
-            <CalendarClock className="w-5 h-5" />
-          </div>
-        </div>
-      </div>
-
-      {/* 3. The Core Master Matrix Table (Excel-like clarity, zero clutter) */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        {/* Table Header Controls */}
-        <div className="px-5 py-4 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-3 bg-slate-50/50">
-          <div>
-            <div className="flex items-center gap-2">
-              <h2 className="font-bold text-slate-900 text-sm">Master Investor Lifecycle Matrix</h2>
-              <span className="text-[10px] font-bold px-2 py-0.5 bg-blue-50 text-blue-700 border border-blue-200 rounded-full">
-                Live 9-Stage Tracker
-              </span>
-            </div>
-            <p className="text-xs text-slate-500 mt-0.5">
-              One central view showing all client companies across the entire statutory approval chain
-            </p>
-          </div>
-
-          {/* Search & Filter pills */}
-          <div className="flex items-center gap-3">
-            <div className="relative w-64">
-              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
+    <div className="w-full">
+      <section className="bg-white rounded-2xl border border-slate-200/70 shadow-sm p-4 min-w-0">
+        {/* Title, filters, search: the same header as the other dashboard cards */}
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 mb-3">
+          <h2 className="flex items-center gap-2 text-sm font-semibold text-slate-900">
+            <MatrixIcon className="w-7 h-7 shrink-0" /> Master Investor Lifecycle Matrix
+          </h2>
+          <div className="flex flex-wrap items-center gap-2.5">
+            {/* the chosen filter is filled with a medium colour; the other one stays plain */}
+            {tabs.map(t => {
+              const on = filterType === t.key
+              const alert = t.key === 'attention'
+              return (
+                <button
+                  key={t.key}
+                  onClick={() => { setFilterType(t.key); setPage(1) }}
+                  aria-pressed={on}
+                  className={`h-9 flex items-center gap-2 px-3.5 rounded-xl text-[13px] font-semibold border transition ${
+                    on ? (alert ? 'bg-rose-500 border-rose-500 text-white' : 'bg-blue-500 border-blue-500 text-white')
+                      : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                  }`}
+                >
+                  {t.label}
+                  <span className={`min-w-6 px-1.5 py-0.5 rounded-md text-[11px] font-bold text-center ${on ? 'bg-white/25 text-white' : alert && t.n > 0 ? 'bg-rose-100 text-rose-700' : 'bg-slate-100 text-slate-600'}`}>{t.n}</span>
+                </button>
+              )
+            })}
+            <div className="relative w-full sm:w-64">
+              <Search className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 value={search}
                 onChange={e => { setSearch(e.target.value); setPage(1) }}
                 placeholder="Search AZC code, company..."
-                className="w-full pl-8 pr-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full h-9 pl-10 pr-3 text-[13px] text-slate-900 placeholder:text-slate-500 bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-500/30"
               />
-            </div>
-
-            <div className="flex items-center bg-white border border-slate-200 rounded-lg p-0.5 text-xs">
-              <button
-                onClick={() => { setFilterType('new'); setPage(1) }}
-                className={`px-2.5 py-1 rounded-md font-medium transition ${
-                  filterType === 'new' ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                New Company ({matrixRows.filter(r => !r.isRenewal).length})
-              </button>
-              <button
-                onClick={() => { setFilterType('attention'); setPage(1) }}
-                className={`px-2.5 py-1 rounded-md font-medium transition ${
-                  filterType === 'attention' ? 'bg-rose-600 text-white shadow-xs' : 'text-slate-600 hover:text-rose-600'
-                }`}
-              >
-                Needs Action
-              </button>
             </div>
           </div>
         </div>
 
-        {/* Matrix Table */}
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
+        <div className="relative overflow-x-auto">
+          <table className="w-full min-w-[1220px] table-fixed border-separate border-spacing-0 text-left">
             <thead>
-              <tr className="bg-slate-100/70 text-slate-600 font-semibold uppercase tracking-wider border-b border-slate-200 text-[11px]">
-                <th className="py-3 px-4 font-mono">Company</th>
-                {MENU_ORDER.map((id, i) => <th key={id} className="py-3 px-3 text-center whitespace-nowrap">{i + 1}: {SHORT[id]}</th>)}
+              <tr className="[&>th]:bg-slate-50 [&>th:first-child]:rounded-l-xl [&>th:last-child]:rounded-r-xl">
+                <th className={`${th} w-8 text-center`}>#</th>
+                <th className={`${th} w-16`}>ID</th>
+                <th className={th}>Company Name</th>
+                <th className={`${th} w-28`}>Country</th>
+                <th className={`${th} w-[74px]`}>Status</th>
+                <th className={`${th} w-28`}>Type</th>
+                {MENU_ORDER.map((id, i) => (
+                  <th key={id} className={`${th} w-[62px] !px-0.5 text-center leading-tight`}>
+                    <span className="block text-[11px] font-semibold text-slate-800">P{i + 1}</span>
+                    <span className="block text-[9.5px] text-slate-500">{SHORT[id]}{id === '8' ? ' (Validity)' : ''}</span>
+                  </th>
+                ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 text-slate-700">
-              {visibleRows.map(row => (
-                <tr key={row.company_id} className="hover:bg-slate-50/70 transition-colors">
-                  {/* Company Info */}
-                  <td className="py-3 px-4">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-lg bg-blue-50 border border-blue-200 flex items-center justify-center font-mono font-bold text-blue-700 text-xs shrink-0">
-                        {row.company_id.replace('AZC', '')}
-                      </div>
-                      <div className="min-w-0">
-                        <div className="font-bold text-slate-800 text-xs truncate max-w-44">
-                          {row.company_name}
-                        </div>
-                        <div className="text-[10px] text-slate-400 font-medium">
-                          <span className="font-mono text-slate-500 font-semibold">{row.company_id}</span>
-                          {row.country_of_origin && <span> • {row.country_of_origin}</span>}
-                          {row.inactive && <span className="ml-1.5 px-1.5 py-px rounded-full bg-slate-100 text-slate-500 border border-slate-300 font-semibold">Inactive</span>}
-                          {row.isRenewal && <span className="ml-1.5 px-1.5 py-px rounded-full bg-violet-50 text-violet-700 border border-violet-200 font-semibold">Renewal Company</span>}
-                        </div>
-                      </div>
-                    </div>
+            <tbody>
+              {visibleRows.map((row, i) => (
+                <tr key={row.company_id} className="[&>td]:border-b [&>td]:border-slate-100 hover:bg-slate-50/60 transition-colors">
+                  <td className={`${td} text-center text-[11px] text-slate-400 tabular-nums`}>{firstIndex + i + 1}</td>
+                  <td className={`${td} text-[11px] font-semibold text-blue-700 tabular-nums`}>{row.company_id}</td>
+                  <td className={td}>
+                    <div title={row.company_name} className="text-[12px] font-semibold leading-snug text-slate-900 line-clamp-2">{row.company_name}</div>
+                    {row.isRenewal && <span className="inline-block mt-0.5 px-1.5 rounded-full bg-amber-50 text-amber-800 text-[10px] font-semibold">Renewal Company</span>}
                   </td>
-
-                  {/* 8 Stages Badges */}
+                  <td className={td}>
+                    {row.country_of_origin ? (
+                      <span className="flex items-center gap-1.5 min-w-0 text-[11px] text-slate-700">
+                        <Flag country={row.country_of_origin} />
+                        <span title={row.country_of_origin} className="leading-tight line-clamp-2">{row.country_of_origin}</span>
+                      </span>
+                    ) : <span className="text-slate-300">—</span>}
+                  </td>
+                  <td className={td}>
+                    <span className={`flex items-center gap-1.5 text-[11px] ${row.inactive ? 'text-slate-400' : 'text-slate-700'}`}>
+                      <span className={`w-2 h-2 rounded-full shrink-0 ${row.inactive ? 'bg-slate-300' : 'bg-emerald-500'}`} />
+                      {row.inactive ? 'Inactive' : 'Active'}
+                    </span>
+                  </td>
+                  <td className={td}>
+                    {row.entity_type
+                      ? <span className="text-[11px] text-slate-700 leading-tight">{row.entity_type}</span>
+                      : <span className="text-slate-300">—</span>}
+                  </td>
                   {MENU_ORDER.map(Number).map(stgNum => {
-                    const stg = row.stages[stgNum] || { status: 'Not Started', label: 'Queued' }
-
-                    let badgeClass = 'bg-slate-100 text-slate-400 border-slate-200'
-                    if (stg.status === 'Green') {
-                      badgeClass = 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
-                    } else if (stg.status === 'Yellow') {
-                      badgeClass = 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100'
-                    } else if (stg.status === 'Red') {
-                      badgeClass = 'bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100 font-semibold'
-                    }
-
+                    const stg = row.stages[stgNum] || { status: 'Not Started' as const, label: 'Queued' }
+                    const tip = `Phase ${phaseOf(stgNum)}: ${stg.label}${stg.days != null ? ` (${stg.days} days)` : ''}`
                     return (
-                      <td key={stgNum} className="py-3 px-2 text-center">
-                        <Link
-                          href={`/dashboard/stage/${stgNum}`}
-                          title={`Click to open Phase ${phaseOf(stgNum)}`}
-                          className={`inline-block px-2 py-1 rounded-md text-[10px] border transition whitespace-nowrap ${badgeClass}`}
-                        >
-                          {stg.label}
+                      <td key={stgNum} className={`${td} !px-0.5 !py-1.5`}>
+                        <Link href={`/dashboard/stage/${stgNum}`} title={tip} aria-label={tip} className="block rounded-xl hover:bg-slate-100">
+                          <PhaseBox stg={stg} stage={stgNum} />
                         </Link>
                       </td>
                     )
                   })}
                 </tr>
               ))}
-
               {filteredRows.length === 0 && (
-                <tr>
-                  <td colSpan={12} className="py-12 text-center text-slate-400">
-                    <p className="text-xs">No corporate entities found matching your filter</p>
-                  </td>
-                </tr>
+                <tr><td colSpan={MENU_ORDER.length + 6} className="py-12 text-center text-xs text-slate-400">No corporate entities found matching your filter</td></tr>
               )}
             </tbody>
           </table>
         </div>
 
         {filteredRows.length > PAGE_SIZE && (
-          <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-3 border-t border-slate-100 text-xs text-slate-600">
-            <span>
-              Showing <b>{showAll ? 1 : (curPage - 1) * PAGE_SIZE + 1}</b>–<b>{showAll ? filteredRows.length : Math.min(curPage * PAGE_SIZE, filteredRows.length)}</b> of <b>{filteredRows.length}</b> companies
-            </span>
-            <div className="flex items-center gap-2">
-              {!showAll && (
-                <>
-                  <button onClick={() => setPage(curPage - 1)} disabled={curPage === 1} className="px-3 py-1.5 rounded-md border border-slate-200 font-semibold disabled:opacity-40 hover:bg-slate-50">‹ Previous</button>
-                  <span className="text-slate-500">Page {curPage} / {totalPages}</span>
-                  <button onClick={() => setPage(curPage + 1)} disabled={curPage === totalPages} className="px-3 py-1.5 rounded-md bg-blue-600 text-white font-semibold disabled:opacity-40 hover:bg-blue-700">Next ›</button>
-                </>
-              )}
-              <button onClick={() => { setShowAll(v => !v); setPage(1) }} className={`px-3 py-1.5 rounded-md border font-semibold ${showAll ? 'border-blue-600 text-blue-700 bg-blue-50' : 'border-slate-200 hover:bg-slate-50'}`}>
-                {showAll ? 'Show 5 at a time' : `Show all (${filteredRows.length})`}
-              </button>
+          <div className="flex flex-wrap items-center justify-between gap-3 pt-3 text-xs text-slate-500">
+            <div className="flex flex-wrap items-center gap-4">
+              <span>Showing {showAll ? 1 : (curPage - 1) * PAGE_SIZE + 1}–{showAll ? filteredRows.length : Math.min(curPage * PAGE_SIZE, filteredRows.length)} of {filteredRows.length} companies</span>
+              <button onClick={() => { setShowAll(v => !v); setPage(1) }} className="font-semibold text-blue-600 hover:text-blue-800">{showAll ? 'Show 5 at a time' : `Show all (${filteredRows.length})`}</button>
             </div>
+            {!showAll && (
+              <nav aria-label="Pages" className="flex flex-wrap items-center gap-1 sm:gap-1.5">
+                <button onClick={() => setPage(curPage - 1)} disabled={curPage === 1} aria-label="Previous page" className={stepBtn}><ChevronLeft className="w-4 h-4" /><span className="hidden sm:inline">Previous</span></button>
+                {pageNumbers.map(n => (
+                  <button key={n} onClick={() => setPage(n)} aria-current={n === curPage ? 'page' : undefined} className={`w-8 h-8 rounded-lg font-semibold ${n === curPage ? 'bg-blue-600 text-white' : 'text-slate-700 hover:bg-slate-100'}`}>{n}</button>
+                ))}
+                <button onClick={() => setPage(curPage + 1)} disabled={curPage === totalPages} aria-label="Next page" className={stepBtn}><span className="hidden sm:inline">Next</span><ChevronRight className="w-4 h-4" /></button>
+              </nav>
+            )}
           </div>
         )}
-
-        <div className="px-5 py-3 border-t border-slate-100"><StatusGuide className="border-0 p-0" /></div>
-        <div className="px-5 pb-2.5 text-[10px] text-slate-400 text-right">*Click any stage badge to open that department immediately</div>
-      </div>
+      </section>
     </div>
   )
 }

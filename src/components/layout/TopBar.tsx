@@ -40,7 +40,7 @@ export default function TopBar({ employee }: TopBarProps) {
   }
 
   return (
-    <header className="h-16 bg-white border-b border-slate-200/80 flex items-center px-4 sm:px-6 gap-3 sm:gap-4 shadow-xs z-20">
+    <header className="h-14 shrink-0 bg-white/70 backdrop-blur-md border-b border-slate-200/60 flex items-center px-4 sm:px-6 gap-3 sm:gap-4 z-20">
       {/* Mobile burger */}
       <button
         onClick={() => setMobileOpen(true)}
@@ -60,15 +60,15 @@ export default function TopBar({ employee }: TopBarProps) {
       </button>
 
       {/* Global Search Bar */}
-      <div className="flex-1 min-w-0 max-w-md">
+      <div className="flex-1 min-w-0 max-w-xl">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
           <input
             type="text"
             placeholder="Search entity..."
-            className="w-full pl-9 pr-12 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition"
+            className="w-full pl-11 pr-16 py-2 text-[13px] bg-slate-100/80 border border-transparent rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition"
           />
-          <kbd className="hidden md:block absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] font-mono text-slate-400 bg-slate-100 border border-slate-200 px-1.5 py-0.5 rounded">
+          <kbd className="hidden md:block absolute right-3.5 top-1/2 -translate-y-1/2 text-[10px] font-mono text-slate-400 bg-white border border-slate-200 px-1.5 py-0.5 rounded">
             Ctrl+K
           </kbd>
         </div>
@@ -85,17 +85,20 @@ export default function TopBar({ employee }: TopBarProps) {
             onClick={() => setShowMenu(!showMenu)}
             className="flex items-center gap-2.5 p-1 rounded-lg hover:bg-slate-50 transition"
           >
+            <span className="relative shrink-0">
             {employee?.avatar_url ? (
               <img
                 src={employee.avatar_url}
                 alt={employee.name || 'User'}
-                className="w-8 h-8 rounded-lg object-cover ring-1 ring-slate-200 shadow-sm shrink-0"
+                className="w-8 h-8 rounded-full object-cover ring-2 ring-white shadow-sm"
               />
             ) : (
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-slate-800 to-slate-700 flex items-center justify-center text-white text-xs font-bold ring-1 ring-slate-200 shadow-sm shrink-0">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-700 to-blue-500 flex items-center justify-center text-white text-xs font-bold ring-2 ring-white shadow-sm">
                 {employee?.name?.charAt(0) || 'A'}
               </div>
             )}
+            <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white" />
+            </span>
             <div className="text-left hidden md:block">
               <div className="text-xs font-semibold text-slate-800 leading-tight">
                 {isAdmin ? 'Al Zahra' : (employee?.name || 'Al Zahra')}

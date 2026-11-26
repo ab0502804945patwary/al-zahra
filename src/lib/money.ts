@@ -1,7 +1,7 @@
 const nf = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 
-/** Amounts are in Bangladeshi Taka (BDT). */
-export const bdt = (n: number | string | null | undefined) => `BDT ${nf.format(Number(n) || 0)}`
+/** Amounts are in Bangladeshi Taka, shown with the Taka sign. */
+export const bdt = (n: number | string | null | undefined) => `৳ ${nf.format(Number(n) || 0)}`
 
 export type PayStatus = 'Unpaid' | 'Partial' | 'Paid' | 'Cancelled'
 

@@ -1,11 +1,11 @@
 import { createClient, isSupabaseConfigured } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { getSessionInfo } from '@/lib/session'
-import { canAccessModule, homeFor } from '@/lib/access'
+import { canAccessModule, homeFor, MODULES } from '@/lib/access'
 import MasterMatrixDashboard from '@/components/dashboard/MasterMatrixDashboard'
 import { Company } from '@/lib/types'
-import AccountsSummary from '@/components/dashboard/AccountsSummary'
-import StageSummaryTable from '@/components/dashboard/StageSummaryTable'
+import { summarizeAccounts } from '@/lib/accounts'
+import Overview from '@/components/dashboard/Overview'
 import { STAGE_CONFIG, MENU_ORDER, phaseOf } from '@/lib/stageData'
 import { enrichTiming, enrichExpiry } from '@/lib/utils'
 
@@ -29,7 +29,7 @@ export default async function DashboardPage() {
     try {
       // admin: everything; staff: only the invoices and expenses they created themselves
       let invQ = supabase.from('invoices').select('id, invoice_no, customer_id, customer_name, total, status, payments(amount, paid_on)')
-      let expQ = supabase.from('expenses').select('expense_date, amount, status')
+      let expQ = supabase.from('expenses').select('expense_date, amount, status, category')
       if (!isAdmin) { invQ = invQ.eq('created_by', user?.id ?? ''); expQ = expQ.eq('created_by', user?.id ?? '') }
       const inv = await invQ
       invoices = (inv.data as any[]) || []
@@ -95,7 +95,8 @@ export default async function DashboardPage() {
         // Company Name Clearance has its own validity statuses: Active = green, Warning = yellow, Urgent/Expired = red
         return {
           id: sid,
-          label: `Phase ${phaseOf(sid)}: ${c.label}`,
+          phase: phaseOf(sid),
+          label: c.label,
           employee: c.employee,
           total: rows.length,
           green: rows.filter(r => r.status === 'Active').length,
@@ -108,7 +109,8 @@ export default async function DashboardPage() {
       const pct = rows.map(r => r.completion_percent).filter((x: any) => typeof x === 'number')
       return {
         id: sid,
-        label: `Phase ${phaseOf(sid)}: ${c.label}`,
+        phase: phaseOf(sid),
+        label: c.label,
         employee: c.employee,
         total: rows.length,
         green: rows.filter(r => st(r) === 'Green').length,
@@ -118,11 +120,19 @@ export default async function DashboardPage() {
       }
     })
 
+  const modules = MODULES.filter(m => canAccessModule(employee, m.key)).map(m => m.key)
+  const seesMoney = isAdmin || canAccessModule(employee, 'invoices') || canAccessModule(employee, 'expenses')
+
   return (
-    <div className="space-y-6">
-      {(isAdmin || canAccessModule(employee, 'invoices') || canAccessModule(employee, 'expenses')) && <AccountsSummary invoices={invoices} expenses={expenses} />}
-      <MasterMatrixDashboard initialCompanies={companies} kpiStats={kpiStats} stageMap={stageMap} />
-      <StageSummaryTable rows={summary} />
+    <div className="space-y-4 w-full max-w-[2000px] mx-auto">
+      <Overview
+        name={isAdmin ? 'Al Zahra' : (employee?.name || 'Al Zahra')}
+        modules={modules}
+        kpi={{ ...kpiStats, totalCompanies: companies.length }}
+        phases={summary}
+        accounts={seesMoney ? summarizeAccounts(invoices, expenses) : null}
+      />
+      <MasterMatrixDashboard initialCompanies={companies} stageMap={stageMap} />
     </div>
   )
 }

@@ -40,7 +40,7 @@ export default function ReceivesClient({ vouchers, customers, invoices, staffNam
 
   function exportCsv() {
     const q = (v: any) => `"${String(v ?? '').replace(/"/g, '""')}"`
-    const head = ['Voucher No.', 'Date', 'Customer', 'Phone', 'Invoice', 'Account type', 'Account', 'Amount (BDT)', 'Received by', 'Reference', 'Status', 'Notes']
+    const head = ['Voucher No.', 'Date', 'Customer', 'Phone', 'Invoice', 'Account type', 'Account', 'Amount (৳)', 'Received by', 'Reference', 'Status', 'Notes']
     const lines = [head.join(','), ...rows.map(v => [v.voucher_no, v.receive_date, v.customers ? `${v.customers.given_name} ${v.customers.surname}` : '', v.customers?.phone, v.invoices?.invoice_no || 'Auto', v.account_type, v.account_name, Number(v.amount).toFixed(2), v.received_by, v.reference_no, v.status, v.notes].map(q).join(','))]
     const a = document.createElement('a')
     a.href = URL.createObjectURL(new Blob(['\ufeff' + lines.join('\n')], { type: 'text/csv;charset=utf-8' }))

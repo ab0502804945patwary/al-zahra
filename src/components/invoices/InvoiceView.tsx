@@ -89,7 +89,7 @@ export default function InvoiceView({ invoice, items, payments, canEdit = false,
             <div className="rounded-lg border border-slate-200 p-4 text-xs space-y-1.5">
               <div className="flex justify-between"><span className="text-slate-500">Invoice no.</span><span className="font-mono font-bold text-slate-900">{invoice.invoice_no}</span></div>
               <div className="flex justify-between"><span className="text-slate-500">Invoice date</span><span className="font-semibold text-slate-900">{invoice.invoice_date}</span></div>
-              <div className="flex justify-between"><span className="text-slate-500">Currency</span><span className="font-semibold text-slate-900">BDT (Taka)</span></div>
+              <div className="flex justify-between"><span className="text-slate-500">Currency</span><span className="font-semibold text-slate-900">৳ (Taka)</span></div>
             </div>
           </div>
 
@@ -171,7 +171,7 @@ export default function InvoiceView({ invoice, items, payments, canEdit = false,
         <form onSubmit={addPayment} className="bg-white rounded-xl border border-slate-200 shadow-sm p-5 space-y-3 print:hidden">
           <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2"><Plus className="w-4 h-4 text-blue-600" /> Add payment <span className="text-xs font-normal text-slate-400">· due {bdt(due)}</span></h3>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div><label className="text-xs font-semibold text-slate-700 mb-1 block">Amount (BDT)</label><input type="number" min="0" step="0.01" value={amount} onChange={e => setAmount(e.target.value)} className={inputCls} /></div>
+            <div><label className="text-xs font-semibold text-slate-700 mb-1 block">Amount (৳)</label><input type="number" min="0" step="0.01" value={amount} onChange={e => setAmount(e.target.value)} className={inputCls} /></div>
             <div><label className="text-xs font-semibold text-slate-700 mb-1 block">Date</label><input type="date" value={paidOn} onChange={e => setPaidOn(e.target.value)} className={inputCls} /></div>
             <div><label className="text-xs font-semibold text-slate-700 mb-1 block">Method</label><select value={method} onChange={e => setMethod(e.target.value)} className={inputCls}>{METHODS.map(m => <option key={m}>{m}</option>)}</select></div>
             <div><label className="text-xs font-semibold text-slate-700 mb-1 block">Reference</label><input value={reference} onChange={e => setReference(e.target.value)} className={inputCls} /></div>

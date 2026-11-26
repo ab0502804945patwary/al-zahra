@@ -84,7 +84,7 @@ export default function ReportsClient({ invoices, expenses, customers, companies
 
   function exportCsv() {
     const q = (v: any) => `"${String(v ?? '').replace(/"/g, '""')}"`
-    const lines: string[] = [`AL ZAHRA report - ${periodLabel} (BDT)`, '',
+    const lines: string[] = [`AL ZAHRA report - ${periodLabel} (৳)`, '',
       `${mode === 'yearly' ? 'Month' : 'Day'},Invoiced,Received,Expenses,Net`,
       ...data.series.map(s => [q(s.label), s.invoiced.toFixed(2), s.received.toFixed(2), s.spent.toFixed(2), (s.received - s.spent).toFixed(2)].join(',')),
       ['Total', data.invoiced.toFixed(2), data.received.toFixed(2), data.spent.toFixed(2), data.net.toFixed(2)].join(','), '',
@@ -111,7 +111,7 @@ export default function ReportsClient({ invoices, expenses, customers, companies
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pb-3 border-b border-slate-200">
         <div>
           <h1 className="text-xl font-bold text-slate-900 tracking-tight">Reports</h1>
-          <p className="text-xs text-slate-500 mt-0.5">{periodLabel} · all amounts in BDT</p>
+          <p className="text-xs text-slate-500 mt-0.5">{periodLabel} · all amounts in ৳</p>
         </div>
         <div className="flex flex-wrap items-center gap-2 print:hidden">
           <div className="inline-flex rounded-lg border border-slate-200 bg-white p-0.5 text-xs font-semibold">

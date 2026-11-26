@@ -48,7 +48,7 @@ export default function NewInvoiceForm({ customers, services, onClose, editing }
     if (lines.length === 0) return setError('Select at least one service')
     if (lines.some(l => !l.description.trim() || !(Number(l.quantity) > 0) || l.unit_price === '' || Number(l.unit_price) < 0)) return setError('Check the service lines: name, quantity and price are required')
     if (disc < 0 || disc > subtotal) return setError('Discount cannot be more than the subtotal')
-    if (editing && total < editing.paid) return setError(`The total cannot be less than the BDT ${editing.paid.toLocaleString()} already received.`)
+    if (editing && total < editing.paid) return setError(`The total cannot be less than the ৳ ${editing.paid.toLocaleString()} already received.`)
     if (!editing && mode === 'partial' && !(payNow > 0 && payNow < total)) return setError('Partial payment must be more than 0 and less than the total')
     setLoading(true)
     if (editing) {
@@ -97,7 +97,7 @@ export default function NewInvoiceForm({ customers, services, onClose, editing }
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-bold text-slate-900">{editing ? `Edit Invoice ${editing.invoice.invoice_no}` : 'New Invoice'}</h1>
-          <p className="text-xs text-slate-500">{editing ? `Change the customer, services, discount or notes. Payments already received (BDT ${editing.paid.toLocaleString()}) stay as they are.` : 'Choose the customer and services, then record the payment (or leave it for later).'}</p>
+          <p className="text-xs text-slate-500">{editing ? `Change the customer, services, discount or notes. Payments already received (৳ ${editing.paid.toLocaleString()}) stay as they are.` : 'Choose the customer and services, then record the payment (or leave it for later).'}</p>
         </div>
         <button type="button" onClick={onClose} title="Back" className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-400"><X className="w-5 h-5" /></button>
       </div>
@@ -182,7 +182,7 @@ export default function NewInvoiceForm({ customers, services, onClose, editing }
             </div>
             {mode === 'partial' && (
               <div>
-                <label className="text-xs font-semibold text-slate-700 mb-1.5 block">Amount received now (BDT)</label>
+                <label className="text-xs font-semibold text-slate-700 mb-1.5 block">Amount received now (৳)</label>
                 <input type="number" min="0" step="0.01" value={partial} onChange={e => setPartial(e.target.value)} className={inputCls} placeholder="0.00" />
               </div>
             )}

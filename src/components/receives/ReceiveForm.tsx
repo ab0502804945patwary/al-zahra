@@ -117,7 +117,7 @@ export default function ReceiveForm({ customers, openInvoices, vouchers, staffNa
         </div>
         <div>{L('Account Type', true)}
           <select value={form.account_type} onChange={e => set('account_type', e.target.value)} className={inputCls}><option value="">Select account type</option>{ACCOUNT_TYPES.map(a => <option key={a}>{a}</option>)}</select></div>
-        <div>{L('Amount (BDT)', true)}
+        <div>{L('Amount (৳)', true)}
           <input type="number" min="0" step="0.01" value={form.amount} onChange={e => set('amount', e.target.value)} className={inputCls} placeholder="0.00" />
           <p className="text-[11px] text-slate-500 mt-1">Max receivable: <b>{maxReceivable.toFixed(2)}</b>{amount > 0 && <> · due after this: <b className="text-rose-600">{left.toFixed(2)}</b></>}</p>
         </div>

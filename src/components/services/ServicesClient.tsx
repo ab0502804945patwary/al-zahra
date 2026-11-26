@@ -63,7 +63,7 @@ export default function ServicesClient({ services }: { services: Service[] }) {
               <input value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} className={inputCls} placeholder="e.g. MISA License Renewal" />
             </div>
             <div>
-              <label className="text-xs font-semibold text-slate-700 mb-1.5 block">Price (BDT)<span className="text-rose-500 ml-0.5">*</span></label>
+              <label className="text-xs font-semibold text-slate-700 mb-1.5 block">Price (৳)<span className="text-rose-500 ml-0.5">*</span></label>
               <input type="number" min="0" step="0.01" value={form.price} onChange={e => setForm(p => ({ ...p, price: e.target.value }))} className={inputCls} placeholder="0.00" />
             </div>
             <div className="sm:col-span-3">

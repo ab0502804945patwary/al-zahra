@@ -4,7 +4,7 @@ import './globals.css'
 import PwaListener from '@/components/pwa/PwaListener'
 import UpdateBanner from '@/components/pwa/UpdateBanner'
 
-const inter = Inter({ subsets: ['latin'] })
+const inter = Inter({ subsets: ['latin'], fallback: ['Taka'] })
 
 export const metadata: Metadata = {
   title: 'AL ZAHRA ERP — Investor License Management',

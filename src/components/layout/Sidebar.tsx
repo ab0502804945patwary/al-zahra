@@ -7,8 +7,10 @@ import { cn } from '@/lib/utils'
 import { Employee } from '@/lib/types'
 import { useSidebar } from './DashboardShell'
 import { canAccessStage, canAccessModule } from '@/lib/access'
+import { MENU_ORDER } from '@/lib/stageData'
 import {
   HandCoins,
+  Hourglass,
   BookOpen,
   UserPlus,
   Clapperboard,
@@ -124,19 +126,22 @@ export default function Sidebar({ employee }: SidebarProps) {
     return () => { alive = false; clearInterval(t) }
   }, [pathname])
 
+  const waitingTotal = Object.values(waiting).reduce((a, b) => a + b, 0)
+  const firstWaiting = MENU_ORDER.find(id => waiting[Number(id)] && canAccessStage(employee, Number(id)))
+
   return (
     <aside
       className={cn(
-        'bg-blue-600 border-r border-blue-700/40 flex flex-col text-white select-none shadow-[1px_0_6px_rgba(0,0,0,0.08)] transition-all duration-300 ease-in-out shrink-0',
+        'bg-gradient-to-b from-white to-[#eef3fd] border-r border-slate-200/70 flex flex-col text-slate-700 select-none transition-all duration-300 ease-in-out shrink-0',
         'fixed inset-y-0 left-0 z-50 w-60 max-w-[85vw] lg:static lg:z-30 lg:translate-x-0',
         mobileOpen ? 'translate-x-0' : '-translate-x-full',
-        !mobileOpen && collapsed ? 'lg:w-16' : 'lg:w-56'
+        !mobileOpen && collapsed ? 'lg:w-[72px]' : 'lg:w-64'
       )}
     >
       {/* Brand Header */}
       <div
         className={cn(
-          'h-16 border-b border-blue-700/30 bg-white flex items-center transition-all duration-300',
+          'h-14 shrink-0 flex items-center transition-all duration-300',
           collapsed ? 'justify-center px-2' : 'justify-between px-4'
         )}
       >
@@ -178,7 +183,7 @@ export default function Sidebar({ employee }: SidebarProps) {
       <nav
         className={cn(
           'flex-1 overflow-y-auto space-y-4 py-4 transition-all duration-300',
-          collapsed ? 'px-2' : 'px-2.5 space-y-5'
+          collapsed ? 'px-2' : 'px-3 space-y-5'
         )}
       >
         {navGroups.map((group, groupIdx) => {
@@ -197,18 +202,18 @@ export default function Sidebar({ employee }: SidebarProps) {
                 group.title === 'INVESTOR WORKFLOW' ? (
                   <button
                     onClick={() => setWorkflowOpen(o => !o)}
-                    className="w-full flex items-center justify-between px-3 pb-1.5 text-[10px] font-bold tracking-wider text-blue-100 hover:text-white uppercase"
+                    className="w-full flex items-center justify-between px-3 pb-1.5 text-[10px] font-bold tracking-wider text-slate-400 hover:text-blue-700 uppercase"
                   >
                     {group.title}
                     <ChevronDown className={cn('w-3.5 h-3.5 transition-transform', workflowOpen ? 'rotate-180' : '')} />
                   </button>
                 ) : (
-                  <div className="px-3 pb-1.5 text-[10px] font-bold tracking-wider text-blue-100 uppercase">
+                  <div className="px-3 pb-1.5 text-[10px] font-bold tracking-wider text-slate-400 uppercase">
                     {group.title}
                   </div>
                 )
               ) : groupIdx > 0 ? (
-                <div className="my-2 border-t border-white/20" />
+                <div className="my-2 border-t border-slate-200" />
               ) : null}
 
               {(collapsed || group.title !== 'INVESTOR WORKFLOW' || workflowOpen) && visibleItems.map(item => {
@@ -224,20 +229,17 @@ export default function Sidebar({ employee }: SidebarProps) {
                       className={cn(
                         'group flex items-center justify-center w-full h-10 rounded-xl transition-all duration-150 relative',
                         isActive
-                          ? 'bg-white text-blue-700 font-semibold shadow-sm'
-                          : 'text-blue-50 hover:text-white hover:bg-white/15'
+                          ? 'bg-blue-600 text-white font-semibold shadow-sm shadow-blue-600/30'
+                          : 'text-slate-600 hover:text-blue-800 hover:bg-blue-100/60'
                       )}
                     >
                       <Icon
                         className={cn(
                           'w-4 h-4 shrink-0 transition-colors',
-                          isActive ? 'text-blue-600' : 'text-blue-200 group-hover:text-white'
+                          isActive ? 'text-white' : 'text-slate-500 group-hover:text-blue-700'
                         )}
                       />
-                      {isActive && (
-                        <span className="absolute left-1 top-2.5 bottom-2.5 w-1 bg-blue-600 rounded-full" />
-                      )}
-                      {item.stage && waiting[item.stage] ? <span className="absolute top-1 right-1 w-2.5 h-2.5 rounded-full bg-rose-500 ring-2 ring-blue-600" /> : null}
+                      {item.stage && waiting[item.stage] ? <span className="absolute top-1 right-1 w-2.5 h-2.5 rounded-full bg-rose-500 ring-2 ring-white" /> : null}
                     </Link>
                   )
                 }
@@ -247,17 +249,17 @@ export default function Sidebar({ employee }: SidebarProps) {
                     key={item.href}
                     href={item.href}
                     className={cn(
-                      'group flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all duration-150',
+                      'group flex items-center justify-between px-3 py-[7px] rounded-lg text-[12.5px] font-medium transition-all duration-150',
                       isActive
-                        ? 'bg-white text-blue-700 font-semibold shadow-sm'
-                        : 'text-blue-50 hover:text-white hover:bg-white/15'
+                        ? 'bg-blue-600 text-white font-semibold shadow-sm shadow-blue-600/30'
+                        : 'text-slate-600 hover:text-blue-800 hover:bg-blue-100/60'
                     )}
                   >
-                    <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="flex items-center gap-3 min-w-0">
                       <Icon
                         className={cn(
                           'w-4 h-4 shrink-0 transition-colors',
-                          isActive ? 'text-blue-600' : 'text-blue-200 group-hover:text-white'
+                          isActive ? 'text-white' : 'text-slate-500 group-hover:text-blue-700'
                         )}
                       />
                       <span className="truncate">{item.label}</span>
@@ -265,7 +267,7 @@ export default function Sidebar({ employee }: SidebarProps) {
 
                     {item.stage && waiting[item.stage] ? (
                       <span className="ml-1 min-w-5 h-5 px-1.5 bg-rose-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center shrink-0">{waiting[item.stage]}</span>
-                    ) : isActive ? <ChevronRight className="w-3.5 h-3.5 text-blue-600 shrink-0" /> : null}
+                    ) : isActive ? <ChevronRight className="w-3.5 h-3.5 text-white shrink-0" /> : null}
                   </Link>
                 )
               })}
@@ -274,27 +276,38 @@ export default function Sidebar({ employee }: SidebarProps) {
         })}
       </nav>
 
+      {/* Pending work card */}
+      {!collapsed && firstWaiting && (
+        <div className="mx-3 mb-2 shrink-0 rounded-xl border border-slate-200 bg-white p-3 shadow-xs">
+          <div className="flex items-center gap-2 text-[13px] font-semibold text-slate-800">
+            <Hourglass className="w-4 h-4 text-blue-600" /> Pending work
+          </div>
+          <p className="text-[11px] text-slate-500 mt-1">{waitingTotal} {waitingTotal === 1 ? 'file is' : 'files are'} waiting to start</p>
+          <Link href={`/dashboard/stage/${firstWaiting}`} className="inline-block mt-1.5 text-[11px] font-semibold text-blue-600 hover:text-blue-800">Open next phase →</Link>
+        </div>
+      )}
+
       {/* Footer Toggle Button */}
       <div
         className={cn(
-          'p-2 border-t border-white/20 bg-blue-700/40 flex items-center transition-all duration-300',
+          'p-2 border-t border-slate-200/70 flex items-center transition-all duration-300',
           collapsed ? 'justify-center' : 'justify-between px-3'
         )}
       >
         <button
           onClick={toggleOrClose}
           className={cn(
-            'flex items-center gap-2 p-2 rounded-lg text-xs text-blue-100 hover:text-white hover:bg-white/15 transition w-full',
+            'flex items-center gap-2 p-2 rounded-lg text-xs text-slate-500 hover:text-blue-800 hover:bg-blue-100/60 transition w-full',
             collapsed ? 'justify-center' : ''
           )}
           title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
           {collapsed ? (
-            <PanelLeftOpen className="w-4 h-4 text-blue-100" />
+            <PanelLeftOpen className="w-4 h-4" />
           ) : (
             <>
-              <PanelLeftClose className="w-4 h-4 text-blue-200" />
-              <span className="text-xs font-medium text-blue-100">Collapse category list</span>
+              <PanelLeftClose className="w-4 h-4" />
+              <span className="text-xs font-medium">Collapse category list</span>
             </>
           )}
         </button>
