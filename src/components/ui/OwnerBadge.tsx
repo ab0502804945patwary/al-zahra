@@ -5,7 +5,6 @@ import * as Tooltip from '@radix-ui/react-tooltip'
 export interface Owner {
   name: string
   avatar_url?: string | null
-  role?: string | null
   designation?: string | null
   department?: string | null
   email?: string | null
@@ -28,7 +27,7 @@ export default function OwnerBadge({ owner }: { owner: Owner | null }) {
   const [open, setOpen] = useState(false)
   const name = owner?.name || 'AL ZAHRA'
   const rows = owner
-    ? [['Designation', owner.designation], ['Department', owner.department], ['Role', owner.role], ['Phone', owner.phone], ['E-mail', owner.email], ['Office', owner.office_location]].filter(r => r[1])
+    ? [['Designation', owner.designation], ['Department', owner.department], ['Phone', owner.phone], ['E-mail', owner.email], ['Office', owner.office_location]].filter(r => r[1])
     : []
 
   return (
@@ -55,7 +54,7 @@ export default function OwnerBadge({ owner }: { owner: Owner | null }) {
                 {rows.map(([label, value]) => (
                   <div key={label} className="contents">
                     <dt className="text-slate-400">{label}</dt>
-                    <dd className={`text-slate-700 break-all ${label === 'Role' ? 'capitalize' : ''}`}>{value}</dd>
+                    <dd className="text-slate-700 break-all">{value}</dd>
                   </div>
                 ))}
               </dl>

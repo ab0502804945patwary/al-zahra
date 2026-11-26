@@ -71,7 +71,7 @@ export default async function StagePage({ params }: { params: Promise<{ id: stri
   // admin: who registered each company (same column as in Company Register)
   const owners: Record<string, Owner> = {}
   if (isAdmin) {
-    const { data: staff } = await lookup.from('employees').select('user_id, name, avatar_url, role, designation, department, email, phone, office_location')
+    const { data: staff } = await lookup.from('employees').select('user_id, name, avatar_url, designation, department, email, phone, office_location')
     for (const x of (staff as any[]) || []) if (x.user_id) owners[x.user_id] = x
   }
 

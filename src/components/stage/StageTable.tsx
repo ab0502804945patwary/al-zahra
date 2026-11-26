@@ -226,8 +226,8 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
             <thead>
               <tr className="bg-slate-50/80 text-slate-500 font-semibold uppercase tracking-wider border-b border-slate-200">
                 <th className="py-3 px-4">Entity</th>
-                {isAdmin && <th className="py-3 px-2 text-center whitespace-nowrap w-px" title="Registered by">Reg. by</th>}
                 <th className="py-3 px-4">Entity Structure</th>
+                {isAdmin && <th className="py-3 px-2 text-center whitespace-nowrap w-px" title="Registered by">Reg. by</th>}
                 <th className="py-3 px-4">Clearance Number</th>
                 <th className="py-3 px-4">Submission Date</th>
                 <th className="py-3 px-4">Approval Date</th>
@@ -247,8 +247,8 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
                     <div className="font-semibold text-slate-900">{e.company_id}</div>
                     <div className="text-slate-500 text-[11px]">{e.companies?.company_name}{e.companies?.original_company_name && <span className="block text-[10px] text-slate-400">Previously: {e.companies.original_company_name}</span>}</div>
                   </td>
-                  {isAdmin && ownerCell(e.company_id)}
                   <td className="py-3 px-4">{e.entity_type || '—'}</td>
+                  {isAdmin && ownerCell(e.company_id)}
                   <td className="py-3 px-4 font-mono font-medium text-slate-600">{e.name_clearance_number || '—'}</td>
                   <td className="py-3 px-4">{formatDate(e.submit_date)}</td>
                   <td className="py-3 px-4">{formatDate(e.approval_date)}</td>
@@ -303,8 +303,8 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
             <thead>
               <tr className="bg-slate-50/80 text-slate-500 font-semibold uppercase tracking-wider border-b border-slate-200">
                 <th className="py-3 px-4">Entity</th>
-                {isAdmin && <th className="py-3 px-2 text-center whitespace-nowrap w-px" title="Registered by">Reg. by</th>}
                 <th className="py-3 px-4">Category</th>
+                {isAdmin && <th className="py-3 px-2 text-center whitespace-nowrap w-px" title="Registered by">Reg. by</th>}
                 <th className="py-3 px-4 bg-blue-50/50">
                   <span className="inline-flex items-center gap-1.5">
                     <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-700">USA</span>
@@ -343,8 +343,8 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
                     <div className="font-semibold text-slate-900">{e.company_id}</div>
                     <div className="text-slate-500 text-[11px]">{e.companies?.company_name}{e.companies?.original_company_name && <span className="block text-[10px] text-slate-400">Previously: {e.companies.original_company_name}</span>}</div>
                   </td>
-                  {isAdmin && ownerCell(e.company_id)}
                   <td className="py-3 px-4">{e.category || '—'}</td>
+                  {isAdmin && ownerCell(e.company_id)}
                   <td className="py-3 px-4 bg-blue-50/20 font-medium text-blue-700">{e.usa_type || '—'}</td>
                   <td className="py-3 px-4 bg-blue-50/20">{formatDate(e.usa_submit_date)}</td>
                   <td className="py-3 px-4 bg-blue-50/20">{formatDate(e.usa_target_date)}</td>
@@ -419,7 +419,6 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
           <thead>
             <tr className="bg-slate-50/80 text-slate-500 font-semibold uppercase tracking-wider border-b border-slate-200">
               <th className="py-3 px-4">No.</th>
-              {isAdmin && <th className="py-3 px-2 text-center whitespace-nowrap w-px" title="Registered by">Reg. by</th>}
               {stageId === '9' && (<>
                 <th className="py-3 px-4">Bangladesh Company Name</th>
                 <th className="py-3 px-4">Name Approval</th>
@@ -442,6 +441,7 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
               {!hideCo() && <th className="py-3 px-4">Company Name</th>}
               {!hideBd() && <th className="py-3 px-4">Authorized Contact</th>}
               {!hideBd() && <th className="py-3 px-4">License Type</th>}
+              {isAdmin && <th className="py-3 px-2 text-center whitespace-nowrap w-px" title="Registered by">Reg. by</th>}
               {['1', '2', '4', '6', '7'].includes(stageId) && (<>
                 <th className="py-3 px-4">Country</th>
               </>)}
@@ -472,7 +472,6 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
             ) : pageRows.map((e, idx) => (
               <tr key={e.id} className="hover:bg-slate-50/60 transition-colors">
                 <td className="py-3 px-4 text-slate-400 font-mono text-[11px]">{(cur - 1) * PAGE + idx + 1}</td>
-                {isAdmin && ownerCell(e.company_id)}
                 {(stageId === '3' || stageId === '10' || stageId === '11') && (<>
                   <td className="py-3 px-4 font-semibold text-slate-900 whitespace-nowrap">{e.foreign_company_name || '—'}</td>
                   <td className="py-3 px-4"><span className="inline-flex items-center gap-1.5 whitespace-nowrap"><Flag country={e.country} />{e.country || '—'}</span></td>
@@ -506,6 +505,7 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
                 </td>
                 <td className="py-3 px-4">{e.category || '—'}</td>
                 </>)}
+                {isAdmin && ownerCell(e.company_id)}
                 {['1', '2', '4', '6', '7'].includes(stageId) && (<>
                   <td className="py-3 px-4 text-slate-600">{e.country || '—'}</td>
                 </>)}
