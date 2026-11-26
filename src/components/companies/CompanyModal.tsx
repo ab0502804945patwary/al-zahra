@@ -44,6 +44,8 @@ import { triggerPush } from '@/lib/pushClient'
 import { STAGE_CONFIG } from '@/lib/stageData'
 import { ShareholdersEditor, DocumentVerification, blankShareholder, isBlankShareholder, missingPassports, type Shareholder } from './FormParts'
 import { removeFromR2 } from '@/lib/compress'
+import PhaseStaffPicker, { useStaffOptions, canWork } from './PhaseStaffPicker'
+import { OTHERS_SERVICE, OTHERS_REQUIRED_PHASE } from '@/lib/stageRules'
 
 interface Props {
   company?: Company
@@ -61,7 +63,7 @@ const AUDIT_STATUSES = ['Not Started', 'In Progress', 'Completed', 'Overdue']
 
 // Work categories that can be ticked for each License Type (stage ids: 9 Bangladesh Company, 10 Foreign Mother, 3 / 11 Foreign Subsidiary 1 / 2)
 // Service License: Foreign Company must be ticked (cannot be removed), Bangladesh Company is optional
-const MANDATORY_FOR: Record<string, string[]> = { 'Service License': ['10'], 'Trading License': ['10'] }
+const MANDATORY_FOR: Record<string, string[]> = { 'Service License': ['10'], 'Trading License': ['10'], [OTHERS_SERVICE]: [OTHERS_REQUIRED_PHASE] }
 const labelFor = (id: string, license?: string) => (license === 'Service License' && id === '10' ? 'Foreign Company' : license === 'Service License' && id === '9' ? 'Bangladesh Company' : PHASE_LABEL[id])
 const PHASE_LABEL: Record<string, string> = { '9': 'Bangladesh Company Name', '10': 'Foreign Mother Company', '3': '1 Foreign Subsidiary Company', '11': '2 Foreign Subsidiary Company' }
 const PHASES_FOR: Record<string, string[]> = {
@@ -116,6 +118,10 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
 
   const set = (k: string, v: any) => setForm(p => ({ ...p, [k]: v }))
 
+  // "Others Service": phases are ticked one by one and each gets its own staff
+  const isOthers = form.entity_type === OTHERS_SERVICE && form.service_type !== 'renewal'
+  const { staff, error: staffError } = useStaffOptions(isOthers)
+
   // the list on this screen can be out of date: ask the database for the real next ID
   useEffect(() => {
     if (company) return
@@ -143,6 +149,18 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
         return
       }
     }
+    let phaseStaff: Record<string, string[]> = {}
+    if (isOthers) {
+      if (!staff) { alert(staffError || 'The staff list is still loading. Please try again in a moment.'); return }
+      const ticked = Array.from(new Set<string>([...(form.selected_phases || []), OTHERS_REQUIRED_PHASE]))
+      // phases removed from this company earlier need no staff
+      const active = ticked.filter(id => !(form.skipped_phases || []).includes(id))
+      for (const id of active) {
+        phaseStaff[id] = ((form.phase_staff || {})[id] || []).filter((u: string) => staff.some(s => s.id === u && canWork(s, id)))
+      }
+      const empty = active.filter(id => !phaseStaff[id].length)
+      if (empty.length) { alert(`Select staff for: ${empty.map(id => STAGE_CONFIG[id]?.label || id).join(', ')}.`); return }
+    }
     const holders: Shareholder[] = (form.shareholders || []).filter((x: Shareholder) => !isBlankShareholder(x))
     const totalShare = holders.reduce((a, x) => a + (parseFloat(x.share_percent) || 0), 0)
     if (totalShare > 100) { alert(`Total shareholding is ${totalShare}%. It cannot be more than 100%.`); return }
@@ -166,6 +184,9 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
     if (form.service_type !== 'renewal') {
       // Company Register form: the new sections are the source of truth
       row.shareholders = holders
+      // phase_staff is only sent when it matters, so other license types keep saving before db/others-service.sql is run
+      if (isOthers) row.phase_staff = phaseStaff
+      else if (row.phase_staff !== undefined) row.phase_staff = {}
     if (Array.isArray(row.selected_phases)) row.selected_phases = Array.from(new Set([...(MANDATORY_FOR[form.entity_type || ''] || []), ...row.selected_phases]))
       // other screens (cards, search, reminders, forms) still read these older columns: keep them in step
       row.ceo_gm_name = row.admin_name || row.ceo_gm_name || null
@@ -175,7 +196,7 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
     } else if (!form.workflow_completed_at) {
       // Renewal form keeps its own fields (CEO / GM, Main Shareholder ...); the new sections are not part of it
       delete row.shareholders; delete row.admin_name; delete row.admin_iqama_no; delete row.admin_iqama_expiry
-      delete row.selected_phases; delete row.admin_mobile; delete row.admin_email; delete row.admin_access_setup; delete row.doc_checks; delete row.company_documents
+      delete row.phase_staff; delete row.selected_phases; delete row.admin_mobile; delete row.admin_email; delete row.admin_access_setup; delete row.doc_checks; delete row.company_documents
     }
     if (company) {
       const { data, error } = await supabase.from('companies').update(row).eq('id', company.id).select().single()
@@ -327,11 +348,12 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
 
       <div className={`col-span-2 ${SPAN[2]}`}>
         <Lbl name="entity_type">License Type</Lbl>
-        <select required value={form.entity_type || ''} onChange={e => setForm(p => ({ ...p, entity_type: e.target.value, selected_phases: phasesFor(e.target.value) }))} className={inputCls}>
+        <select required value={form.entity_type || ''} onChange={e => setForm(p => ({ ...p, entity_type: e.target.value, selected_phases: e.target.value === OTHERS_SERVICE ? [OTHERS_REQUIRED_PHASE] : phasesFor(e.target.value) }))} className={inputCls}>
           <option value="">Select license type</option>
           <option value="Trading License">Trading License</option>
           <option value="Service License">Service License</option>
           <option value="Service to Trade">Service to Trade</option>
+          <option value={OTHERS_SERVICE}>{OTHERS_SERVICE}</option>
         </select>
       </div>
 
@@ -350,11 +372,24 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
             {form.skipped_phases.map((id: string) => (
               <span key={id} className="inline-flex items-center gap-2 pl-3 pr-1.5 py-1 rounded-full border border-slate-200 bg-slate-50 text-xs font-medium text-slate-700">
                 {STAGE_CONFIG[id]?.label || `Phase ${id}`}
-                <button type="button" onClick={() => setForm(p => ({ ...p, skipped_phases: (p.skipped_phases || []).filter((x: string) => x !== id), selected_phases: PHASES_FOR[p.entity_type || ''] && OPTIONAL_IDS.includes(id) && !(p.selected_phases || []).includes(id) ? [...(p.selected_phases || []), id] : p.selected_phases }))}
+                <button type="button" onClick={() => setForm(p => ({ ...p, skipped_phases: (p.skipped_phases || []).filter((x: string) => x !== id), selected_phases: (p.entity_type === OTHERS_SERVICE || (PHASES_FOR[p.entity_type || ''] && OPTIONAL_IDS.includes(id))) && !(p.selected_phases || []).includes(id) ? [...(p.selected_phases || []), id] : p.selected_phases }))}
                   className="px-2 py-0.5 rounded-full bg-blue-600 text-white text-[11px] font-semibold hover:bg-blue-700">Restore</button>
               </span>
             ))}
           </div>
+        </div>
+      )}
+
+      {isOthers && (
+        <div className={SPAN[12]}>
+          <PhaseStaffPicker
+            phases={form.selected_phases || []}
+            onPhases={p => set('selected_phases', p)}
+            value={form.phase_staff || {}}
+            onChange={v => set('phase_staff', v)}
+            staff={staff}
+            error={staffError}
+          />
         </div>
       )}
 

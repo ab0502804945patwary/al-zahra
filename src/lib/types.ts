@@ -137,6 +137,8 @@ export interface Company {
   original_company_name?: string | null
   selected_phases?: string[] | null
   skipped_phases?: string[] | null
+  /** "Others Service": stage id -> auth user ids of the staff picked for that phase */
+  phase_staff?: Record<string, string[]> | null
   admin_name?: string
   admin_iqama_no?: string
   admin_iqama_expiry?: string

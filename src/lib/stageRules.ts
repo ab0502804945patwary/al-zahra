@@ -4,7 +4,10 @@
 export const COUNTRIES = ['Bangladesh', 'Pakistan', 'India', 'Afganistan', 'Sudan']
 /** Stages that show the company's Country and City (entered in stage 1, copied to the rest). */
 export const COUNTRY_CITY_STAGES = ['1', '2', '4', '5', '6', '7']
-export const CATEGORIES = ['Service License', 'Trading License', 'Service to Trade']
+export const OTHERS_SERVICE = 'Others Service'
+/** Always part of an "Others Service" company: finishing it moves the company to Renewal. */
+export const OTHERS_REQUIRED_PHASE = '7'
+export const CATEGORIES = ['Service License', 'Trading License', 'Service to Trade', OTHERS_SERVICE]
 /** Service to Trade follows the Trading License flow (it needs Foreign Entity too). */
 const needsForeign = (c?: string) => c === 'Trading License' || c === 'Service to Trade'
 export const PAYMENT_STATUSES = ['Paid', 'Pending', 'Partial']
@@ -76,6 +79,36 @@ function submittedAndDone(entries: AnyEntry[] | undefined, companyId: string) {
 // Phases that depend on what was ticked on the Company Register form (Bangladesh Company, Foreign Mother, 1 and 2 Foreign Subsidiary)
 export const OPTIONAL_PHASES = ['9', '10', '3', '11']
 
+/** "Others Service": a phase of such a company belongs only to the staff picked for it (admins are not limited by this). */
+export function phaseStaffAllows(company: { entity_type?: string; phase_staff?: Record<string, string[]> | null }, stageId: string, userId: string) {
+  if (company.entity_type !== OTHERS_SERVICE || !company.phase_staff || !Object.keys(company.phase_staff).length) return true
+  return (company.phase_staff[stageId] || []).includes(userId)
+}
+
+/**
+ * "Others Service" order. Only ticked phases get work; an unticked one counts as done, so the next one waits
+ * for whatever was ticked before it. 9, 2, 8 start at once -> 10, 3, 11 -> 1 -> 4 -> 5 -> 6 -> 7.
+ */
+function othersEligible(stageId: string, id: string, picked: string[], skipped: string[], all: StageEntriesMap): boolean {
+  const on = (sid: string) => picked.includes(sid) && !skipped.includes(sid)
+  if (!on(stageId)) return false
+  const done_ = (sid: string, field: 'complete_date' | 'approval_date' = 'complete_date') => !on(sid) || done(all[sid], id, field)
+  const bdApproved = () => !on('9') || (all['9'] || []).some(e => e.company_id === id && (e as any).approval_status === 'Approved')
+  // what has to be finished before a phase can start
+  const ready = (sid: string): boolean => {
+    switch (sid) {
+      case '10': case '3': case '11': return bdApproved()
+      case '1': return on('10') ? done_('10') : bdApproved() && done_('3') && done_('11')
+      case '4': return ready('1') && done_('1') && done_('2') && done_('8', 'approval_date') && done_('9') && done_('10') && done_('3') && done_('11')
+      case '5': return on('4') ? submittedAndDone(all['4'], id) : ready('4')
+      case '6': return on('5') ? submittedAndDone(all['5'], id) : ready('5')
+      case '7': return on('6') ? (all['6'] || []).some(e => e.company_id === id) : ready('6')
+      default: return true
+    }
+  }
+  return ready(stageId)
+}
+
 export function isEligibleForStage(stageId: string, company: { company_id: string; entity_type?: string; category?: string; service_type?: string; selected_phases?: string[] | null; skipped_phases?: string[] | null; workflow_completed_at?: string | null }, all: StageEntriesMap): boolean {
   // the Final Dossier is done: the company has moved to Renewal
   if (company.workflow_completed_at) return false
@@ -89,6 +122,7 @@ export function isEligibleForStage(stageId: string, company: { company_id: strin
   // A phase the admin removed for this company never gets its work; the other phases are not affected.
   const skipped = Array.isArray(company.skipped_phases) ? company.skipped_phases : []
   if (skipped.includes(stageId)) return false
+  if (company.entity_type === OTHERS_SERVICE) return othersEligible(stageId, id, picked || [], skipped, all)
   // a removed phase counts as done for the phases that wait for it (MISA, CR, Portals, Final Dossier)
   const dk = (sid: string, field: 'complete_date' | 'usa_complete_date' | 'approval_date' = 'complete_date') => skipped.includes(sid) || done(all[sid], id, field)
   if (picked && OPTIONAL_PHASES.includes(stageId)) {
@@ -189,7 +223,7 @@ export function parentReadyDate(company: { company_id: string; entity_type?: str
   const category = company.category || company.entity_type
   const picked = Array.isArray(company.selected_phases) ? company.selected_phases : null
   const skipped = Array.isArray(company.skipped_phases) ? company.skipped_phases : []
-  const ticked = picked ? picked.filter(s => OPTIONAL_PHASES.includes(s) && !skipped.includes(s)) : []
+  const ticked = picked ? picked.filter(s => OPTIONAL_PHASES.includes(s) && !skipped.includes(s)) : [] // only these lead into Parent Entity
   const last = (xs: (string | null | undefined)[]) => xs.filter((x): x is string => !!x).map(x => String(x).slice(0, 10)).sort().pop() || null
   const dateOf = (sid: string) => {
     const rows = (all[sid] || []).filter(e => e.company_id === id) as any[]
@@ -197,7 +231,7 @@ export function parentReadyDate(company: { company_id: string; entity_type?: str
   }
   let sids: string[] = []
   if (picked && category === 'Service License') sids = ticked.includes('9') ? ['9'] : ticked
-  else if (picked && needsForeign(category)) sids = ticked.includes('10') ? ['10'] : ticked
+  else if (picked && (needsForeign(category) || category === OTHERS_SERVICE)) sids = ticked.includes('10') ? ['10'] : ticked
   const found = last(sids.map(dateOf))
   if (found) return found
   return company.created_at ? new Date(company.created_at).toLocaleDateString('en-CA', { timeZone: 'Asia/Riyadh' }) : null

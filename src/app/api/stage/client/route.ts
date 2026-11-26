@@ -3,6 +3,7 @@ import { createServiceClient, isSupabaseConfigured } from '@/lib/supabase/server
 import { getSessionInfo } from '@/lib/session'
 import { canAccessStage } from '@/lib/access'
 import { STAGE_CONFIG } from '@/lib/stageData'
+import { phaseStaffAllows } from '@/lib/stageRules'
 
 export const dynamic = 'force-dynamic'
 
@@ -46,6 +47,9 @@ export async function POST(request: Request) {
   const { data, error } = await db.from('companies').select('*').eq('company_id', companyId).maybeSingle()
   if (error) return NextResponse.json({ error: 'Could not load the client information.' }, { status: 500 })
   if (!data) return NextResponse.json({ error: 'Company not found.' }, { status: 404 })
+  if (me.role !== 'admin' && !phaseStaffAllows(data, stage, user.id)) {
+    return NextResponse.json({ error: 'This company is given to other staff in this phase.' }, { status: 403 })
+  }
 
   const company = Object.fromEntries(FIELDS.map(k => [k, (data as Record<string, unknown>)[k] ?? null]))
   return NextResponse.json({ company }, { headers: { 'Cache-Control': 'no-store' } })

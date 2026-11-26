@@ -86,7 +86,8 @@ export default function MasterMatrixDashboard({ initialCompanies, stageMap }: Da
         if (real[n]) stages[n] = real[n]
         else if (Array.isArray((c as any).skipped_phases) && (c as any).skipped_phases.includes(String(n))) stages[n] = { status: 'Not Started', label: 'Removed' }
         else if (isRenewal) stages[n] = { status: 'Not Started', label: '—' } // renewal: no stage handoff
-        else if (Array.isArray((c as any).selected_phases) && [3, 9, 10, 11].includes(n) && !(c as any).selected_phases.includes(String(n))) stages[n] = { status: 'Not Started', label: 'N/A' } // not ticked on the form
+        else if (c.entity_type === 'Others Service' && !((c as any).selected_phases || []).includes(String(n))) stages[n] = { status: 'Not Started', label: 'N/A' }
+        else if (c.entity_type !== 'Others Service' && Array.isArray((c as any).selected_phases) && [3, 9, 10, 11].includes(n) && !(c as any).selected_phases.includes(String(n))) stages[n] = { status: 'Not Started', label: 'N/A' } // not ticked on the form
         else if (!Array.isArray((c as any).selected_phases) && (n === 3 || n === 10 || n === 11) && c.entity_type === 'Service License') stages[n] = { status: 'Not Started', label: 'N/A' } // older company: Service License skips the foreign phases
         else stages[n] = { status: 'Not Started', label: 'Not started' }
       }

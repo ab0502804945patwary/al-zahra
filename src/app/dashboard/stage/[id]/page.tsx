@@ -8,7 +8,7 @@ import { enrichTiming, enrichExpiry } from '@/lib/utils'
 import { STAGE_CONFIG } from '@/lib/stageData'
 import { getSessionInfo } from '@/lib/session'
 import { canAccessStage, canDo } from '@/lib/access'
-import { isEligibleForStage, eligibilityColumns, parentReadyDate, ELIGIBILITY_HINT, type StageEntriesMap } from '@/lib/stageRules'
+import { isEligibleForStage, eligibilityColumns, parentReadyDate, phaseStaffAllows, OTHERS_SERVICE, ELIGIBILITY_HINT, type StageEntriesMap } from '@/lib/stageRules'
 
 export const dynamic = 'force-dynamic'
 
@@ -34,7 +34,7 @@ export default async function StagePage({ params }: { params: Promise<{ id: stri
   const isAdmin = me?.role === 'admin'
 
   const gated = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11'].includes(id)
-  const upstream = !gated || id === '9' || id === '8' ? [] : id === '10' || id === '3' || id === '11' ? ['9'] : id === '1' ? ['9', '10', '3', '11'] : id === '4' ? ['1', '2', '3', '8', '9', '10', '11'] : ['1', '2', '3', '4', '5', '6'].filter(sid => Number(sid) < Number(id))
+  const upstream = !gated || id === '9' || id === '8' ? [] : id === '10' || id === '3' || id === '11' ? ['9'] : id === '1' ? ['9', '10', '3', '11'] : id === '4' ? ['1', '2', '3', '8', '9', '10', '11'] : id === '2' ? ['1'] : ['1', '2', '3', '4', '5', '6', '8', '9', '10', '11'].filter(sid => sid !== id)
   const dbEntries: Record<string, any[]> = {}
 
   try {
@@ -64,6 +64,15 @@ export default async function StagePage({ params }: { params: Promise<{ id: stri
       return config.isNameClearance ? enrichExpiry(withName, stoppedOn.get(e.company_id) || null) : enrichTiming(withName)
     })
     upstream.forEach((sid, k) => { dbEntries[sid] = (upRes[k]?.data as any[]) || [] })
+    // "Others Service": picked staff per phase (asked separately, so the page keeps working before db/others-service.sql is run)
+    const { data: others } = await lookup.from('companies').select('company_id, phase_staff').eq('entity_type', OTHERS_SERVICE)
+    const staffOf = new Map<string, any>(((others as any[]) || []).map(o => [o.company_id, o.phase_staff]))
+    companies = companies.map(c => (staffOf.has(c.company_id) ? { ...c, phase_staff: staffOf.get(c.company_id) } : c))
+    if (!isAdmin) {
+      const hidden = new Set(companies.filter(c => !phaseStaffAllows(c, id, user.id)).map(c => c.company_id))
+      companies = companies.filter(c => !hidden.has(c.company_id))
+      entries = entries.filter(e => !hidden.has(e.company_id))
+    }
   } catch (e) {
     console.error('Error fetching stage data:', e)
   }

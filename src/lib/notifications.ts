@@ -1,7 +1,7 @@
 import { createClient, createServiceClient, isSupabaseConfigured } from '@/lib/supabase/server'
 import { STAGE_CONFIG, MENU_ORDER, phaseOf } from '@/lib/stageData'
 import { stagesOf } from '@/lib/access'
-import { isEligibleForStage, eligibilityColumns, type StageEntriesMap } from '@/lib/stageRules'
+import { isEligibleForStage, eligibilityColumns, phaseStaffAllows, OTHERS_SERVICE, type StageEntriesMap } from '@/lib/stageRules'
 
 export interface AppNotification {
   key: string
@@ -19,20 +19,24 @@ const stageIds = () => MENU_ORDER.filter(id => STAGE_CONFIG[id])
 async function loadWorkData() {
   const ids = stageIds()
   const lookup = await createServiceClient()
-  const [cRes, ...sRes] = await Promise.all([
+  const [cRes, oRes, ...sRes] = await Promise.all([
     lookup.from('companies').select('company_id, company_name, entity_type, service_type, account_status, selected_phases, skipped_phases'),
+    // asked separately: this column only exists after db/others-service.sql
+    lookup.from('companies').select('company_id, phase_staff').eq('entity_type', OTHERS_SERVICE),
     ...ids.map(sid => lookup.from(STAGE_CONFIG[sid].table).select(eligibilityColumns(sid))),
   ])
   const all: StageEntriesMap = {}
   ids.forEach((sid, k) => { all[sid] = (sRes[k].data as any[]) || [] })
-  return { companies: (cRes.data as any[]) || [], all }
+  const staffOf = new Map<string, any>(((oRes.data as any[]) || []).map(o => [o.company_id, o.phase_staff]))
+  const companies = ((cRes.data as any[]) || []).map(c => (staffOf.has(c.company_id) ? { ...c, phase_staff: staffOf.get(c.company_id) } : c))
+  return { companies, all }
 }
 
 /**
  * A company is "waiting" for a stage when it is eligible for that stage but has no entry there yet.
- * `myStages` null = admin (every stage).
+ * `myStages` null = admin (every stage, every company).
  */
-function buildFor(companies: any[], all: StageEntriesMap, myStages: number[] | null): AppNotification[] {
+function buildFor(companies: any[], all: StageEntriesMap, myStages: number[] | null, userId: string): AppNotification[] {
   const out: AppNotification[] = []
   for (const sid of stageIds()) {
     const n = Number(sid)
@@ -44,6 +48,7 @@ function buildFor(companies: any[], all: StageEntriesMap, myStages: number[] | n
       const started = (all[sid] || []).some(e => e.company_id === c.company_id)
       if (started) continue
       if (!isEligibleForStage(sid, c, all)) continue
+      if (myStages !== null && !phaseStaffAllows(c, sid, userId)) continue
       out.push({
         key: `${sid}:${c.company_id}`,
         stage: n,
@@ -68,7 +73,7 @@ export async function getNotifications(): Promise<AppNotification[]> {
     supabase.from('employees').select('role, assigned_stage, assigned_stages').eq('user_id', user.id).single(),
     loadWorkData(),
   ])
-  return buildFor(work.companies, work.all, stagesOf(empRes.data))
+  return buildFor(work.companies, work.all, stagesOf(empRes.data), user.id)
 }
 
 /** Work waiting for every active staff member (used to send push notifications). */
@@ -81,5 +86,5 @@ export async function getAllStaffNotifications(): Promise<{ userId: string; item
   ])
   return (staff || [])
     .filter((e: any) => e.user_id && e.is_active !== false)
-    .map((e: any) => ({ userId: e.user_id as string, items: buildFor(work.companies, work.all, stagesOf(e)) }))
+    .map((e: any) => ({ userId: e.user_id as string, items: buildFor(work.companies, work.all, stagesOf(e), e.user_id) }))
 }

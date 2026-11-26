@@ -180,7 +180,7 @@ export default function CompaniesClient({ companies: initialCompanies, mode = 'n
           {!renewalMode && (
             <select value={licSel} onChange={e => { setLicSel(e.target.value); setPage(1) }} className="px-2.5 py-1.5 text-xs border border-slate-200 rounded-lg bg-white text-slate-700">
               <option value="">All license types</option>
-              {['Trading License', 'Service License', 'Service to Trade'].map(l => <option key={l} value={l}>{l} ({modeList.filter(c => c.entity_type === l).length})</option>)}
+              {['Trading License', 'Service License', 'Service to Trade', 'Others Service'].map(l => <option key={l} value={l}>{l} ({modeList.filter(c => c.entity_type === l).length})</option>)}
             </select>
           )}
           <select value={statusFilter} onChange={e => { setStatusFilter(e.target.value as any); setPage(1) }} className="px-2.5 py-1.5 text-xs border border-slate-200 rounded-lg bg-white text-slate-700">
