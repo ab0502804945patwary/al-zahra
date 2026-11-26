@@ -143,7 +143,7 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
     let saved: Company = finalPayload
     if (!isSupabaseConfigured) { alert('Database is not connected.'); setLoading(false); return }
     // Never send client-side placeholders to the database
-    const { id: _id, created_at: _c, ...rest } = form as any
+    const { id: _id, created_at: _c, workflow_completed_at: _w, ...rest } = form as any
     const row: Record<string, any> = {}
     for (const [k, v] of Object.entries(rest)) row[k] = v === '' ? null : v
     if (form.service_type !== 'renewal') {
@@ -155,7 +155,7 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
       row.iqama_no = row.admin_iqama_no || row.iqama_no || null
       row.shareholders_name = holders[0]?.name || row.shareholders_name || null
       row.shareholder_phone = holders[0]?.phone || row.shareholder_phone || null
-    } else {
+    } else if (!form.workflow_completed_at) {
       // Renewal form keeps its own fields (CEO / GM, Main Shareholder ...); the new sections are not part of it
       delete row.shareholders; delete row.admin_name; delete row.admin_iqama_no; delete row.admin_iqama_expiry
       delete row.selected_phases; delete row.admin_mobile; delete row.admin_email; delete row.admin_access_setup; delete row.doc_checks; delete row.company_documents
@@ -553,7 +553,7 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
       </div>
 
       <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-5">
-        {sections.filter(section => form.service_type === 'renewal' ? !section.newOnly : (!section.renewalOnly && !section.title.startsWith('Statutory'))).map(section => {
+        {sections.filter(section => form.service_type === 'renewal' ? (!section.newOnly || !!form.workflow_completed_at) : (!section.renewalOnly && !section.title.startsWith('Statutory'))).map(section => {
           const SectionIcon = section.icon
           return (
             <div key={section.title} className="bg-slate-50/60 border border-slate-200/80 rounded-xl p-5">

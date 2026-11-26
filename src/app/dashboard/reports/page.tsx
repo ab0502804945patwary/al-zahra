@@ -20,7 +20,7 @@ export default async function ReportsPage() {
     mine(supabase.from('invoices').select('id, invoice_no, customer_id, customer_name, invoice_date, total, status, payments(amount, paid_on)')),
     mine(supabase.from('expenses').select('id, expense_no, expense_date, category, payment_method, amount, status')),
     supabase.from('customers').select('id, created_at, customer_type, status'),
-    mine(supabase.from('companies').select('id, company_id, company_name, service_type, created_at, cr_expire_date, misa_expire_date, rjsc_annual_return_due, bd_next_audit_due, sa_next_audit_due')),
+    mine(supabase.from('companies').select('id, company_id, company_name, service_type, workflow_completed_at, created_at, cr_expire_date, misa_expire_date, rjsc_annual_return_due, bd_next_audit_due, sa_next_audit_due')),
     supabase.from('agents').select('id, category'),
   ])
   return (

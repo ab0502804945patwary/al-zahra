@@ -76,7 +76,9 @@ function submittedAndDone(entries: AnyEntry[] | undefined, companyId: string) {
 // Phases that depend on what was ticked on the Company Register form (Bangladesh Company, Foreign Mother, 1 and 2 Foreign Subsidiary)
 export const OPTIONAL_PHASES = ['9', '10', '3', '11']
 
-export function isEligibleForStage(stageId: string, company: { company_id: string; entity_type?: string; category?: string; service_type?: string; selected_phases?: string[] | null; skipped_phases?: string[] | null }, all: StageEntriesMap): boolean {
+export function isEligibleForStage(stageId: string, company: { company_id: string; entity_type?: string; category?: string; service_type?: string; selected_phases?: string[] | null; skipped_phases?: string[] | null; workflow_completed_at?: string | null }, all: StageEntriesMap): boolean {
+  // the Final Dossier is done: the company has moved to Renewal
+  if (company.workflow_completed_at) return false
   // Existing companies that only need renewal skip the handoff chain entirely.
   // They are not offered MISA, CR, Portals or Final Dossier unless they really go through the chain.
   if (company.service_type === 'renewal') return !['4', '5', '6', '7'].includes(stageId)

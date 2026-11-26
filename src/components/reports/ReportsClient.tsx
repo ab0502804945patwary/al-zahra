@@ -70,7 +70,7 @@ export default function ReportsClient({ invoices, expenses, customers, companies
     const dueNow = sum(liveInv.map(i => Number(i.total) - sum((i.payments || []).map((p: any) => Number(p.amount)))))
 
     const newCustomers = customers.filter(c => inPeriod(c.created_at))
-    const newCompanies = companies.filter(c => c.service_type !== 'renewal' && inPeriod(c.created_at))
+    const newCompanies = companies.filter(c => (c.service_type !== 'renewal' || (c as any).workflow_completed_at) && inPeriod(c.created_at))
     const newRenewals = companies.filter(c => c.service_type === 'renewal' && inPeriod(c.created_at))
 
     const renewalsDue = companies.filter(c => c.service_type === 'renewal').flatMap(c =>

@@ -110,6 +110,7 @@ export interface Company {
   client_phone?: string
   client_present_address?: string
   present_country?: string
+  workflow_completed_at?: string | null
   present_city?: string
   /** auth user id of whoever registered the company (staff see only their own in the directory) */
   created_by?: string | null

@@ -211,7 +211,7 @@ export default function CompaniesClient({ companies: initialCompanies, mode = 'n
                 <tr key={c.id} className={`hover:bg-slate-50/70 ${c.account_status === 'Inactive' ? 'opacity-60' : ''}`}>
                   <td className="px-3 py-2.5 text-slate-400 font-mono">{serialOf(c)}</td>
                   <td className="px-3 py-2.5 font-mono font-bold text-blue-700">{c.company_id}</td>
-                  <td className="px-3 py-2.5 font-semibold text-slate-900">{c.company_name}{c.original_company_name && <div className="text-[10px] font-normal text-slate-400">Previously: {c.original_company_name}</div>}</td>
+                  <td className="px-3 py-2.5 font-semibold text-slate-900">{c.company_name}{c.original_company_name && <div className="text-[10px] font-normal text-slate-400">Previously: {c.original_company_name}</div>}{c.workflow_completed_at && <div className="text-[10px] font-semibold text-emerald-700">From workflow · finished {c.workflow_completed_at}</div>}</td>
                   <td className="px-3 py-2.5 text-slate-600 whitespace-nowrap font-mono">{regDate(c.created_at)}</td>
                   {isAdmin && <td className="px-3 py-2.5 text-slate-600"><OwnerTag name={c.created_by ? (owners[c.created_by] || 'Unknown') : null} avatar={c.created_by ? ownerAvatars[c.created_by] : null} /></td>}
                   <td className="px-3 py-2.5 text-slate-600"><span className="inline-flex items-center gap-1"><Flag country={c.country_of_origin} />{c.country_of_origin}</span></td>
@@ -257,6 +257,7 @@ export default function CompaniesClient({ companies: initialCompanies, mode = 'n
                     <div>
                       <div className="font-bold text-sm leading-tight text-slate-900">{company.company_name}</div>
                       {company.original_company_name && <div className="text-[10px] text-slate-400">Previously: {company.original_company_name}</div>}
+                      {company.workflow_completed_at && <div className="text-[10px] font-semibold text-emerald-700">From workflow · finished {company.workflow_completed_at}</div>}
                       <div className="text-[10px] text-slate-400">Registered on {regDate(company.created_at)}</div>
                       <div className="text-slate-500 text-xs mt-0.5 flex items-center gap-1.5 font-mono">
                         <span className="font-bold text-blue-700 bg-blue-50 px-1.5 py-0.2 rounded border border-blue-200 text-[11px]">
