@@ -18,13 +18,13 @@ function StatusSwitch({ on, busy, onClick }: { on: boolean; busy: boolean; onCli
   )
 }
 
-interface Props { companies: Company[]; mode?: 'new' | 'renewal'; isAdmin?: boolean; owners?: Record<string, string>; ownerAvatars?: Record<string, string> }
+interface Props { companies: Company[]; mode?: 'new' | 'renewal'; isAdmin?: boolean; canEdit?: boolean; owners?: Record<string, string>; ownerAvatars?: Record<string, string> }
 
-// Only an admin can edit or delete a company. Staff can look and register new ones.
+// Admins, and staff given the edit permission of this page, can edit. Status, "Registered by" and delete stay with the admin.
 /** Date the company was registered (Saudi time), e.g. 2026-11-25 */
 const regDate = (iso?: string) => (iso ? new Date(iso).toLocaleDateString('en-CA', { timeZone: 'Asia/Riyadh' }) : '—')
 
-export default function CompaniesClient({ companies: initialCompanies, mode = 'new', isAdmin = false, owners = {}, ownerAvatars = {} }: Props) {
+export default function CompaniesClient({ companies: initialCompanies, mode = 'new', isAdmin = false, canEdit = false, owners = {}, ownerAvatars = {} }: Props) {
   const renewalMode = mode === 'renewal'
   const [companiesList, setCompaniesList] = useState<Company[]>(initialCompanies)
   const [search, setSearch] = useState('')
@@ -127,8 +127,8 @@ export default function CompaniesClient({ companies: initialCompanies, mode = 'n
   if (showAdd) {
     return <CompanyModal lockedType={renewalMode ? 'renewal' : 'a2z'} existingCompanies={companiesList} onClose={() => setShowAdd(false)} onSave={handleSave} />
   }
-  if (selected && isAdmin) {
-    return <CompanyModal lockedType={renewalMode ? 'renewal' : 'a2z'} company={selected} ownerOptions={isAdmin ? owners : undefined} existingCompanies={companiesList} onClose={() => setSelected(null)} onSave={handleSave} onDelete={handleDelete} />
+  if (selected && canEdit) {
+    return <CompanyModal lockedType={renewalMode ? 'renewal' : 'a2z'} company={selected} ownerOptions={isAdmin ? owners : undefined} existingCompanies={companiesList} onClose={() => setSelected(null)} onSave={handleSave} onDelete={isAdmin ? handleDelete : undefined} lockStatus={!isAdmin} />
   }
 
   return (
@@ -227,7 +227,7 @@ export default function CompaniesClient({ companies: initialCompanies, mode = 'n
                     </div>
                   </td>
                   <td className="px-3 py-2.5 text-right">
-                    {isAdmin && <button onClick={() => setSelected(c)} className="p-1.5 hover:bg-slate-200/60 rounded-md text-slate-400 hover:text-slate-700"><Edit2 className="w-4 h-4" /></button>}
+                    {canEdit && <button onClick={() => setSelected(c)} className="p-1.5 hover:bg-slate-200/60 rounded-md text-slate-400 hover:text-slate-700"><Edit2 className="w-4 h-4" /></button>}
                   </td>
                 </tr>
               ))}
@@ -268,9 +268,9 @@ export default function CompaniesClient({ companies: initialCompanies, mode = 'n
                       </div>
                     </div>
                   </div>
-                  {isAdmin && (
+                  {canEdit && (
                     <div className="flex items-center gap-2">
-                      <StatusSwitch on={company.account_status !== 'Inactive'} busy={toggling === company.id} onClick={() => toggleStatus(company)} />
+                      {isAdmin && <StatusSwitch on={company.account_status !== 'Inactive'} busy={toggling === company.id} onClick={() => toggleStatus(company)} />}
                       <button
                         onClick={() => setSelected(company)}
                         className="p-1.5 hover:bg-slate-200/60 rounded-md transition text-slate-400 hover:text-slate-700"
@@ -346,15 +346,6 @@ export default function CompaniesClient({ companies: initialCompanies, mode = 'n
           existingCompanies={companiesList}
           onClose={() => setShowAdd(false)}
           onSave={handleSave}
-        />
-      )}
-      {selected && (
-        <CompanyModal
-          company={selected}
-          existingCompanies={companiesList}
-          onClose={() => setSelected(null)}
-          onSave={handleSave}
-          onDelete={handleDelete}
         />
       )}
     </div>

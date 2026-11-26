@@ -57,6 +57,8 @@ interface Props {
   ownerOptions?: Record<string, string>
   onSave?: (savedCompany: Company) => void
   onDelete?: (id: string) => void
+  /** staff with the edit permission may not switch a company Active / Inactive */
+  lockStatus?: boolean
 }
 
 const AUDIT_STATUSES = ['Not Started', 'In Progress', 'Completed', 'Overdue']
@@ -90,7 +92,7 @@ export function computeNextCompanyId(companies: Company[] = []): string {
 }
 
 import { useSecureDelete } from '@/components/ui/useSecureDelete'
-export default function CompanyModal({ company, existingCompanies = [], onClose, onSave, onDelete, lockedType, ownerOptions }: Props) {
+export default function CompanyModal({ company, existingCompanies = [], onClose, onSave, onDelete, lockedType, ownerOptions, lockStatus = false }: Props) {
   const router = useRouter()
   const supabase = createClient()
   const { askDelete, dialog } = useSecureDelete()
@@ -359,7 +361,7 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
 
       <div className={SPAN[2]}>
         <label className="block"><Lbl name="account_status">Status</Lbl></label>
-        <select value={form.account_status === 'Inactive' ? 'Inactive' : 'Active'} onChange={e => set('account_status', e.target.value)} className={inputCls}>
+        <select value={form.account_status === 'Inactive' ? 'Inactive' : 'Active'} onChange={e => set('account_status', e.target.value)} disabled={lockStatus} title={lockStatus ? 'Only an admin can change the status' : undefined} className={`${inputCls} disabled:bg-slate-100 disabled:text-slate-500`}>
           <option value="Active">Active</option>
           <option value="Inactive">Inactive</option>
         </select>
@@ -640,7 +642,7 @@ export default function CompanyModal({ company, existingCompanies = [], onClose,
         })}
 
         <div className="flex gap-3 pt-3 border-t border-slate-100">
-          {company && (
+          {company && onDelete && (
             <button
               type="button"
               onClick={handleDelete}

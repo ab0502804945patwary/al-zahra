@@ -23,6 +23,8 @@ export const MODULES: { key: string; label: string; href: string }[] = [
  * Admins always have them. The database enforces them too (see db/permissions.sql).
  */
 export const PERMISSIONS: { key: string; label: string }[] = [
+  { key: 'perm_company_edit', label: 'Company Register: can see all and edit companies' },
+  { key: 'perm_renewal_edit', label: 'Renewal Companies: can see all and edit companies' },
   { key: 'perm_invoice_edit', label: 'Invoices: can edit an invoice' },
   { key: 'perm_invoice_cancel', label: 'Invoices: can cancel an invoice' },
   { key: 'perm_expense_approve', label: 'Expenses: can approve / reject' },
@@ -59,6 +61,14 @@ export function canDo(emp: StaffLike, key: string): boolean {
   if (!emp) return false
   if (emp.role === 'admin') return true
   return Array.isArray(emp.modules) && emp.modules.includes(key)
+}
+
+/**
+ * May this person see and edit every company of the Company Register / Renewal Companies page?
+ * Needs the page's module and its edit permission (admins always). The database enforces it (db/company-edit-permission.sql).
+ */
+export function canEditCompanies(emp: StaffLike, page: 'companies' | 'renewals'): boolean {
+  return canAccessModule(emp, page) && canDo(emp, page === 'renewals' ? 'perm_renewal_edit' : 'perm_company_edit')
 }
 
 /** Where a user lands after login: admins get the dashboard, staff their first workflow stage, else their first module. */
