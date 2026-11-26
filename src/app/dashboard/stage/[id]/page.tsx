@@ -3,6 +3,7 @@ import { notFound, redirect } from 'next/navigation'
 import StageTable from '@/components/stage/StageTable'
 import StageHeader from '@/components/stage/StageHeader'
 import type { Owner } from '@/components/ui/OwnerBadge'
+import type { Assignments } from '@/components/stage/AssignStaff'
 import StatusGuide from '@/components/ui/StatusGuide'
 import { enrichTiming, enrichExpiry } from '@/lib/utils'
 import { STAGE_CONFIG } from '@/lib/stageData'
@@ -79,9 +80,27 @@ export default async function StagePage({ params }: { params: Promise<{ id: stri
 
   // admin: who registered each company (same column as in Company Register)
   const owners: Record<string, Owner> = {}
-  if (isAdmin) {
-    const { data: staff } = await lookup.from('employees').select('user_id, name, avatar_url, designation, department, email, phone, office_location')
-    for (const x of (staff as any[]) || []) if (x.user_id) owners[x.user_id] = x
+  // "Assigned": who works on a company in this phase (empty until db/stage-assignments.sql has been run)
+  const assignments: Assignments = { assigned: {}, people: {}, assignable: [], admins: [] }
+  const [{ data: asg }, { data: staff }] = await Promise.all([
+    supabase.from('stage_assignments').select('company_id, user_ids').eq('stage', Number(id)),
+    lookup.from('employees').select('user_id, name, avatar_url, designation, department, email, phone, office_location, role, assigned_stage, assigned_stages, is_active').order('name'),
+  ])
+  for (const a of (asg as any[]) || []) assignments.assigned[a.company_id] = a.user_ids || []
+  const assignedIds = new Set(Object.values(assignments.assigned).flat())
+  for (const x of (staff as any[]) || []) {
+    if (!x.user_id) continue
+    const card: Owner = { name: x.name, avatar_url: x.avatar_url, designation: x.designation, department: x.department }
+    if (isAdmin) {
+      const full: Owner = { ...card, email: x.email, phone: x.phone, office_location: x.office_location }
+      owners[x.user_id] = full
+      assignments.people[x.user_id] = full
+      if (x.is_active !== false && canAccessStage(x, Number(id))) assignments.assignable.push(x.user_id)
+      if (x.role === 'admin') assignments.admins.push(x.user_id)
+    } else if (assignedIds.has(x.user_id)) {
+      // staff only get the name and photo of colleagues who are assigned
+      assignments.people[x.user_id] = card
+    }
   }
 
   // Eligibility: which companies may enter this stage (stages 2-7)
@@ -123,6 +142,7 @@ export default async function StagePage({ params }: { params: Promise<{ id: stri
         eligibilityHint={eligibilityHint}
         canEdit={canEdit}
         isAdmin={isAdmin}
+        assignments={assignments}
       />
       <StageTable
         stageId={id}
@@ -134,6 +154,7 @@ export default async function StagePage({ params }: { params: Promise<{ id: stri
         canEdit={canEditRows}
         isAdmin={isAdmin}
         owners={owners}
+        assignments={assignments}
       />
       {!config.isNameClearance && <StatusGuide />}
     </div>

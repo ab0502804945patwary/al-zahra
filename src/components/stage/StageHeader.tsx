@@ -4,6 +4,8 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Trash2, Plus, PlayCircle, CheckCircle2, Clock, AlertCircle, AlertTriangle, Layers } from 'lucide-react'
 import AddEntryModal from './AddEntryModal'
+import AssignStaff, { type Assignments } from './AssignStaff'
+import ClientInfoDialog from './ClientInfoDialog'
 
 interface Props {
   stageId: string
@@ -22,13 +24,16 @@ interface Props {
   canEdit?: boolean
   isAdmin?: boolean
   eligibilityHint?: string
+  assignments: Assignments
 }
 
 // Temporary clean-up tool: the admin can take a company out of THIS phase when it shows in "Waiting for you" by mistake.
 // The company stays in every other phase. Set to false when it is no longer needed and the icon disappears.
 const SHOW_WAITING_DELETE = true
 
-export default function StageHeader({ stageId, config, stats, companies, employees, eligibleIds, eligibilityHint, canEdit = true, isAdmin = false }: Props) {
+export default function StageHeader({ stageId, config, stats, companies, employees, eligibleIds, eligibilityHint, canEdit = true, isAdmin = false, assignments }: Props) {
+  // company whose client popup is open
+  const [clientId, setClientId] = useState<string | null>(null)
   const [showModal, setShowModal] = useState(false)
   const [startFor, setStartFor] = useState<string | undefined>()
   const router = useRouter()
@@ -113,11 +118,12 @@ export default function StageHeader({ stageId, config, stats, companies, employe
           <ul className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
             {waiting.map(c => (
               <li key={c.company_id} className="bg-white border border-amber-200/80 rounded-lg px-3 py-2.5 flex items-center justify-between gap-3">
-                <div className="min-w-0">
-                  <div className="text-xs font-bold text-slate-900 truncate">{c.company_name}</div>
-                  <div className="text-[11px] text-slate-500 font-mono">{c.company_id}{c.entity_type ? ` · ${c.entity_type}` : ''}</div>
-                </div>
+                <button type="button" onClick={() => setClientId(c.company_id)} title="See client information" className="min-w-0 flex-1 text-left group">
+                  <span className="block text-xs font-bold text-slate-900 truncate group-hover:text-blue-700 group-hover:underline">{c.company_name}</span>
+                  <span className="block text-[11px] text-slate-500 font-mono">{c.company_id}{c.entity_type ? ` · ${c.entity_type}` : ''}</span>
+                </button>
                 <div className="shrink-0 flex items-center gap-1.5">
+                <AssignStaff stageId={stageId} company={c} data={assignments} isAdmin={isAdmin} />
                 {SHOW_WAITING_DELETE && isAdmin && c.id && (
                   <button
                     onClick={() => removeFromPhase(c)}
@@ -140,6 +146,8 @@ export default function StageHeader({ stageId, config, stats, companies, employe
           </ul>
         </div>
       )}
+
+      {clientId && <ClientInfoDialog stageId={stageId} companyId={clientId} onClose={() => setClientId(null)} />}
 
       {showModal && (
         <AddEntryModal

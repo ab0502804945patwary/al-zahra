@@ -12,7 +12,7 @@ export interface Owner {
   office_location?: string | null
 }
 
-function Photo({ owner, size }: { owner: Owner | null; size: string }) {
+export function OwnerPhoto({ owner, size }: { owner: Owner | null; size: string }) {
   if (owner?.avatar_url) {
     // eslint-disable-next-line @next/next/no-img-element
     return <img src={owner.avatar_url} alt="" className={`${size} rounded-full object-cover ring-1 ring-slate-200 shrink-0`} />
@@ -23,7 +23,7 @@ function Photo({ owner, size }: { owner: Owner | null; size: string }) {
 }
 
 /** Narrow form of OwnerTag for tables: only the photo, the staff details open on hover (or tap). No person = AL ZAHRA. */
-export default function OwnerBadge({ owner }: { owner: Owner | null }) {
+export default function OwnerBadge({ owner, label = 'Registered by' }: { owner: Owner | null; label?: string }) {
   const [open, setOpen] = useState(false)
   const name = owner?.name || 'AL ZAHRA'
   const rows = owner
@@ -35,17 +35,17 @@ export default function OwnerBadge({ owner }: { owner: Owner | null }) {
       <Tooltip.Root open={open} onOpenChange={setOpen}>
         <Tooltip.Trigger asChild>
           {/* preventDefault keeps the tooltip from closing on click, so a tap on a phone opens it */}
-          <button type="button" aria-label={`Registered by ${name}`} onClick={e => { e.preventDefault(); setOpen(true) }}
+          <button type="button" aria-label={`${label} ${name}`} onClick={e => { e.preventDefault(); setOpen(true) }}
             className="inline-flex rounded-full align-middle focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
-            <Photo owner={owner} size="w-7 h-7" />
+            <OwnerPhoto owner={owner} size="w-7 h-7" />
           </button>
         </Tooltip.Trigger>
         <Tooltip.Portal>
           <Tooltip.Content side="right" sideOffset={8} collisionPadding={8} className="z-50 max-w-72 rounded-lg border border-slate-200 bg-white p-3 text-xs shadow-lg">
             <div className="flex items-center gap-2.5">
-              <Photo owner={owner} size="w-10 h-10" />
+              <OwnerPhoto owner={owner} size="w-10 h-10" />
               <div className="min-w-0">
-                <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Registered by</div>
+                <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">{label}</div>
                 <div className="font-semibold text-slate-900 break-words">{name}</div>
               </div>
             </div>

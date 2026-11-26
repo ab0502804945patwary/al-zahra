@@ -4,6 +4,7 @@ import { getSessionInfo } from '@/lib/session'
 import { canAccessStage } from '@/lib/access'
 import { STAGE_CONFIG } from '@/lib/stageData'
 import { phaseStaffAllows } from '@/lib/stageRules'
+import { isWaitingInStage } from '@/lib/notifications'
 
 export const dynamic = 'force-dynamic'
 
@@ -23,7 +24,7 @@ const FIELDS = [
 
 /**
  * POST { stage, company_id } -> { company }
- * Only for admins and staff assigned to that phase, and only for a company that has a record in it.
+ * Only for admins and staff assigned to that phase, and only for a company that has a record in it or is waiting for it.
  */
 export async function POST(request: Request) {
   if (!isSupabaseConfigured) return NextResponse.json({ error: 'Supabase is not configured.' }, { status: 503 })
@@ -42,7 +43,9 @@ export async function POST(request: Request) {
   const db = await createServiceClient()
   const entry = await db.from(STAGE_CONFIG[stage].table).select('company_id').eq('company_id', companyId).limit(1)
   if (entry.error) return NextResponse.json({ error: 'Could not load the client information.' }, { status: 500 })
-  if (!entry.data?.length) return NextResponse.json({ error: 'This company has no record in this phase.' }, { status: 404 })
+  if (!entry.data?.length && !(await isWaitingInStage(stage, companyId))) {
+    return NextResponse.json({ error: 'This company has not reached this phase.' }, { status: 404 })
+  }
 
   const { data, error } = await db.from('companies').select('*').eq('company_id', companyId).maybeSingle()
   if (error) return NextResponse.json({ error: 'Could not load the client information.' }, { status: 500 })
