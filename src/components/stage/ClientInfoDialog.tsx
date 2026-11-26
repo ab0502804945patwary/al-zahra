@@ -121,6 +121,19 @@ function FileRow({ title, name, onOpen }: { title: string; name: string; onOpen:
   )
 }
 
+/** The company ID chip in the header: one click copies it. */
+function CopyId({ id }: { id: string }) {
+  const [copied, setCopied] = useState(false)
+  return (
+    <button type="button" title="Copy company ID"
+      onClick={() => navigator.clipboard?.writeText(id).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1500) }).catch(() => {})}
+      className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-white text-blue-700 font-mono hover:bg-blue-50">
+      {id}
+      {copied ? <><Check className="w-3 h-3 text-emerald-600" /><span className="font-sans text-emerald-700">Copied</span></> : <Copy className="w-3 h-3" />}
+    </button>
+  )
+}
+
 const initial = (name?: string | null) => (name || '').trim().charAt(0).toUpperCase()
 
 const date = (d?: string | null) => (d ? formatDate(d) : '')
@@ -197,7 +210,7 @@ export default function ClientInfoDialog({ stageId, companyId, onClose }: { stag
               <Dialog.Title className="text-base font-bold leading-snug break-words">{c.company_name || 'Client Information'}</Dialog.Title>
               {c.original_company_name && c.original_company_name !== c.company_name && <p className="text-[11px] text-blue-100">Previously: {c.original_company_name}</p>}
               <div className="flex flex-wrap items-center gap-1.5 mt-2 text-[11px] font-semibold">
-                <span className="px-2 py-0.5 rounded-md bg-white text-blue-700 font-mono">{companyId}</span>
+                <CopyId id={companyId} />
                 {c.entity_type && <span className="px-2 py-0.5 rounded-md bg-white/15">{c.entity_type}</span>}
                 {c.country_of_origin && <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-white/15"><Flag country={c.country_of_origin} />{c.country_of_origin}</span>}
                 {c.account_status && <span className={`px-2 py-0.5 rounded-md ${c.account_status === 'Inactive' ? 'bg-rose-500' : 'bg-emerald-500'}`}>{c.account_status}</span>}
