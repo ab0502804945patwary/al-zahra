@@ -120,7 +120,9 @@ export default function StageHeader({ stageId, config, stats, companies, employe
               <li key={c.company_id} className="bg-white border border-amber-200/80 rounded-lg px-3 py-2.5 flex items-center justify-between gap-3">
                 <button type="button" onClick={() => setClientId(c.company_id)} title="See client information" className="min-w-0 flex-1 text-left group">
                   <span className="block text-xs font-bold text-slate-900 truncate group-hover:text-blue-700 group-hover:underline">{c.company_name}</span>
-                  <span className="block text-[11px] text-slate-500 font-mono">{c.company_id}{c.entity_type ? ` · ${c.entity_type}` : ''}</span>
+                  <span className="block text-[11px] text-slate-500 truncate">
+                    {[c.entity_type, isAdmin && `Reg. by ${c.created_by ? (assignments.people[c.created_by]?.name || 'Unknown') : 'AL ZAHRA'}`].filter(Boolean).join(' · ') || '—'}
+                  </span>
                 </button>
                 <div className="shrink-0 flex items-center gap-1.5">
                 <AssignStaff stageId={stageId} company={c} data={assignments} isAdmin={isAdmin} />
