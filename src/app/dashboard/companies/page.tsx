@@ -17,7 +17,8 @@ export default async function CompaniesPage() {
   const canEdit = canEditCompanies(employee, 'companies')
   let query = supabase.from('companies').select('*').order('created_at', { ascending: false }).order('company_id', { ascending: false })
   if (!canEdit) query = query.eq('created_by', user?.id ?? '00000000-0000-0000-0000-000000000000')
-  else if (!isAdmin) query = query.or('service_type.is.null,service_type.neq.renewal')
+  // companies that finished the workflow are in Renewal Companies and stay listed here too
+  else if (!isAdmin) query = query.or('service_type.is.null,service_type.neq.renewal,workflow_completed_at.not.is.null')
   const { data } = await query
   // admin: who registered each company
   const owners: Record<string, string> = {}
@@ -26,5 +27,5 @@ export default async function CompaniesPage() {
     const { data: staff } = await (await createServiceClient()).from('employees').select('user_id, name, avatar_url')
     for (const e of (staff as any[]) || []) if (e.user_id) { owners[e.user_id] = e.name; if (e.avatar_url) ownerAvatars[e.user_id] = e.avatar_url }
   }
-  return <CompaniesClient companies={(data as Company[]) || []} isAdmin={isAdmin} canEdit={canEdit} owners={owners} ownerAvatars={ownerAvatars} />
+  return <CompaniesClient companies={(data as Company[]) || []} isAdmin={isAdmin} canEdit={canEdit} canEditFinished={canEditCompanies(employee, 'renewals')} owners={owners} ownerAvatars={ownerAvatars} />
 }

@@ -18,13 +18,13 @@ function StatusSwitch({ on, busy, onClick }: { on: boolean; busy: boolean; onCli
   )
 }
 
-interface Props { companies: Company[]; mode?: 'new' | 'renewal'; isAdmin?: boolean; canEdit?: boolean; owners?: Record<string, string>; ownerAvatars?: Record<string, string> }
+interface Props { companies: Company[]; mode?: 'new' | 'renewal'; isAdmin?: boolean; canEdit?: boolean; canEditFinished?: boolean; owners?: Record<string, string>; ownerAvatars?: Record<string, string> }
 
 // Admins, and staff given the edit permission of this page, can edit. Status, "Registered by" and delete stay with the admin.
 /** Date the company was registered (Saudi time), e.g. 2026-11-25 */
 const regDate = (iso?: string) => (iso ? new Date(iso).toLocaleDateString('en-CA', { timeZone: 'Asia/Riyadh' }) : '—')
 
-export default function CompaniesClient({ companies: initialCompanies, mode = 'new', isAdmin = false, canEdit = false, owners = {}, ownerAvatars = {} }: Props) {
+export default function CompaniesClient({ companies: initialCompanies, mode = 'new', isAdmin = false, canEdit = false, canEditFinished = false, owners = {}, ownerAvatars = {} }: Props) {
   const renewalMode = mode === 'renewal'
   const [companiesList, setCompaniesList] = useState<Company[]>(initialCompanies)
   const [search, setSearch] = useState('')
@@ -51,6 +51,8 @@ export default function CompaniesClient({ companies: initialCompanies, mode = 'n
   }
 
   const isRenewal = (c: Company) => c.service_type === 'renewal'
+  // on the Company Register page a finished workflow company can also be edited with the renewal edit permission
+  const mayEdit = (c: Company) => canEdit || (!renewalMode && isRenewal(c) && canEditFinished)
   const TypeBadge = ({ company }: { company: Company }) => isRenewal(company) ? (
     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">
       <RefreshCw className="w-2.5 h-2.5" /> Renewal Company
@@ -95,8 +97,8 @@ export default function CompaniesClient({ companies: initialCompanies, mode = 'n
   useEffect(() => { createClient().rpc('next_company_id').then(({ data }) => { if (data) setDbNextId(data as string) }) }, [])
   const nextAutoId = dbNextId || computeNextCompanyId(companiesList)
 
-  // New and renewal companies live on separate pages
-  const modeList = companiesList.filter(c => (renewalMode ? isRenewal(c) : !isRenewal(c)))
+  // Companies registered as renewal show only on Renewal Companies; those that finished the workflow show on both pages
+  const modeList = companiesList.filter(c => (renewalMode ? isRenewal(c) : !isRenewal(c) || !!c.workflow_completed_at))
   // newest first on screen; SL numbers stay fixed (oldest = 1)
   const serialOf = (c: Company) => modeList.length - modeList.indexOf(c)
   const filtered = modeList.filter(c =>
@@ -127,7 +129,7 @@ export default function CompaniesClient({ companies: initialCompanies, mode = 'n
   if (showAdd) {
     return <CompanyModal lockedType={renewalMode ? 'renewal' : 'a2z'} existingCompanies={companiesList} onClose={() => setShowAdd(false)} onSave={handleSave} />
   }
-  if (selected && canEdit) {
+  if (selected && mayEdit(selected)) {
     return <CompanyModal lockedType={renewalMode ? 'renewal' : 'a2z'} company={selected} ownerOptions={isAdmin ? owners : undefined} existingCompanies={companiesList} onClose={() => setSelected(null)} onSave={handleSave} onDelete={isAdmin ? handleDelete : undefined} lockStatus={!isAdmin} />
   }
 
@@ -227,7 +229,7 @@ export default function CompaniesClient({ companies: initialCompanies, mode = 'n
                     </div>
                   </td>
                   <td className="px-3 py-2.5 text-right">
-                    {canEdit && <button onClick={() => setSelected(c)} className="p-1.5 hover:bg-slate-200/60 rounded-md text-slate-400 hover:text-slate-700"><Edit2 className="w-4 h-4" /></button>}
+                    {mayEdit(c) && <button onClick={() => setSelected(c)} className="p-1.5 hover:bg-slate-200/60 rounded-md text-slate-400 hover:text-slate-700"><Edit2 className="w-4 h-4" /></button>}
                   </td>
                 </tr>
               ))}
@@ -268,7 +270,7 @@ export default function CompaniesClient({ companies: initialCompanies, mode = 'n
                       </div>
                     </div>
                   </div>
-                  {canEdit && (
+                  {mayEdit(company) && (
                     <div className="flex items-center gap-2">
                       {isAdmin && <StatusSwitch on={company.account_status !== 'Inactive'} busy={toggling === company.id} onClick={() => toggleStatus(company)} />}
                       <button
