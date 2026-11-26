@@ -2,6 +2,7 @@ import { createServiceClient, isSupabaseConfigured } from '@/lib/supabase/server
 import { notFound, redirect } from 'next/navigation'
 import StageTable from '@/components/stage/StageTable'
 import StageHeader from '@/components/stage/StageHeader'
+import type { Owner } from '@/components/ui/OwnerBadge'
 import StatusGuide from '@/components/ui/StatusGuide'
 import { enrichTiming, enrichExpiry } from '@/lib/utils'
 import { STAGE_CONFIG } from '@/lib/stageData'
@@ -68,11 +69,10 @@ export default async function StagePage({ params }: { params: Promise<{ id: stri
   }
 
   // admin: who registered each company (same column as in Company Register)
-  const owners: Record<string, string> = {}
-  const ownerAvatars: Record<string, string> = {}
+  const owners: Record<string, Owner> = {}
   if (isAdmin) {
-    const { data: staff } = await lookup.from('employees').select('user_id, name, avatar_url')
-    for (const x of (staff as any[]) || []) if (x.user_id) { owners[x.user_id] = x.name; if (x.avatar_url) ownerAvatars[x.user_id] = x.avatar_url }
+    const { data: staff } = await lookup.from('employees').select('user_id, name, avatar_url, role, designation, department, email, phone, office_location')
+    for (const x of (staff as any[]) || []) if (x.user_id) owners[x.user_id] = x
   }
 
   // Eligibility: which companies may enter this stage (stages 2-7)
@@ -125,7 +125,6 @@ export default async function StagePage({ params }: { params: Promise<{ id: stri
         canEdit={canEditRows}
         isAdmin={isAdmin}
         owners={owners}
-        ownerAvatars={ownerAvatars}
       />
       {!config.isNameClearance && <StatusGuide />}
     </div>

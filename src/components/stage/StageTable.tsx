@@ -7,7 +7,7 @@ import { openFromR2 } from '@/lib/compress'
 import { ExternalLink, Eye, EyeOff, Lock, Edit2, Search, CheckCircle2, Clock, AlertTriangle, AlertCircle, FileText } from 'lucide-react'
 import { cn, formatDate } from '@/lib/utils'
 import { Flag } from '@/components/ui/CountrySelect'
-import OwnerTag from '@/components/ui/OwnerTag'
+import OwnerBadge, { type Owner } from '@/components/ui/OwnerBadge'
 import EditEntryModal from './EditEntryModal'
 
 function StatusBadge({ status }: { status?: string }) {
@@ -89,9 +89,8 @@ interface Props {
   isNameClearance?: boolean
   canEdit?: boolean
   isAdmin?: boolean
-  /** admin only: staff user id -> name / photo, for the "Registered by" column */
-  owners?: Record<string, string>
-  ownerAvatars?: Record<string, string>
+  /** admin only: staff user id -> staff details, for the "Reg. by" column */
+  owners?: Record<string, Owner>
 }
 
 /** A saved password: hidden until the eye is pressed (it is stored as plain text, so this only keeps it from being read over a shoulder). */
@@ -156,11 +155,11 @@ function Pager({ total, cur, pages, onPage }: { total: number; cur: number; page
   )
 }
 
-export default function StageTable({ stageId, entries: serverEntries, companies, employees, isUSACanada, isNameClearance, canEdit = true, isAdmin = false, owners = {}, ownerAvatars = {} }: Props) {
+export default function StageTable({ stageId, entries: serverEntries, companies, employees, isUSACanada, isNameClearance, canEdit = true, isAdmin = false, owners = {} }: Props) {
   // who registered the company of a record (admin only); no person = registered under AL ZAHRA
   const ownerCell = (companyId: string) => {
     const by = companies.find(c => c.company_id === companyId)?.created_by
-    return <td className="py-3 px-4"><OwnerTag name={by ? (owners[by] || 'Unknown') : null} avatar={by ? ownerAvatars[by] : null} /></td>
+    return <td className="py-3 px-2 text-center w-px"><OwnerBadge owner={by ? (owners[by] || { name: 'Unknown' }) : null} /></td>
   }
   const noDates = stageId === '6' // Portals & Compliance is a checklist: no dates, timing or payment
   const [editEntry, setEditEntry] = useState<any>(null)
@@ -227,7 +226,7 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
             <thead>
               <tr className="bg-slate-50/80 text-slate-500 font-semibold uppercase tracking-wider border-b border-slate-200">
                 <th className="py-3 px-4">Entity</th>
-                {isAdmin && <th className="py-3 px-4 whitespace-nowrap">Registered by</th>}
+                {isAdmin && <th className="py-3 px-2 text-center whitespace-nowrap w-px" title="Registered by">Reg. by</th>}
                 <th className="py-3 px-4">Entity Structure</th>
                 <th className="py-3 px-4">Clearance Number</th>
                 <th className="py-3 px-4">Submission Date</th>
@@ -304,7 +303,7 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
             <thead>
               <tr className="bg-slate-50/80 text-slate-500 font-semibold uppercase tracking-wider border-b border-slate-200">
                 <th className="py-3 px-4">Entity</th>
-                {isAdmin && <th className="py-3 px-4 whitespace-nowrap">Registered by</th>}
+                {isAdmin && <th className="py-3 px-2 text-center whitespace-nowrap w-px" title="Registered by">Reg. by</th>}
                 <th className="py-3 px-4">Category</th>
                 <th className="py-3 px-4 bg-blue-50/50">
                   <span className="inline-flex items-center gap-1.5">
@@ -420,7 +419,7 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
           <thead>
             <tr className="bg-slate-50/80 text-slate-500 font-semibold uppercase tracking-wider border-b border-slate-200">
               <th className="py-3 px-4">No.</th>
-              {isAdmin && <th className="py-3 px-4 whitespace-nowrap">Registered by</th>}
+              {isAdmin && <th className="py-3 px-2 text-center whitespace-nowrap w-px" title="Registered by">Reg. by</th>}
               {stageId === '9' && (<>
                 <th className="py-3 px-4">Bangladesh Company Name</th>
                 <th className="py-3 px-4">Name Approval</th>
