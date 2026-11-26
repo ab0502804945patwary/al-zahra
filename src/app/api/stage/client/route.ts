@@ -8,13 +8,16 @@ export const dynamic = 'force-dynamic'
 
 /** What the client popup of a workflow phase shows. Bank details and portal logins are left out on purpose. */
 const FIELDS = [
-  'company_id', 'company_name', 'original_company_name', 'country_of_origin', 'entity_type', 'account_status',
+  'company_id', 'company_name', 'original_company_name', 'country_of_origin', 'entity_type', 'account_status', 'service_type', 'selected_phases', 'created_at',
   'client_name', 'client_phone', 'present_country', 'present_city', 'client_present_address', 'whatsapp_number', 'official_email', 'national_address',
   'shareholders', 'shareholders_name', 'shareholder_phone',
-  'admin_name', 'admin_iqama_no', 'admin_iqama_expiry', 'admin_mobile', 'admin_email', 'ceo_gm_name', 'iqama_no',
-  'company_documents',
+  'admin_name', 'admin_iqama_no', 'admin_iqama_expiry', 'admin_mobile', 'admin_email', 'admin_access_setup', 'ceo_gm_name', 'iqama_no',
+  'doc_checks', 'company_documents',
   'cr_number', 'cr_issue_date', 'cr_expire_date', 'misa_license_no', 'misa_issue_date', 'misa_expire_date',
-  'tin_number', 'vat_number', 'chamber_registration_no', 'rjsc_reg_no',
+  'tin_number', 'vat_number', 'chamber_registration_no', 'gosi_qiwa_status',
+  'rjsc_reg_no', 'rjsc_incorporation_date', 'rjsc_annual_return_due', 'rjsc_issue_no', 'rjsc_auditor', 'rjsc_company_type',
+  'bd_last_audit_date', 'bd_audit_status', 'bd_next_audit_due', 'bd_financial_year', 'bd_auditor', 'bd_audit_report', 'bd_audit_notes',
+  'sa_last_audit_date', 'sa_audit_status', 'sa_next_audit_due', 'sa_financial_year', 'sa_auditor', 'sa_audit_report', 'sa_audit_notes', 'sa_audit_files',
 ]
 
 /**
