@@ -1,0 +1,49 @@
+import { NextResponse } from 'next/server'
+import { createServiceClient, isSupabaseConfigured } from '@/lib/supabase/server'
+import { getSessionInfo } from '@/lib/session'
+import { canAccessStage } from '@/lib/access'
+import { STAGE_CONFIG } from '@/lib/stageData'
+
+export const dynamic = 'force-dynamic'
+
+/** What the client popup of a workflow phase shows. Bank details and portal logins are left out on purpose. */
+const FIELDS = [
+  'company_id', 'company_name', 'original_company_name', 'country_of_origin', 'entity_type', 'account_status',
+  'client_name', 'client_phone', 'present_country', 'present_city', 'client_present_address', 'whatsapp_number', 'official_email', 'national_address',
+  'shareholders', 'shareholders_name', 'shareholder_phone',
+  'admin_name', 'admin_iqama_no', 'admin_iqama_expiry', 'admin_mobile', 'admin_email', 'ceo_gm_name', 'iqama_no',
+  'company_documents',
+  'cr_number', 'cr_issue_date', 'cr_expire_date', 'misa_license_no', 'misa_issue_date', 'misa_expire_date',
+  'tin_number', 'vat_number', 'chamber_registration_no', 'rjsc_reg_no',
+]
+
+/**
+ * POST { stage, company_id } -> { company }
+ * Only for admins and staff assigned to that phase, and only for a company that has a record in it.
+ */
+export async function POST(request: Request) {
+  if (!isSupabaseConfigured) return NextResponse.json({ error: 'Supabase is not configured.' }, { status: 503 })
+
+  const { user, employee: me } = await getSessionInfo()
+  if (!user) return NextResponse.json({ error: 'Not signed in.' }, { status: 401 })
+
+  const body = await request.json().catch(() => ({}))
+  const stage = String(body?.stage || '')
+  const companyId = String(body?.company_id || '')
+  if (!Object.hasOwn(STAGE_CONFIG, stage) || !companyId) return NextResponse.json({ error: 'Invalid request.' }, { status: 400 })
+  if (!me || me.is_active === false || !canAccessStage(me, Number(stage))) {
+    return NextResponse.json({ error: 'You cannot see client information of this phase.' }, { status: 403 })
+  }
+
+  const db = await createServiceClient()
+  const entry = await db.from(STAGE_CONFIG[stage].table).select('company_id').eq('company_id', companyId).limit(1)
+  if (entry.error) return NextResponse.json({ error: 'Could not load the client information.' }, { status: 500 })
+  if (!entry.data?.length) return NextResponse.json({ error: 'This company has no record in this phase.' }, { status: 404 })
+
+  const { data, error } = await db.from('companies').select('*').eq('company_id', companyId).maybeSingle()
+  if (error) return NextResponse.json({ error: 'Could not load the client information.' }, { status: 500 })
+  if (!data) return NextResponse.json({ error: 'Company not found.' }, { status: 404 })
+
+  const company = Object.fromEntries(FIELDS.map(k => [k, (data as Record<string, unknown>)[k] ?? null]))
+  return NextResponse.json({ company }, { headers: { 'Cache-Control': 'no-store' } })
+}

@@ -9,6 +9,7 @@ import { cn, formatDate } from '@/lib/utils'
 import { Flag } from '@/components/ui/CountrySelect'
 import OwnerBadge, { type Owner } from '@/components/ui/OwnerBadge'
 import EditEntryModal from './EditEntryModal'
+import ClientInfoDialog from './ClientInfoDialog'
 
 function StatusBadge({ status }: { status?: string }) {
   if (!status) return <span className="text-slate-400">—</span>
@@ -116,7 +117,7 @@ function DossierCell({ files }: { files: any }) {
   const list: any[] = Array.isArray(files) ? files : []
   if (!list.length) return <>—</>
   return (
-    <div className="relative inline-block">
+    <div className="relative inline-block" data-no-row-click>
       <button type="button" onClick={() => setOpen(v => !v)} className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md border border-blue-200 bg-blue-50 text-blue-700 text-[11px] font-semibold hover:bg-blue-100">
         <FileText className="w-3.5 h-3.5" /> {list.length} {list.length === 1 ? 'file' : 'files'}
       </button>
@@ -163,6 +164,23 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
   }
   const noDates = stageId === '6' // Portals & Compliance is a checklist: no dates, timing or payment
   const [editEntry, setEditEntry] = useState<any>(null)
+  // company whose client popup is open
+  const [clientId, setClientId] = useState<string | null>(null)
+  const clientDialog = clientId && <ClientInfoDialog stageId={stageId} companyId={clientId} onClose={() => setClientId(null)} />
+  // a click anywhere on a row opens the popup, except on its buttons / links, in popups hanging off it, or after selecting text
+  const rowProps = (companyId: string) => ({
+    tabIndex: 0,
+    className: 'cursor-pointer hover:bg-blue-50/60 transition-colors focus:outline-none focus-visible:bg-blue-50',
+    onClick: (ev: React.MouseEvent<HTMLTableRowElement>) => {
+      const target = ev.target as HTMLElement
+      if (!ev.currentTarget.contains(target) || target.closest('button, a, input, select, textarea, label, [data-no-row-click]')) return
+      if (window.getSelection()?.toString()) return
+      setClientId(companyId)
+    },
+    onKeyDown: (ev: React.KeyboardEvent<HTMLTableRowElement>) => {
+      if (ev.key === 'Enter' && ev.target === ev.currentTarget) setClientId(companyId)
+    },
+  })
   // Staff cannot change a record once it is completed; admins always can
   // canEdit (the phase edit permission, or admin) also covers completed records; people without it never get an edit button
   const isLocked = (_e: any) => false
@@ -242,7 +260,7 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
               {filtered.length === 0 ? (
                 <tr><td colSpan={11} className="text-center py-12 text-slate-400">No records found</td></tr>
               ) : pageRows.map(e => (
-                <tr key={e.id} className="hover:bg-slate-50/60 transition-colors">
+                <tr key={e.id} {...rowProps(e.company_id)}>
                   <td className="py-3 px-4">
                     <div className="font-semibold text-slate-900">{e.company_id}</div>
                     <div className="text-slate-500 text-[11px]">{e.companies?.company_name}{e.companies?.original_company_name && <span className="block text-[10px] text-slate-400">Previously: {e.companies.original_company_name}</span>}</div>
@@ -274,6 +292,7 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
           </table>
         </div>
         {pager}
+        {clientDialog}
         {editEntry && <EditEntryModal isAdmin={isAdmin} stageId={stageId} entry={editEntry} companies={companies} employees={employees} isNameClearance onClose={() => setEditEntry(null)} />}
       </div>
     )
@@ -338,7 +357,7 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
               {filtered.length === 0 ? (
                 <tr><td colSpan={22} className="text-center py-12 text-slate-400">No cross-border records found</td></tr>
               ) : pageRows.map(e => (
-                <tr key={e.id} className="hover:bg-slate-50/60 transition-colors">
+                <tr key={e.id} {...rowProps(e.company_id)}>
                   <td className="py-3 px-4">
                     <div className="font-semibold text-slate-900">{e.company_id}</div>
                     <div className="text-slate-500 text-[11px]">{e.companies?.company_name}{e.companies?.original_company_name && <span className="block text-[10px] text-slate-400">Previously: {e.companies.original_company_name}</span>}</div>
@@ -380,6 +399,7 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
           </table>
         </div>
         {pager}
+        {clientDialog}
         {editEntry && <EditEntryModal isAdmin={isAdmin} stageId={stageId} entry={editEntry} companies={companies} employees={employees} isUSACanada onClose={() => setEditEntry(null)} />}
       </div>
     )
@@ -470,7 +490,7 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
             {filtered.length === 0 ? (
               <tr><td colSpan={26} className="text-center py-12 text-slate-400">No active files found in this workflow module.</td></tr>
             ) : pageRows.map((e, idx) => (
-              <tr key={e.id} className="hover:bg-slate-50/60 transition-colors">
+              <tr key={e.id} {...rowProps(e.company_id)}>
                 <td className="py-3 px-4 text-slate-400 font-mono text-[11px]">{(cur - 1) * PAGE + idx + 1}</td>
                 {(stageId === '3' || stageId === '10' || stageId === '11') && (<>
                   <td className="py-3 px-4 font-semibold text-slate-900 whitespace-nowrap">{e.foreign_company_name || '—'}</td>
@@ -567,6 +587,7 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
         </table>
       </div>
       {pager}
+      {clientDialog}
       {editEntry && <EditEntryModal isAdmin={isAdmin} stageId={stageId} entry={editEntry} companies={companies} employees={employees} onClose={() => setEditEntry(null)} />}
     </div>
   )
