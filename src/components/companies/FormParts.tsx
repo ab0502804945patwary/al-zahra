@@ -16,6 +16,8 @@ export const SH_DOCS: { key: string; label: string }[] = [
   { key: 'nid_copy', label: 'NID Copy' },
 ]
 
+const DESIGNATIONS = ['General Manager (GM)', 'Chief Executive Officer (CEO)', 'Chairman of the Board / Board Director']
+
 export interface Shareholder {
   name: string; address: string; father_name: string; mother_name: string; dob: string; nationality: string
   passport_no: string; tin_no: string; email: string; phone: string; designation: string; share_percent: string
@@ -124,7 +126,15 @@ function ShareholderCard({ index, total, value, onChange, onDuplicate, onRemove,
         {text('TIN No.', 'tin_no', 'text', '', false)}
         {text('E-mail', 'email', 'email', '', false)}
         {text('Phone', 'phone')}
-        {text('Designation', 'designation')}
+        <div>
+          <label className={labelCls}>Designation{must && star}</label>
+          <select required={must} value={value.designation || ''} onChange={e => set('designation', e.target.value)} className={inputCls}>
+            <option value="">Select designation</option>
+            {DESIGNATIONS.map(o => <option key={o} value={o}>{o}</option>)}
+            {/* text typed before this was a list stays selectable, so saving an old record does not lose it */}
+            {value.designation && !DESIGNATIONS.includes(value.designation) && <option value={value.designation}>{value.designation}</option>}
+          </select>
+        </div>
         {text('Shareholding %', 'share_percent', 'number', 'e.g. 50')}
         <div className="col-span-2 md:col-span-4 xl:col-span-6">
           <label className={labelCls}>Address{must && star}</label>
