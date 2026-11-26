@@ -7,10 +7,8 @@ import { cn } from '@/lib/utils'
 import { Employee } from '@/lib/types'
 import { useSidebar } from './DashboardShell'
 import { canAccessStage, canAccessModule } from '@/lib/access'
-import { MENU_ORDER } from '@/lib/stageData'
 import {
   HandCoins,
-  Hourglass,
   BookOpen,
   UserPlus,
   Clapperboard,
@@ -125,9 +123,6 @@ export default function Sidebar({ employee }: SidebarProps) {
     const t = setInterval(load, 30000)
     return () => { alive = false; clearInterval(t) }
   }, [pathname])
-
-  const waitingTotal = Object.values(waiting).reduce((a, b) => a + b, 0)
-  const firstWaiting = MENU_ORDER.find(id => waiting[Number(id)] && canAccessStage(employee, Number(id)))
 
   return (
     <aside
@@ -275,17 +270,6 @@ export default function Sidebar({ employee }: SidebarProps) {
           )
         })}
       </nav>
-
-      {/* Pending work card */}
-      {!collapsed && firstWaiting && (
-        <div className="mx-3 mb-2 shrink-0 rounded-xl border border-slate-200 bg-white p-3 shadow-xs">
-          <div className="flex items-center gap-2 text-[13px] font-semibold text-slate-800">
-            <Hourglass className="w-4 h-4 text-blue-600" /> Pending work
-          </div>
-          <p className="text-[11px] text-slate-500 mt-1">{waitingTotal} {waitingTotal === 1 ? 'file is' : 'files are'} waiting to start</p>
-          <Link href={`/dashboard/stage/${firstWaiting}`} className="inline-block mt-1.5 text-[11px] font-semibold text-blue-600 hover:text-blue-800">Open next phase →</Link>
-        </div>
-      )}
 
       {/* Footer Toggle Button */}
       <div
