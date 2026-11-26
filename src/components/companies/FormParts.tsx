@@ -1,5 +1,5 @@
 'use client'
-import { uploadToR2 } from '@/lib/compress'
+import { uploadToR2, openFromR2, kb, type StoredFile } from '@/lib/compress'
 import { useRef, useState } from 'react'
 import { Copy, ExternalLink, FileText, Link2, Loader2, Plus, Trash2, Upload, X } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
@@ -20,6 +20,7 @@ export interface Shareholder {
   name: string; address: string; father_name: string; mother_name: string; dob: string; nationality: string
   passport_no: string; tin_no: string; email: string; phone: string; designation: string; share_percent: string
   docs: Record<string, 'Collected' | 'Pending' | ''>
+  passport_file?: StoredFile | null // scanned passport kept in R2; missing on records saved before it was required
 }
 
 export const blankShareholder = (): Shareholder => ({
@@ -30,9 +31,57 @@ export const blankShareholder = (): Shareholder => ({
 export const isBlankShareholder = (s: Shareholder) =>
   !Object.entries(s).some(([k, v]) => (k === 'docs' ? Object.values(v as object).some(Boolean) : String(v || '').trim() !== ''))
 
-function ShareholderCard({ index, total, value, onChange, onDuplicate, onRemove }: {
+/** Positions of the shareholders that will be saved but have no passport uploaded (empty extra cards are dropped on save). */
+export const missingPassports = (list: Shareholder[]) =>
+  list.map((s, i) => ((i === 0 || !isBlankShareholder(s)) && !s.passport_file?.key ? i : -1)).filter(i => i >= 0)
+
+/** Passport scan of one shareholder: upload, view, replace, remove. The old file is deleted from storage only after the company is saved. */
+function PassportUpload({ file, required, invalid, busy, error, onPick, onRemove }: {
+  file?: StoredFile | null; required: boolean; invalid: boolean; busy: boolean; error: string
+  onPick: (f: File) => void; onRemove: () => void
+}) {
+  const ref = useRef<HTMLInputElement>(null)
+  const [openError, setOpenError] = useState('')
+  const link = 'text-[10px] font-semibold hover:underline disabled:opacity-60'
+
+  async function view() {
+    if (!file) return
+    setOpenError('')
+    try { await openFromR2(file.key) } catch (e: any) { setOpenError(e?.message || 'Could not open the file.') }
+  }
+
+  return (
+    <div className="mt-1.5">
+      <input ref={ref} type="file" accept={ACCEPT} className="hidden"
+        onChange={e => { const f = e.target.files?.[0]; e.target.value = ''; if (f) { setOpenError(''); onPick(f) } }} />
+      {file ? (
+        <div className="bg-white border border-emerald-200 rounded-md px-2 py-1.5">
+          <button type="button" onClick={view} title={file.name} className="w-full flex items-center gap-1.5 text-[11px] text-blue-700 hover:underline">
+            <FileText className="w-3.5 h-3.5 shrink-0" /><span className="truncate">{file.name}</span><span className="text-slate-400 shrink-0">{kb(file.size)}</span>
+          </button>
+          <div className="flex items-center gap-3 mt-1">
+            <button type="button" onClick={view} className={`${link} text-blue-700`}>View</button>
+            <button type="button" onClick={() => ref.current?.click()} disabled={busy} className={`${link} text-slate-600`}>{busy ? 'Uploading...' : 'Replace'}</button>
+            <button type="button" onClick={onRemove} disabled={busy} className={`${link} text-rose-600`}>Remove</button>
+          </div>
+        </div>
+      ) : (
+        <button type="button" onClick={() => ref.current?.click()} disabled={busy} title="JPG, PNG, WebP or PDF. PDF max 5 MB."
+          className={`w-full inline-flex items-center justify-center gap-1.5 px-2 py-1.5 text-[11px] font-semibold border border-dashed rounded-md disabled:opacity-60 ${invalid ? 'text-rose-700 border-rose-400 bg-rose-50' : 'text-blue-700 border-blue-300 bg-blue-50/60 hover:bg-blue-50'}`}>
+          {busy ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />} {busy ? 'Uploading...' : 'Upload passport'}
+          {required && !busy && <span className="text-rose-500">*</span>}
+        </button>
+      )}
+      {invalid && !file && <div className="mt-1 text-[10px] font-semibold text-rose-600">Passport upload is required.</div>}
+      {(error || openError) && <div className="mt-1 text-[10px] text-rose-700">{error || openError}</div>}
+    </div>
+  )
+}
+
+function ShareholderCard({ index, total, value, onChange, onDuplicate, onRemove, locked, passport }: {
   index: number; total: number; value: Shareholder; onChange: (s: Shareholder) => void
   onDuplicate: () => void; onRemove: () => void
+  locked: boolean; passport: React.ReactNode
 }) {
   const set = (k: keyof Shareholder, v: string) => onChange({ ...value, [k]: v })
   // Shareholder 1 must be filled in, except TIN No. and E-mail; the other shareholders stay optional
@@ -49,13 +98,13 @@ function ShareholderCard({ index, total, value, onChange, onDuplicate, onRemove 
       <div className="flex items-center justify-between gap-2">
         <span className="text-[11px] font-bold tracking-wider text-blue-700 bg-blue-50 border border-blue-200 rounded-md px-2 py-1 uppercase">Shareholder {index + 1}</span>
         <div className="flex items-center gap-1.5">
-          <button type="button" onClick={onDuplicate} title="Copy this shareholder into a new one"
-            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] font-semibold text-slate-700 border border-slate-200 rounded-lg hover:bg-slate-50">
+          <button type="button" onClick={onDuplicate} disabled={locked} title="Copy this shareholder into a new one (the passport file is not copied)"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] font-semibold text-slate-700 border border-slate-200 rounded-lg hover:bg-slate-50 disabled:opacity-60">
             <Copy className="w-3.5 h-3.5" /> Duplicate
           </button>
           {total > 1 && (
-            <button type="button" onClick={onRemove} title="Remove this shareholder"
-              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] font-semibold text-rose-600 border border-rose-200 rounded-lg hover:bg-rose-50">
+            <button type="button" onClick={onRemove} disabled={locked} title="Remove this shareholder"
+              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] font-semibold text-rose-600 border border-rose-200 rounded-lg hover:bg-rose-50 disabled:opacity-60">
               <Trash2 className="w-3.5 h-3.5" /> Remove
             </button>
           )}
@@ -85,7 +134,7 @@ function ShareholderCard({ index, total, value, onChange, onDuplicate, onRemove 
 
       <div className="border-t border-slate-100 pt-2.5">
         <div className="text-[11px] font-bold tracking-wider text-slate-500 uppercase mb-1.5">Documents</div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 items-start">
           {SH_DOCS.map(d => (
             <div key={d.key} className="bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5">
               <div className="text-[11px] font-semibold text-slate-700 mb-1">{d.label}</div>
@@ -106,6 +155,7 @@ function ShareholderCard({ index, total, value, onChange, onDuplicate, onRemove 
                   )
                 })}
               </div>
+              {d.key === 'passport_copy' && passport}
             </div>
           ))}
         </div>
@@ -115,8 +165,43 @@ function ShareholderCard({ index, total, value, onChange, onDuplicate, onRemove 
 }
 
 /** One card by default. "Add shareholder" adds a blank one, "Duplicate" copies a card. No limit. */
-export function ShareholdersEditor({ value, onChange }: { value: Shareholder[]; onChange: (v: Shareholder[]) => void }) {
+export function ShareholdersEditor({ value, onChange, folder, showMissing, onUploading, onUploaded }: {
+  value: Shareholder[]; onChange: (v: Shareholder[]) => void
+  folder: string
+  /** true after a save was refused: cards without a passport are marked */
+  showMissing: boolean
+  onUploading: (delta: 1 | -1) => void
+  onUploaded: (key: string) => void
+}) {
   const list = value.length ? value : [blankShareholder()]
+  // an upload takes a while: apply its result to the newest list so typing done meanwhile is kept
+  const latest = useRef(list)
+  latest.current = list
+  const [busy, setBusy] = useState<number[]>([])
+  const [errors, setErrors] = useState<Record<number, string>>({})
+  // cards are matched by position, so no adding / copying / removing while a file is on its way
+  const locked = busy.length > 0
+  const missing = missingPassports(list)
+
+  const setPassport = (i: number, file: StoredFile | null) => {
+    latest.current = latest.current.map((x, k) => (k === i ? { ...x, passport_file: file } : x))
+    onChange(latest.current)
+  }
+
+  async function uploadPassport(i: number, file: File) {
+    setErrors(p => ({ ...p, [i]: '' }))
+    setBusy(b => [...b, i])
+    onUploading(1)
+    try {
+      const saved = await uploadToR2(file, folder || 'unassigned')
+      onUploaded(saved.key)
+      setPassport(i, saved)
+    } catch (e: any) {
+      setErrors(p => ({ ...p, [i]: e?.message || 'Upload failed.' }))
+    }
+    setBusy(b => b.filter(k => k !== i))
+    onUploading(-1)
+  }
   const update = (i: number, s: Shareholder) => onChange(list.map((x, k) => (k === i ? s : x)))
   const total = list.reduce((a, s) => a + (parseFloat(s.share_percent) || 0), 0)
 
@@ -129,13 +214,25 @@ export function ShareholdersEditor({ value, onChange }: { value: Shareholder[]; 
           total={list.length}
           value={s}
           onChange={x => update(i, x)}
-          onDuplicate={() => onChange([...list.slice(0, i + 1), { ...s, docs: { ...s.docs } }, ...list.slice(i + 1)])}
-          onRemove={() => onChange(list.filter((_, k) => k !== i))}
+          onDuplicate={() => { setErrors({}); onChange([...list.slice(0, i + 1), { ...s, docs: { ...s.docs }, passport_file: null }, ...list.slice(i + 1)]) }}
+          onRemove={() => { setErrors({}); onChange(list.filter((_, k) => k !== i)) }}
+          locked={locked}
+          passport={
+            <PassportUpload
+              file={s.passport_file}
+              required={i === 0 || !isBlankShareholder(s)}
+              invalid={showMissing && missing.includes(i)}
+              busy={busy.includes(i)}
+              error={errors[i] || ''}
+              onPick={f => uploadPassport(i, f)}
+              onRemove={() => { if (confirm(`Remove "${s.passport_file?.name}"?`)) setPassport(i, null) }}
+            />
+          }
         />
       ))}
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <button type="button" onClick={() => onChange([...list, blankShareholder()])}
-          className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-blue-700 border border-blue-200 bg-blue-50 rounded-lg hover:bg-blue-100">
+        <button type="button" onClick={() => onChange([...list, blankShareholder()])} disabled={locked}
+          className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-blue-700 border border-blue-200 bg-blue-50 rounded-lg hover:bg-blue-100 disabled:opacity-60">
           <Plus className="w-3.5 h-3.5" /> Add shareholder ({list.length})
         </button>
         <span className={`text-[11px] font-medium ${total > 100 ? 'text-rose-600' : 'text-slate-500'}`}>

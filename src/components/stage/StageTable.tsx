@@ -7,6 +7,7 @@ import { openFromR2 } from '@/lib/compress'
 import { ExternalLink, Eye, EyeOff, Lock, Edit2, Search, CheckCircle2, Clock, AlertTriangle, AlertCircle, FileText } from 'lucide-react'
 import { cn, formatDate } from '@/lib/utils'
 import { Flag } from '@/components/ui/CountrySelect'
+import OwnerTag from '@/components/ui/OwnerTag'
 import EditEntryModal from './EditEntryModal'
 
 function StatusBadge({ status }: { status?: string }) {
@@ -88,6 +89,9 @@ interface Props {
   isNameClearance?: boolean
   canEdit?: boolean
   isAdmin?: boolean
+  /** admin only: staff user id -> name / photo, for the "Registered by" column */
+  owners?: Record<string, string>
+  ownerAvatars?: Record<string, string>
 }
 
 /** A saved password: hidden until the eye is pressed (it is stored as plain text, so this only keeps it from being read over a shoulder). */
@@ -152,7 +156,12 @@ function Pager({ total, cur, pages, onPage }: { total: number; cur: number; page
   )
 }
 
-export default function StageTable({ stageId, entries: serverEntries, companies, employees, isUSACanada, isNameClearance, canEdit = true, isAdmin = false }: Props) {
+export default function StageTable({ stageId, entries: serverEntries, companies, employees, isUSACanada, isNameClearance, canEdit = true, isAdmin = false, owners = {}, ownerAvatars = {} }: Props) {
+  // who registered the company of a record (admin only); no person = registered under AL ZAHRA
+  const ownerCell = (companyId: string) => {
+    const by = companies.find(c => c.company_id === companyId)?.created_by
+    return <td className="py-3 px-4"><OwnerTag name={by ? (owners[by] || 'Unknown') : null} avatar={by ? ownerAvatars[by] : null} /></td>
+  }
   const noDates = stageId === '6' // Portals & Compliance is a checklist: no dates, timing or payment
   const [editEntry, setEditEntry] = useState<any>(null)
   // Staff cannot change a record once it is completed; admins always can
@@ -218,6 +227,7 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
             <thead>
               <tr className="bg-slate-50/80 text-slate-500 font-semibold uppercase tracking-wider border-b border-slate-200">
                 <th className="py-3 px-4">Entity</th>
+                {isAdmin && <th className="py-3 px-4 whitespace-nowrap">Registered by</th>}
                 <th className="py-3 px-4">Entity Structure</th>
                 <th className="py-3 px-4">Clearance Number</th>
                 <th className="py-3 px-4">Submission Date</th>
@@ -231,13 +241,14 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
             </thead>
             <tbody className="divide-y divide-slate-100 text-slate-700">
               {filtered.length === 0 ? (
-                <tr><td colSpan={10} className="text-center py-12 text-slate-400">No records found</td></tr>
+                <tr><td colSpan={11} className="text-center py-12 text-slate-400">No records found</td></tr>
               ) : pageRows.map(e => (
                 <tr key={e.id} className="hover:bg-slate-50/60 transition-colors">
                   <td className="py-3 px-4">
                     <div className="font-semibold text-slate-900">{e.company_id}</div>
                     <div className="text-slate-500 text-[11px]">{e.companies?.company_name}{e.companies?.original_company_name && <span className="block text-[10px] text-slate-400">Previously: {e.companies.original_company_name}</span>}</div>
                   </td>
+                  {isAdmin && ownerCell(e.company_id)}
                   <td className="py-3 px-4">{e.entity_type || '—'}</td>
                   <td className="py-3 px-4 font-mono font-medium text-slate-600">{e.name_clearance_number || '—'}</td>
                   <td className="py-3 px-4">{formatDate(e.submit_date)}</td>
@@ -293,6 +304,7 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
             <thead>
               <tr className="bg-slate-50/80 text-slate-500 font-semibold uppercase tracking-wider border-b border-slate-200">
                 <th className="py-3 px-4">Entity</th>
+                {isAdmin && <th className="py-3 px-4 whitespace-nowrap">Registered by</th>}
                 <th className="py-3 px-4">Category</th>
                 <th className="py-3 px-4 bg-blue-50/50">
                   <span className="inline-flex items-center gap-1.5">
@@ -325,13 +337,14 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
             </thead>
             <tbody className="divide-y divide-slate-100 text-slate-700">
               {filtered.length === 0 ? (
-                <tr><td colSpan={21} className="text-center py-12 text-slate-400">No cross-border records found</td></tr>
+                <tr><td colSpan={22} className="text-center py-12 text-slate-400">No cross-border records found</td></tr>
               ) : pageRows.map(e => (
                 <tr key={e.id} className="hover:bg-slate-50/60 transition-colors">
                   <td className="py-3 px-4">
                     <div className="font-semibold text-slate-900">{e.company_id}</div>
                     <div className="text-slate-500 text-[11px]">{e.companies?.company_name}{e.companies?.original_company_name && <span className="block text-[10px] text-slate-400">Previously: {e.companies.original_company_name}</span>}</div>
                   </td>
+                  {isAdmin && ownerCell(e.company_id)}
                   <td className="py-3 px-4">{e.category || '—'}</td>
                   <td className="py-3 px-4 bg-blue-50/20 font-medium text-blue-700">{e.usa_type || '—'}</td>
                   <td className="py-3 px-4 bg-blue-50/20">{formatDate(e.usa_submit_date)}</td>
@@ -407,6 +420,7 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
           <thead>
             <tr className="bg-slate-50/80 text-slate-500 font-semibold uppercase tracking-wider border-b border-slate-200">
               <th className="py-3 px-4">No.</th>
+              {isAdmin && <th className="py-3 px-4 whitespace-nowrap">Registered by</th>}
               {stageId === '9' && (<>
                 <th className="py-3 px-4">Bangladesh Company Name</th>
                 <th className="py-3 px-4">Name Approval</th>
@@ -455,10 +469,11 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
           </thead>
           <tbody className="divide-y divide-slate-100 text-slate-700">
             {filtered.length === 0 ? (
-              <tr><td colSpan={25} className="text-center py-12 text-slate-400">No active files found in this workflow module.</td></tr>
+              <tr><td colSpan={26} className="text-center py-12 text-slate-400">No active files found in this workflow module.</td></tr>
             ) : pageRows.map((e, idx) => (
               <tr key={e.id} className="hover:bg-slate-50/60 transition-colors">
                 <td className="py-3 px-4 text-slate-400 font-mono text-[11px]">{(cur - 1) * PAGE + idx + 1}</td>
+                {isAdmin && ownerCell(e.company_id)}
                 {(stageId === '3' || stageId === '10' || stageId === '11') && (<>
                   <td className="py-3 px-4 font-semibold text-slate-900 whitespace-nowrap">{e.foreign_company_name || '—'}</td>
                   <td className="py-3 px-4"><span className="inline-flex items-center gap-1.5 whitespace-nowrap"><Flag country={e.country} />{e.country || '—'}</span></td>

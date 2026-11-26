@@ -46,7 +46,7 @@ export default async function StagePage({ params }: { params: Promise<{ id: stri
 
     const [eRes, cRes, empRes, crRes, ...upRes] = await Promise.all([
       entriesQuery,
-      supabase.from('companies').select('id, company_id, company_name, country_of_origin, province, entity_type, service_type, client_name, client_phone, cr_number, cr_issue_date, cr_expire_date, misa_license_no, misa_issue_date, misa_expire_date, tin_number, vat_number, chamber_registration_no, gosi_qiwa_status, account_status, selected_phases, skipped_phases, created_at, workflow_completed_at, sa_last_audit_date, sa_audit_status, sa_next_audit_due, sa_financial_year, sa_audit_notes, bd_last_audit_date, bd_audit_status, bd_next_audit_due, bd_financial_year, bd_audit_notes').order('company_id'),
+      supabase.from('companies').select('id, company_id, company_name, country_of_origin, province, entity_type, service_type, client_name, client_phone, cr_number, cr_issue_date, cr_expire_date, misa_license_no, misa_issue_date, misa_expire_date, tin_number, vat_number, chamber_registration_no, gosi_qiwa_status, account_status, selected_phases, skipped_phases, created_at, workflow_completed_at, created_by, sa_last_audit_date, sa_audit_status, sa_next_audit_due, sa_financial_year, sa_audit_notes, bd_last_audit_date, bd_audit_status, bd_next_audit_due, bd_financial_year, bd_audit_notes').order('company_id'),
       // colleague names are read on the server: staff may only read their own staff row
       lookup.from('employees').select('id, name, assigned_stage, assigned_stages'),
       // CR Association (stage 5): when it is Complete the Company Name Clearance countdown stops on that day
@@ -65,6 +65,14 @@ export default async function StagePage({ params }: { params: Promise<{ id: stri
     upstream.forEach((sid, k) => { dbEntries[sid] = (upRes[k]?.data as any[]) || [] })
   } catch (e) {
     console.error('Error fetching stage data:', e)
+  }
+
+  // admin: who registered each company (same column as in Company Register)
+  const owners: Record<string, string> = {}
+  const ownerAvatars: Record<string, string> = {}
+  if (isAdmin) {
+    const { data: staff } = await lookup.from('employees').select('user_id, name, avatar_url')
+    for (const x of (staff as any[]) || []) if (x.user_id) { owners[x.user_id] = x.name; if (x.avatar_url) ownerAvatars[x.user_id] = x.avatar_url }
   }
 
   // Eligibility: which companies may enter this stage (stages 2-7)
@@ -116,6 +124,8 @@ export default async function StagePage({ params }: { params: Promise<{ id: stri
         isNameClearance={config.isNameClearance}
         canEdit={canEditRows}
         isAdmin={isAdmin}
+        owners={owners}
+        ownerAvatars={ownerAvatars}
       />
       {!config.isNameClearance && <StatusGuide />}
     </div>
