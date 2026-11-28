@@ -1,9 +1,10 @@
 'use client'
 import { uploadToR2, openFromR2, kb, type StoredFile } from '@/lib/compress'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Copy, ExternalLink, FileText, Link2, Loader2, Plus, Trash2, Upload, X } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import CountrySelect from '@/components/ui/CountrySelect'
+import ComboInput from '@/components/ui/ComboInput'
 
 const inputCls = 'w-full px-2.5 py-1.5 text-xs text-slate-900 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white placeholder:text-slate-400'
 const labelCls = 'block text-[11px] font-semibold text-slate-600 mb-0.5'
@@ -88,10 +89,11 @@ function DocUpload({ what, file, required, invalid, busy, error, onPick, onRemov
   )
 }
 
-function ShareholderCard({ index, total, value, onChange, onDuplicate, onRemove, locked, allDocs, upload }: {
+function ShareholderCard({ index, total, value, onChange, onDuplicate, onRemove, locked, allDocs, upload, designations }: {
   index: number; total: number; value: Shareholder; onChange: (s: Shareholder) => void
   onDuplicate: () => void; onRemove: () => void
   locked: boolean; allDocs: boolean; upload: (docKey: string) => React.ReactNode
+  designations: string[]
 }) {
   const set = (k: keyof Shareholder, v: string) => onChange({ ...value, [k]: v })
   // Every shareholder card must be filled in, except TIN No. and E-mail
@@ -136,12 +138,7 @@ function ShareholderCard({ index, total, value, onChange, onDuplicate, onRemove,
         {text('Phone', 'phone')}
         <div>
           <label className={labelCls}>Designation{must && star}</label>
-          <select required={must} value={value.designation || ''} onChange={e => set('designation', e.target.value)} className={inputCls}>
-            <option value="">Select designation</option>
-            {DESIGNATIONS.map(o => <option key={o} value={o}>{o}</option>)}
-            {/* text typed before this was a list stays selectable, so saving an old record does not lose it */}
-            {value.designation && !DESIGNATIONS.includes(value.designation) && <option value={value.designation}>{value.designation}</option>}
-          </select>
+          <ComboInput required={must} value={value.designation || ''} onChange={v => set('designation', v)} options={designations} className={inputCls} placeholder="Select or type" />
         </div>
         {text('Shareholding %', 'share_percent', 'number', 'e.g. 50')}
         <div className="col-span-2 md:col-span-4 xl:col-span-6">
@@ -204,6 +201,16 @@ export function ShareholdersEditor({ value, onChange, folder, allDocs = false, s
   const locked = busy.length > 0
   const missing = missingShareholderFiles(list, allDocs)
 
+  // designations typed on saved companies are offered again
+  const [saved, setSaved] = useState<string[]>([])
+  useEffect(() => {
+    createClient().from('companies').select('shareholders').then(({ data }) => {
+      setSaved((data || []).flatMap((c: any) => (Array.isArray(c.shareholders) ? c.shareholders.map((x: any) => x?.designation) : [])))
+    })
+  }, [])
+  const designations = [...new Map([...DESIGNATIONS, ...saved, ...list.map(x => x.designation)]
+    .map(d => (d || '').trim()).filter(Boolean).map(d => [d.toLowerCase(), d] as const).reverse()).values()].reverse()
+
   // a file also marks the document as Collected, which other screens show
   const setFile = (i: number, docKey: string, file: StoredFile | null) => {
     latest.current = latest.current.map((x, k) => (k !== i ? x : {
@@ -245,6 +252,7 @@ export function ShareholdersEditor({ value, onChange, folder, allDocs = false, s
           onRemove={() => { setErrors({}); onChange(list.filter((_, k) => k !== i)) }}
           locked={locked}
           allDocs={allDocs}
+          designations={designations}
           upload={docKey => {
             const label = SH_DOCS.find(d => d.key === docKey)!.label
             const file = shareholderFile(s, docKey)
