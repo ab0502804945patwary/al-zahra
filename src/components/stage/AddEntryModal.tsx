@@ -7,7 +7,7 @@ import BdFields from './BdFields'
 import DossierFiles from './DossierFiles'
 import { portalsComplete } from '@/lib/portals'
 import MisaAccounts from './MisaAccounts'
-import ParentChecks from './ParentChecks'
+import ParentChecks, { missingParentFile } from './ParentChecks'
 import CountrySelect from '@/components/ui/CountrySelect'
 import ComboInput from '@/components/ui/ComboInput'
 import { placesFor } from '@/lib/regions'
@@ -90,14 +90,16 @@ export default function AddEntryModal({ stageId, companies, employees, onClose, 
     }))
   }
 
-  // at least one file: always for Parent Entity Verification, and for the other phases once a Completion Date is entered
-  const needFiles = stageId === '1' || (['9', '10', '2', '3', '11'].includes(stageId) && !!form.complete_date)
+  // at least one file once a Completion Date is entered (Parent Entity Verification asks per item, see ParentChecks)
+  const needFiles = (['9', '10', '2', '3', '11'].includes(stageId) && !!form.complete_date)
   const fileCount = Array.isArray((form as any).dossier_files) ? (form as any).dossier_files.length : 0
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     const dateError = validateDates(form)
     if (dateError) { alert(dateError); return }
+    const noFile = stageId === '1' ? missingParentFile((form as any).dossier_files) : ''
+    if (noFile) { alert(`Upload the ${noFile} file.`); return }
     if (needFiles && !['4', '5', '7'].includes(stageId) && fileCount === 0) { alert('Upload at least one file in the Electronic Dossier.'); return }
     setLoading(true)
 
@@ -214,7 +216,7 @@ export default function AddEntryModal({ stageId, companies, employees, onClose, 
                   </>)}
                 </div>
               )}
-              {stageId === '1' && <ParentChecks form={form} set={set} />}
+              {stageId === '1' && <ParentChecks form={form} set={set} folder={`${form.company_id || 'unassigned'}_dossier`} onFiles={update => setForm(prev => ({ ...prev, dossier_files: update((prev as any).dossier_files || []) as any }))} />}
               {!['6', '7'].includes(stageId) && <Select label="Workflow Phase Status" name="current_stage" options={toOptions(PHASE_OPTIONS[stageId] || [])} />}
               {stageId === '6' && <Field label="Submission Date" name="submit_date" type="date" disabled hint="Set automatically to today" />}
               {stageId === '6' && <PortalAccountsEditor value={portals} onChange={setPortals} />}
@@ -322,7 +324,7 @@ export default function AddEntryModal({ stageId, companies, employees, onClose, 
                   <p className="text-[11px] text-slate-500 self-end pb-2">Complete stops the Company Name Clearance countdown of this company.</p>
                 </div>
               )}
-              {!['4', '5', '7'].includes(stageId) && <DossierFiles required={needFiles} folder={`${form.company_id || 'unassigned'}_dossier`} value={(form as any).dossier_files} onChange={v => setForm(prev => ({ ...prev, dossier_files: v as any }))} />}
+              {!['1', '4', '5', '7'].includes(stageId) && <DossierFiles required={needFiles} folder={`${form.company_id || 'unassigned'}_dossier`} value={(form as any).dossier_files} onChange={v => setForm(prev => ({ ...prev, dossier_files: v as any }))} />}
               <Field label="Operational Remarks" name="remarks" />
             </>
           )}

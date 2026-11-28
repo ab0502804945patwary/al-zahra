@@ -7,7 +7,7 @@ import BdFields from './BdFields'
 import DossierFiles from './DossierFiles'
 import { portalsComplete } from '@/lib/portals'
 import MisaAccounts from './MisaAccounts'
-import ParentChecks from './ParentChecks'
+import ParentChecks, { missingParentFile } from './ParentChecks'
 import CountrySelect from '@/components/ui/CountrySelect'
 import ComboInput from '@/components/ui/ComboInput'
 import { placesFor } from '@/lib/regions'
@@ -55,14 +55,16 @@ export default function EditEntryModal({ stageId, entry, companies, employees, o
     phone: comp?.client_phone || comp?.whatsapp_number || form.client_phone,
   }
 
-  // at least one file: always for Parent Entity Verification, and for the other phases once a Completion Date is entered
-  const needFiles = stageId === '1' || (['9', '10', '2', '3', '11'].includes(stageId) && !!form.complete_date)
+  // at least one file once a Completion Date is entered (Parent Entity Verification asks per item, see ParentChecks)
+  const needFiles = (['9', '10', '2', '3', '11'].includes(stageId) && !!form.complete_date)
   const fileCount = Array.isArray((form as any).dossier_files) ? (form as any).dossier_files.length : 0
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     const dateError = validateDates(form)
     if (dateError) { alert(dateError); return }
+    const noFile = stageId === '1' ? missingParentFile((form as any).dossier_files) : ''
+    if (noFile) { alert(`Upload the ${noFile} file.`); return }
     if (needFiles && !['4', '5', '7'].includes(stageId) && fileCount === 0) { alert('Upload at least one file in the Electronic Dossier.'); return }
     setLoading(true)
     let payload: Record<string, any> = { ...form, ...(stageId === '6' ? { portal_accounts: portals.filter(p => p.portal), complete_date: portalsComplete(portals) ? (entry.complete_date || new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10)) : null } : {}), client_name: clientInfo.name || form.client_name, client_phone: clientInfo.phone || form.client_phone, category: comp?.entity_type || form.category, ...(COUNTRY_CITY_STAGES.includes(stageId) && stageId !== '1' ? { country: comp?.stage1_country || form.country, city: comp?.stage1_city || form.city } : {}) }
@@ -174,7 +176,7 @@ export default function EditEntryModal({ stageId, entry, companies, employees, o
                   </>)}
                 </div>
               )}
-              {stageId === '1' && <ParentChecks form={form} set={set} />}
+              {stageId === '1' && <ParentChecks form={form} set={set} folder={`${form.company_id || 'unassigned'}_dossier`} onFiles={update => setForm(prev => ({ ...prev, dossier_files: update((prev as any).dossier_files || []) as any }))} />}
               {!['6', '7'].includes(stageId) && <Sel label="Workflow Phase Status" name="current_stage" options={toOptions(PHASE_OPTIONS[stageId] || [])} />}
               {stageId === '6' && (
                 <>
@@ -282,7 +284,7 @@ export default function EditEntryModal({ stageId, entry, companies, employees, o
                   <p className="text-[11px] text-slate-500 self-end pb-2">Complete stops the Company Name Clearance countdown of this company.</p>
                 </div>
               )}
-              {!['4', '5', '7'].includes(stageId) && <DossierFiles required={needFiles} folder={`${form.company_id || 'unassigned'}_dossier`} value={(form as any).dossier_files} onChange={v => setForm(prev => ({ ...prev, dossier_files: v as any }))} />}
+              {!['1', '4', '5', '7'].includes(stageId) && <DossierFiles required={needFiles} folder={`${form.company_id || 'unassigned'}_dossier`} value={(form as any).dossier_files} onChange={v => setForm(prev => ({ ...prev, dossier_files: v as any }))} />}
               <Field label="Operational Remarks" name="remarks" />
             </>
           )}

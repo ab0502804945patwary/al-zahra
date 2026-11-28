@@ -6,7 +6,7 @@ import { uploadToR2, openFromR2, removeFromR2, kb, type StoredFile } from '@/lib
 export type DossierFile = StoredFile
 
 /** Electronic dossier of a workflow record: upload files straight from the computer or phone (replaces the Google Drive link). */
-export default function DossierFiles({ value, onChange, folder, required = false, label = 'Electronic Dossier (upload files)' }: { value: DossierFile[]; onChange: (v: DossierFile[]) => void; folder: string; required?: boolean; label?: string }) {
+export default function DossierFiles({ value, onChange, folder, required = false, label = 'Electronic Dossier (upload files)', compact = false }: { value: DossierFile[]; onChange: (v: DossierFile[]) => void; folder: string; required?: boolean; label?: string; compact?: boolean }) {
   const ref = useRef<HTMLInputElement>(null)
   const [busy, setBusy] = useState(false)
   const [msg, setMsg] = useState('')
@@ -44,7 +44,7 @@ export default function DossierFiles({ value, onChange, folder, required = false
       <input ref={ref} type="file" multiple accept="image/jpeg,image/png,image/webp,application/pdf" className="hidden" onChange={pick} />
       <button type="button" onClick={() => ref.current?.click()} disabled={busy}
         className="w-full inline-flex items-center justify-center gap-2 px-3 py-2.5 text-xs font-semibold text-blue-700 border border-dashed border-blue-300 bg-blue-50/60 rounded-lg hover:bg-blue-50 disabled:opacity-60">
-        {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />} Choose files (JPG, PNG, PDF · pictures are made small automatically · PDF max 5 MB)
+        {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />} {compact ? 'Choose files (JPG, PNG, PDF max 5 MB)' : 'Choose files (JPG, PNG, PDF · pictures are made small automatically · PDF max 5 MB)'}
       </button>
       {msg && <div className="mt-2 text-xs text-rose-700 bg-rose-50 border border-rose-200 rounded-lg p-2">{msg}</div>}
       {files.length > 0 && (
