@@ -7,6 +7,7 @@ import BdFields from './BdFields'
 import DossierFiles from './DossierFiles'
 import { portalsComplete } from '@/lib/portals'
 import MisaAccounts from './MisaAccounts'
+import MisaLicense, { misaLicenseFrom, misaLicenseArgs } from './MisaLicense'
 import ParentChecks, { missingParentFile } from './ParentChecks'
 import CountrySelect from '@/components/ui/CountrySelect'
 import ComboInput from '@/components/ui/ComboInput'
@@ -41,6 +42,7 @@ export default function EditEntryModal({ stageId, entry, companies, employees, o
   const [portals, setPortals] = useState<PortalAccount[]>(() => (Array.isArray((entry as any).portal_accounts) ? (entry as any).portal_accounts : []))
   const [deleting, setDeleting] = useState(false)
   const [form, setForm] = useState<Record<string, string>>(() => (stageId === '7' ? { ...entry, ...statutoryFrom(companies.find(c => c.company_id === entry.company_id)) }
+    : stageId === '4' ? { ...entry, ...misaLicenseFrom(companies.find(c => c.company_id === entry.company_id)) }
     : entry))
   const set = (k: string, v: string) => setForm(prev => ({ ...prev, [k]: v }))
   // Company Name Clearance: the expiry date is always 60 days after the Approval Date
@@ -89,6 +91,11 @@ export default function EditEntryModal({ stageId, entry, companies, employees, o
     if (isSupabaseConfigured) {
       const { error } = await supabase.from(STAGE_TABLES[stageId]).update(pickColumns(stageId, payload)).eq('id', entry.id)
       if (error) { alert('Could not save: ' + error.message); setLoading(false); return }
+      if (stageId === '4') {
+        const license = misaLicenseArgs(form)
+        const { error: misaErr } = license ? await supabase.rpc('set_company_misa_license', license) : { error: null }
+        if (misaErr) alert('The record was saved, but the MISA license could not be saved to the company: ' + misaErr.message)
+      }
       if (stageId === '7' && form.company_id) {
         const st = statutoryPayload(form)
         const { error: stErr } = await supabase.rpc('update_company_statutory', { p_company_id: form.company_id, p: st })
@@ -126,11 +133,13 @@ export default function EditEntryModal({ stageId, entry, companies, employees, o
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {stageId === '4' && <MisaAccounts required={!!form.complete_date} form={form} set={set} />}
+          {stageId === '4' && <MisaLicense required={!!form.complete_date} form={form} set={set} />}
           {stageId === '9' && <BdFields form={form} set={set} />}
           {(stageId === '3' || stageId === '10' || stageId === '11') && <ForeignFields requireAll={['3', '10', '11'].includes(stageId) && !!form.complete_date} requireAccount={['3', '11'].includes(stageId) ? !!form.complete_date : true} form={form} set={set} title={stageId === '10' ? 'Foreign Mother Company' : stageId === '3' ? '1 Foreign Subsidiary Company' : '2 Foreign Subsidiary Company'} withAccount={stageId === '3' || stageId === '11'} />}
           <Sel
             label={stageId === '9' ? 'Linked Client Company (optional)' : 'Corporate Entity'}
             name="company_id"
+            onChange={v => setForm(prev => ({ ...prev, company_id: v, ...(stageId === '4' ? misaLicenseFrom(companies.find(c => c.company_id === v)) : {}) }))}
             options={companies.map(c => ({ value: c.company_id, label: `${c.company_id} — ${c.company_name}` }))}
           />
 

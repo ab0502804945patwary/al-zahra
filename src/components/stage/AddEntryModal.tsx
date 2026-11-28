@@ -7,6 +7,7 @@ import BdFields from './BdFields'
 import DossierFiles from './DossierFiles'
 import { portalsComplete } from '@/lib/portals'
 import MisaAccounts from './MisaAccounts'
+import MisaLicense, { misaLicenseFrom, misaLicenseArgs } from './MisaLicense'
 import ParentChecks, { missingParentFile } from './ParentChecks'
 import CountrySelect from '@/components/ui/CountrySelect'
 import ComboInput from '@/components/ui/ComboInput'
@@ -86,6 +87,7 @@ export default function AddEntryModal({ stageId, companies, employees, onClose, 
         : { country: comp?.stage1_country || prev.country || '', city: comp?.stage1_city || prev.city || '' }) : {}),
       company_name_english: prev.company_name_english || comp?.company_name || '',
       ...(stageId === '7' ? statutoryFrom(comp) : {}),
+      ...(stageId === '4' ? misaLicenseFrom(comp) : {}),
       entity_type: prev.entity_type || comp?.entity_type || 'Trading License',
     }))
   }
@@ -131,6 +133,11 @@ export default function AddEntryModal({ stageId, companies, employees, onClose, 
     if (!isSupabaseConfigured) { alert('Database is not connected.'); setLoading(false); return }
     const { error } = await supabase.from(STAGE_TABLES[stageId]).insert([pickColumns(stageId, payload)])
     if (error) { alert('Could not save: ' + error.message); setLoading(false); return }
+    if (stageId === '4') {
+      const license = misaLicenseArgs(form)
+      const { error: misaErr } = license ? await supabase.rpc('set_company_misa_license', license) : { error: null }
+      if (misaErr) alert('The record was saved, but the MISA license could not be saved to the company: ' + misaErr.message)
+    }
     if (stageId === '7' && form.company_id) {
       const st = statutoryPayload(form)
       const { error: stErr } = await supabase.rpc('update_company_statutory', { p_company_id: form.company_id, p: st })
@@ -159,6 +166,7 @@ export default function AddEntryModal({ stageId, companies, employees, onClose, 
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {stageId === '4' && <MisaAccounts required={!!form.complete_date} form={form} set={set} />}
+          {stageId === '4' && <MisaLicense required={!!form.complete_date} form={form} set={set} />}
           {stageId === '9' && <BdFields form={form} set={set} />}
           {(stageId === '3' || stageId === '10' || stageId === '11') && <ForeignFields requireAll={['3', '10', '11'].includes(stageId) && !!form.complete_date} requireAccount={['3', '11'].includes(stageId) ? !!form.complete_date : true} form={form} set={set} title={stageId === '10' ? 'Foreign Mother Company' : stageId === '3' ? '1 Foreign Subsidiary Company' : '2 Foreign Subsidiary Company'} withAccount={stageId === '3' || stageId === '11'} />}
           <Select
