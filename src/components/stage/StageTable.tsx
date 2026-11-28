@@ -7,6 +7,7 @@ import { openFromR2 } from '@/lib/compress'
 import { ExternalLink, Eye, EyeOff, Lock, Edit2, Search, CheckCircle2, Clock, AlertTriangle, AlertCircle, FileText } from 'lucide-react'
 import { cn, formatDate } from '@/lib/utils'
 import { Flag } from '@/components/ui/CountrySelect'
+import { countryCode } from '@/lib/countries'
 import OwnerBadge, { type Owner } from '@/components/ui/OwnerBadge'
 import EditEntryModal from './EditEntryModal'
 import ReopenButton from './ReopenButton'
@@ -543,7 +544,7 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
                 {isAdmin && ownerCell(e.company_id)}
                 {assignCell(e.company_id)}
                 {['1', '2', '4', '6', '7'].includes(stageId) && (<>
-                  <td className="py-3 px-4 text-slate-600">{e.country || '—'}</td>
+                  <td className="py-3 px-4 text-slate-600">{countryCode(e.country) ? <span title={e.country} aria-label={e.country} role="img" className="inline-flex cursor-default"><Flag country={e.country} /></span> : (e.country || '—')}</td>
                 </>)}
                 {!noDates && !hideBd() && stageId !== '7' && (                <td className="py-3 px-4">
                   <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-slate-100 text-slate-700 border border-slate-200">
