@@ -110,21 +110,22 @@ export default function StageHeader({ stageId, config, stats, companies, employe
 
       {waiting.length > 0 && (
         <div className="bg-amber-50/70 border border-amber-200 rounded-xl p-4">
-          <div className="flex items-center gap-2 mb-3">
-            <span className="relative flex h-2.5 w-2.5"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" /><span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500" /></span>
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mb-3">
+            <span className="relative flex h-2.5 w-2.5 shrink-0"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" /><span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500" /></span>
             <h2 className="text-sm font-bold text-amber-900">Waiting for you ({waiting.length})</h2>
-            <span className="text-[11px] text-amber-700">These companies are ready for this stage — start work on them</span>
+            <span className="w-full sm:w-auto text-[11px] text-amber-700">These companies are ready for this stage — start work on them</span>
           </div>
-          <ul className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+          {/* grid-cols-1 keeps the single phone column inside the box, so long names are cut with "…" */}
+          <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-3">
             {waiting.map(c => (
-              <li key={c.company_id} className="bg-white border border-amber-200/80 rounded-lg px-3 py-2.5 flex items-center justify-between gap-3">
-                <button type="button" onClick={() => setClientId(c.company_id)} title="See client information" className="min-w-0 flex-1 text-left group">
-                  <span className="block text-xs font-bold text-slate-900 truncate group-hover:text-blue-700 group-hover:underline">{c.company_name}</span>
+              <li key={c.company_id} className="min-w-0 bg-white border border-amber-200/80 rounded-lg px-3 py-2.5 flex flex-wrap sm:flex-nowrap items-center justify-between gap-x-3 gap-y-2">
+                <button type="button" onClick={() => setClientId(c.company_id)} title="See client information" className="min-w-0 w-full sm:w-auto sm:flex-1 text-left group">
+                  <span className="block text-xs font-bold text-slate-900 break-words sm:truncate group-hover:text-blue-700 group-hover:underline">{c.company_name}</span>
                   <span className="block text-[11px] text-slate-500 truncate">
                     {[c.entity_type, isAdmin && `Reg. by ${c.created_by ? (assignments.people[c.created_by]?.name || 'Unknown') : 'AL ZAHRA'}`].filter(Boolean).join(' · ') || '—'}
                   </span>
                 </button>
-                <div className="shrink-0 flex items-center gap-1.5">
+                <div className="ml-auto shrink-0 flex items-center gap-1.5">
                 <AssignStaff stageId={stageId} company={c} data={assignments} isAdmin={isAdmin} />
                 {SHOW_WAITING_DELETE && isAdmin && c.id && (
                   <button
