@@ -43,7 +43,7 @@ export default function VideosClient({ videos, staff, meName }: { videos: VideoR
   const [month, setMonth] = useState(today().slice(0, 7))
   const [last7, setLast7] = useState(false)
   const [search, setSearch] = useState('')
-  const [tab, setTab] = useState<'pending' | 'completed'>('pending')
+  const [tab, setTab] = useState<'pending' | 'completed'>('completed')
   // headlines opened by a click
   const [openHeadlines, setOpenHeadlines] = useState<string[]>([])
   const [editing, setEditing] = useState<string | null>(null) // 'new' or a row id
@@ -96,7 +96,9 @@ export default function VideosClient({ videos, staff, meName }: { videos: VideoR
     setError('')
     if (!draft.platform.trim()) return setError('Choose the platform')
     if (!draft.posted_on) return setError('Choose the editing date')
-    if (draft.url.trim() && !/^https?:\/\/\S+$/i.test(draft.url.trim())) return setError('The URL must start with http:// or https://')
+    if (!draft.publish_date) return setError('Choose the publish date')
+    if (!draft.url.trim()) return setError('Enter the URL address')
+    if (!/^https?:\/\/\S+$/i.test(draft.url.trim())) return setError('The URL must start with http:// or https://')
     setSaving(true)
     const row = {
       posted_on: draft.posted_on, publish_date: draft.publish_date || null, posted_time: draft.posted_time || null, channel_name: draft.channel_name.trim() || null, headline: draft.headline.trim() || null, platform: draft.platform.trim(),
@@ -106,6 +108,7 @@ export default function VideosClient({ videos, staff, meName }: { videos: VideoR
     setSaving(false)
     if (err) return setError(err.message)
     cancel()
+    setTab('completed')
     router.refresh()
   }
 
@@ -150,14 +153,14 @@ export default function VideosClient({ videos, staff, meName }: { videos: VideoR
     <tr key={key} className="bg-blue-50/40 align-top">
       <td className="px-2 py-2 text-slate-500">{no}</td>
       <td className="px-2 py-2"><input type="date" aria-label="Editing date" value={draft.posted_on} onChange={e => set('posted_on', e.target.value)} className={inputCls} /></td>
-      <td className="px-2 py-2"><input type="date" aria-label="Publish date" value={draft.publish_date} onChange={e => set('publish_date', e.target.value)} className={inputCls} /></td>
+      <td className="px-2 py-2"><input type="date" aria-label="Publish date" required value={draft.publish_date} onChange={e => set('publish_date', e.target.value)} className={inputCls} /></td>
       <td className="px-2 py-2"><input type="time" aria-label="Publish time" value={draft.posted_time} onChange={e => set('posted_time', e.target.value)} className={inputCls} /></td>
       <td className="px-2 py-2 min-w-[150px]"><ComboInput value={draft.channel_name} onChange={v => set('channel_name', v)} options={channels} className={inputCls} placeholder="Channel name" /></td>
       <td className="px-2 py-2 min-w-[200px]"><input aria-label="Headline" value={draft.headline} onChange={e => set('headline', e.target.value)} placeholder="Video headline" className={inputCls} /></td>
       <td className="px-2 py-2 min-w-[150px]"><IconSelect value={draft.platform} onChange={v => set('platform', v)} placeholder="Select platform" options={(draft.platform && !PLATFORMS.includes(draft.platform) ? [...PLATFORMS, draft.platform] : PLATFORMS).map(p => ({ value: p, label: p, icon: <SourceIcon source={p} size={16} /> }))} className={`${inputCls} bg-white`} /></td>
       <td className="px-2 py-2 min-w-[170px]"><IconSelect value={draft.employee_name} onChange={v => set('employee_name', v)} placeholder="Select creator" emptyLabel="—" options={personOptions} className={`${inputCls} bg-white`} /></td>
       <td className="px-2 py-2 min-w-[170px]"><IconSelect value={draft.video_creator} onChange={v => set('video_creator', v)} placeholder="Select editor" emptyLabel="—" options={personOptions} className={`${inputCls} bg-white`} /></td>
-      <td className="px-2 py-2 min-w-[190px]"><input value={draft.url} onChange={e => set('url', e.target.value)} placeholder="https://..." aria-label="URL address" className={inputCls} /></td>
+      <td className="px-2 py-2 min-w-[190px]"><input value={draft.url} onChange={e => set('url', e.target.value)} placeholder="https://... (required)" aria-label="URL address" required className={inputCls} /></td>
       <td className="px-2 py-2">
         <div className="flex items-center gap-1.5">
           <button onClick={save} disabled={saving} title="Save" className="p-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-md disabled:opacity-60">{saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}</button>
@@ -219,13 +222,13 @@ export default function VideosClient({ videos, staff, meName }: { videos: VideoR
             {label} <span className={`ml-1 px-1.5 py-0.5 rounded-full text-[10px] ${tab === k ? 'bg-blue-50 text-blue-700' : 'bg-slate-100 text-slate-500'}`}>{n}</span>
           </button>
         ))}
-        <span className="ml-auto self-center text-[11px] text-slate-400">Completed = publish date and URL both given</span>
+        <span className="ml-auto self-center text-[11px] text-slate-400">Pending = older entries without a publish date or URL</span>
       </div>
 
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-x-auto">
         <table className="w-full text-xs min-w-[1250px]">
           <thead className="bg-slate-50 text-slate-600 text-[11px] tracking-wide">
-            <tr>{['SL No', 'Editing Date', 'Publish Date', 'Publish Time', 'Channel Name', 'Headline', 'Platform', 'Video Creator', 'Video Editor', 'URL Address', 'Action'].map(h => <th key={h} className="text-left font-semibold px-3 py-3 whitespace-nowrap">{h}</th>)}</tr>
+            <tr>{['SL No', 'Editing Date', 'Publish Date *', 'Publish Time', 'Channel Name', 'Headline', 'Platform', 'Video Creator', 'Video Editor', 'URL Address *', 'Action'].map(h => <th key={h} className="text-left font-semibold px-3 py-3 whitespace-nowrap">{h}</th>)}</tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
             {editing === 'new' && editorRow('new', '+')}
