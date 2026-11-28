@@ -1,11 +1,14 @@
 'use client'
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
-import { Check, ChevronLeft, ChevronRight, Clock3, Search, TriangleAlert } from 'lucide-react'
+import { Check, ChevronLeft, ChevronRight, Clock3, Search, History, TriangleAlert } from 'lucide-react'
 import { MatrixIcon } from './MoneyIcons'
 import { Flag } from '@/components/ui/CountrySelect'
 import { Company } from '@/lib/types'
 import { phaseOf, MENU_ORDER } from '@/lib/stageData'
+import CompanyLogDialog, { KIND_TEXT } from './CompanyLogDialog'
+import PhaseStaffButton from './PhaseStaffButton'
+import type { WorkflowPeople } from '@/lib/workflowPeople'
 
 const SHORT: Record<string, string> = { '1': 'Parent', '9': 'BD Company', '10': 'Foreign Mother', '2': 'Activity', '3': 'Foreign Sub 1', '11': 'Foreign Sub 2', '8': 'Name', '4': 'MISA', '5': 'CR', '6': 'Portals', '7': 'Filing' }
 
@@ -14,6 +17,8 @@ interface StageSummary {
   label: string
   sublabel?: string
   days?: number
+  from?: string | null
+  to?: string | null
 }
 
 interface CompanyMatrixRow {
@@ -30,6 +35,8 @@ interface CompanyMatrixRow {
 interface DashboardProps {
   stageMap: Record<string, Record<number, StageSummary>>
   initialCompanies: Company[]
+  /** admin only */
+  team?: WorkflowPeople | null
 }
 
 const PAGE_SIZE = 5
@@ -69,7 +76,8 @@ function PhaseBox({ stg, stage }: { stg: StageSummary; stage: number }) {
   )
 }
 
-export default function MasterMatrixDashboard({ initialCompanies, stageMap }: DashboardProps) {
+export default function MasterMatrixDashboard({ initialCompanies, stageMap, team }: DashboardProps) {
+  const [logFor, setLogFor] = useState<CompanyMatrixRow | null>(null)
   const companiesList = initialCompanies
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
@@ -202,6 +210,7 @@ export default function MasterMatrixDashboard({ initialCompanies, stageMap }: Da
                   <th key={id} className={`${th} w-[62px] !px-0.5 text-center leading-tight`}>
                     <span className="block text-[11px] font-semibold text-slate-800">P{i + 1}</span>
                     <span className="block text-[9.5px] text-slate-500">{SHORT[id]}{id === '8' ? ' (Validity)' : ''}</span>
+                    {team && <PhaseStaffButton title={`P${i + 1} · ${SHORT[id]}`} people={(team.phaseStaff[Number(id)] || []).map(u => team.people[u])} />}
                   </th>
                 ))}
               </tr>
@@ -212,7 +221,10 @@ export default function MasterMatrixDashboard({ initialCompanies, stageMap }: Da
                   <td className={`${td} text-center text-[11px] text-slate-400 tabular-nums`}>{firstIndex + i + 1}</td>
                   <td className={`${td} text-[11px] font-semibold text-blue-700 tabular-nums`}>{row.company_id}</td>
                   <td className={td}>
-                    <div title={row.company_name} className="text-[12px] font-semibold leading-snug text-slate-900 line-clamp-2">{row.company_name}</div>
+                    <div className="flex items-center gap-1.5">
+                      <div title={row.company_name} className="min-w-0 text-[12px] font-semibold leading-snug text-slate-900 line-clamp-2">{row.company_name}</div>
+                      {team && <button type="button" onClick={() => setLogFor(row)} title="Work log" aria-label={`Work log of ${row.company_name}`} className="shrink-0 p-1 rounded-md text-blue-600 hover:bg-blue-50"><History className="w-3.5 h-3.5" /></button>}
+                    </div>
                     {row.isRenewal && <span className="inline-block mt-0.5 px-1.5 rounded-full bg-amber-50 text-amber-800 text-[10px] font-semibold">Renewal Company</span>}
                   </td>
                   <td className={td}>
@@ -236,7 +248,9 @@ export default function MasterMatrixDashboard({ initialCompanies, stageMap }: Da
                   </td>
                   {MENU_ORDER.map(Number).map(stgNum => {
                     const stg = row.stages[stgNum] || { status: 'Not Started' as const, label: 'Queued' }
-                    const tip = `Phase ${phaseOf(stgNum)}: ${stg.label}${stg.days != null ? ` (${stg.days} days)` : ''}`
+                    const cell = team && stg.status !== 'Not Started' ? team.cells[row.company_id]?.[stgNum] : undefined
+                    const who = cell ? `\n${KIND_TEXT[cell.kind]}: ${cell.ids.map(id => team!.people[id].name).join(', ')}` : ''
+                    const tip = `Phase ${phaseOf(stgNum)}: ${stg.label}${stg.days != null ? ` (${stg.days} days)` : ''}${who}`
                     return (
                       <td key={stgNum} className={`${td} !px-0.5 !py-1.5`}>
                         <Link href={`/dashboard/stage/${stgNum}`} title={tip} aria-label={tip} className="block rounded-xl hover:bg-slate-100">
@@ -272,6 +286,7 @@ export default function MasterMatrixDashboard({ initialCompanies, stageMap }: Da
           </div>
         )}
       </section>
+      {logFor && team && <CompanyLogDialog company={logFor} stages={logFor.stages} team={team} onClose={() => setLogFor(null)} />}
     </div>
   )
 }

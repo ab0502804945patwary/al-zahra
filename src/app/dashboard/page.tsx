@@ -8,6 +8,7 @@ import { summarizeAccounts } from '@/lib/accounts'
 import Overview from '@/components/dashboard/Overview'
 import { STAGE_CONFIG, MENU_ORDER, phaseOf } from '@/lib/stageData'
 import { enrichTiming, enrichExpiry } from '@/lib/utils'
+import { loadWorkflowPeople } from '@/lib/workflowPeople'
 
 export const dynamic = 'force-dynamic'
 
@@ -75,7 +76,7 @@ export default async function DashboardPage() {
         label = done ? 'Complete' : (r.current_stage || 'In Progress')
         days = r.days_taken ?? undefined
       }
-      ;(stageMap[r.company_id] ||= {})[n] = { status, label, days }
+      ;(stageMap[r.company_id] ||= {})[n] = { status, label, days, from: r.submit_date || null, to: (n === 8 ? r.approval_date : r.complete_date) || null }
     }
   }
 
@@ -120,6 +121,9 @@ export default async function DashboardPage() {
       }
     })
 
+  // photos and history on the matrix are for the admin only
+  const team = isAdmin && isSupabaseConfigured ? await loadWorkflowPeople(companies, stageMap) : null
+
   const modules = MODULES.filter(m => canAccessModule(employee, m.key)).map(m => m.key)
   const seesMoney = isAdmin || canAccessModule(employee, 'invoices') || canAccessModule(employee, 'expenses')
 
@@ -132,7 +136,7 @@ export default async function DashboardPage() {
         phases={summary}
         accounts={seesMoney ? summarizeAccounts(invoices, expenses) : null}
       />
-      <MasterMatrixDashboard initialCompanies={companies} stageMap={stageMap} />
+      <MasterMatrixDashboard initialCompanies={companies} stageMap={stageMap} team={team} />
     </div>
   )
 }
