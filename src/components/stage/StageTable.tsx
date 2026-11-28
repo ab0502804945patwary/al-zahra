@@ -206,7 +206,7 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
   const entries = serverEntries
 
   const filtered = entries.filter((e, i) => {
-    if (['9', '10', '2', '3', '4', '5', '6', '11'].includes(stageId) && bdGroup(e) !== bdTab) return false
+    if (['1', '9', '10', '2', '3', '4', '5', '6', '11'].includes(stageId) && bdGroup(e) !== bdTab) return false
     if (stageId === '8' && (e.approval_date ? 'completed' : 'pending') !== bdTab) return false
     const comp = companies.find(c => c.company_id === e.company_id)
     return matchesQuery(search, i + 1, [
@@ -234,7 +234,7 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
               value={search}
               onChange={e => { setSearch(e.target.value); setPage(1) }}
               placeholder="Filter records..."
-              className="pl-8 pr-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-48"
+              className="pl-8 pr-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-48"
             />
           </div>
         </div>
@@ -322,7 +322,7 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
               value={search}
               onChange={e => { setSearch(e.target.value); setPage(1) }}
               placeholder="Search cross-border files..."
-              className="pl-8 pr-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-52"
+              className="pl-8 pr-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-52"
             />
           </div>
         </div>
@@ -431,12 +431,12 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
             value={search}
             onChange={e => { setSearch(e.target.value); setPage(1) }}
             placeholder="Search records..."
-            className="pl-8 pr-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-56"
+            className="pl-8 pr-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-56"
           />
         </div>
       </div>
 
-      {['9', '10', '2', '3', '4', '5', '6', '11'].includes(stageId) && (
+      {['1', '9', '10', '2', '3', '4', '5', '6', '11'].includes(stageId) && (
         <div className="px-4 sm:px-6 pt-3 flex flex-wrap gap-2 border-b border-slate-100">
           {([['pending', 'Pending / Others', entries.filter(e => bdGroup(e) === 'pending').length], ...(stageId === '9' ? [['approved', 'Name Approved', entries.filter(e => bdGroup(e) === 'approved').length] as const] : []), ['completed', 'Completed', entries.filter(e => bdGroup(e) === 'completed').length]] as const).map(([k, label, n]) => (
             <button key={k} onClick={() => { setBdTab(k); setPage(1) }} className={`px-3.5 py-2 text-xs font-semibold rounded-t-lg border-b-2 -mb-px transition ${bdTab === k ? 'border-blue-600 text-blue-700' : 'border-transparent text-slate-500 hover:text-slate-700'}`}>
