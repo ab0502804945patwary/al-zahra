@@ -5,6 +5,7 @@ import { canAccessStage } from '@/lib/access'
 import { STAGE_CONFIG } from '@/lib/stageData'
 import { phaseStaffAllows } from '@/lib/stageRules'
 import { isWaitingInStage } from '@/lib/notifications'
+import { HISTORY_COMMON, HISTORY_PHASES, type PhaseRecord } from '@/lib/phaseHistory'
 
 export const dynamic = 'force-dynamic'
 
@@ -23,7 +24,7 @@ const FIELDS = [
 ]
 
 /**
- * POST { stage, company_id } -> { company }
+ * POST { stage, company_id } -> { company, phases }   (phases: earlier work and files, MISA phase only)
  * Only for admins and staff assigned to that phase, and only for a company that has a record in it or is waiting for it.
  */
 export async function POST(request: Request) {
@@ -55,5 +56,15 @@ export async function POST(request: Request) {
   }
 
   const company = Object.fromEntries(FIELDS.map(k => [k, (data as Record<string, unknown>)[k] ?? null]))
-  return NextResponse.json({ company }, { headers: { 'Cache-Control': 'no-store' } })
+  let phases: PhaseRecord[] = []
+  if (stage === '4') {
+    const results = await Promise.all(HISTORY_PHASES.map(p => db.from(STAGE_CONFIG[p.stage].table).select('*').eq('company_id', companyId)))
+    if (results.some(r => r.error)) return NextResponse.json({ error: 'Could not load the earlier phases.' }, { status: 500 })
+    phases = HISTORY_PHASES.flatMap((p, i) => ((results[i].data || []) as Record<string, any>[]).map(row => ({
+      stage: p.stage,
+      values: Object.fromEntries([...p.fields, ...HISTORY_COMMON].map(([column]) => [column, row[column] ?? null])),
+      files: Array.isArray(row.dossier_files) ? row.dossier_files.filter((f: any) => f?.key).map((f: any) => ({ key: f.key, name: f.name, tag: f.tag })) : [],
+    })))
+  }
+  return NextResponse.json({ company, phases }, { headers: { 'Cache-Control': 'no-store' } })
 }

@@ -7,6 +7,7 @@ import { Flag } from '@/components/ui/CountrySelect'
 import { createClient } from '@/lib/supabase/client'
 import { openFromR2 } from '@/lib/compress'
 import { formatDate } from '@/lib/utils'
+import { HISTORY_COMMON, HISTORY_PHASES, type PhaseRecord } from '@/lib/phaseHistory'
 import { SH_DOCS, VERIFY_ITEMS, type CompanyDoc, type DocCheck, type Shareholder } from '@/components/companies/FormParts'
 
 type Row = [label: string, value: React.ReactNode]
@@ -143,6 +144,7 @@ export default function ClientInfoDialog({ stageId, companyId, onClose }: { stag
   const [company, setCompany] = useState<any>(null)
   const [error, setError] = useState('')
   const [fileError, setFileError] = useState('')
+  const [phases, setPhases] = useState<PhaseRecord[]>([])
 
   useEffect(() => {
     const stop = new AbortController()
@@ -151,6 +153,7 @@ export default function ClientInfoDialog({ stageId, companyId, onClose }: { stag
         const out = await res.json().catch(() => ({} as any))
         if (!res.ok || !out.company) throw new Error(out.error || 'Could not load the client information.')
         setCompany(out.company)
+        setPhases(out.phases || [])
       })
       .catch(e => { if (!stop.signal.aborted) setError(e?.message || 'Cannot reach the server.') })
     return () => stop.abort()
@@ -343,6 +346,27 @@ export default function ClientInfoDialog({ stageId, companyId, onClose }: { stag
               {extra.filter(([, rows]) => rows.some(r => !empty(r[1]))).map(([title, rows]) => (
                 <Section key={title} title={title} icon={FileCheck}><Details rows={rows} /></Section>
               ))}
+
+              {stageId === '4' && (<>
+                <h3 className="pt-2 text-xs font-bold uppercase tracking-wide text-slate-700">Earlier phases</h3>
+                {!phases.length && <p className="text-xs text-slate-400">No earlier work is saved for this company.</p>}
+                {phases.map((p, n) => {
+                  const rows: Row[] = [...(HISTORY_PHASES.find(h => h.stage === p.stage)?.fields || []), ...HISTORY_COMMON].map(([column, label, type]) => {
+                    const v = p.values[column] as any
+                    return [label, type === 'date' ? date(v) : type === 'yesno' ? (v ? 'Done' : '') : v]
+                  })
+                  return (
+                    <Section key={`${p.stage}-${n}`} title={STAGE_CONFIG[p.stage]?.label || `Phase ${p.stage}`} icon={FileCheck}>
+                      <Details rows={rows} />
+                      {p.files.length > 0 && (
+                        <ul className="mt-3 divide-y divide-slate-100 border border-slate-200 rounded-lg">
+                          {p.files.map(f => <FileRow key={f.key} title={f.tag === 'audit' ? 'Audit Report' : f.tag === 'incorporation' ? 'Incorporation Update' : 'Dossier file'} name={f.name} onOpen={() => openFile(f.key)} />)}
+                        </ul>
+                      )}
+                    </Section>
+                  )
+                })}
+              </>)}
             </>)}
           </div>
         </Dialog.Content>
