@@ -7,7 +7,7 @@ import { Company } from '@/lib/types'
 import CompanyModal, { computeNextCompanyId } from './CompanyModal'
 import { matchesQuery } from '@/lib/search'
 import { createClient } from '@/lib/supabase/client'
-import ExpiryAlerts from '@/components/dashboard/ExpiryAlerts'
+import RenewalHub from './RenewalHub'
 
 function StatusSwitch({ on, busy, onClick }: { on: boolean; busy: boolean; onClick: () => void }) {
   return (
@@ -156,8 +156,16 @@ export default function CompaniesClient({ companies: initialCompanies, mode = 'n
       </div>
 
       {/* Search and filters */}
-      {renewalMode && <ExpiryAlerts companies={modeList} isAdmin={isAdmin} owners={owners} ownerAvatars={ownerAvatars} />}
+      {renewalMode && <RenewalHub companies={modeList} isAdmin={isAdmin} canEdit={canEdit} onCompanyChange={handleSave} owners={owners} ownerAvatars={ownerAvatars}
+        rowTools={c => (
+          <>
+            {isAdmin && <StatusSwitch on={c.account_status !== 'Inactive'} busy={toggling === c.id} onClick={() => toggleStatus(c)} />}
+            {mayEdit(c) && <button type="button" onClick={() => setSelected(c)} title="Edit company" aria-label={`Edit ${c.company_name}`} className="p-1.5 hover:bg-slate-200/60 rounded-md text-slate-400 hover:text-slate-700"><Edit2 className="w-4 h-4" /></button>}
+          </>
+        )} />}
 
+      {/* The Renewal Companies page is the hub alone; the list below belongs to the Company Register */}
+      {!renewalMode && <>
       <div className="flex items-center justify-between gap-4">
         <div className="relative max-w-md w-full">
           <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -342,6 +350,8 @@ export default function CompaniesClient({ companies: initialCompanies, mode = 'n
           </div>
         </div>
       )}
+
+      </>}
 
       {showAdd && (
         <CompanyModal
