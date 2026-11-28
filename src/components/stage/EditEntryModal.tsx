@@ -67,7 +67,7 @@ export default function EditEntryModal({ stageId, entry, companies, employees, o
     e.preventDefault()
     const dateError = validateDates(form)
     if (dateError) { alert(dateError); return }
-    const noFile = stageId === '1' ? missingParentFile((form as any).dossier_files) : ''
+    const noFile = stageId === '1' && form.complete_date ? missingParentFile((form as any).dossier_files) : ''
     if (noFile) { alert(`Upload the ${noFile} file.`); return }
     if (needFiles && !['4', '5', '7'].includes(stageId) && fileCount === 0) { alert('Upload at least one file in the Electronic Dossier.'); return }
     setLoading(true)

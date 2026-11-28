@@ -17,7 +17,7 @@ export function missingParentFile(files: unknown) {
   return ITEMS.find(i => !listOf(files).some(f => f.tag === i.tag))?.label || ''
 }
 
-/** Parent Entity Verification: Audit Report and Incorporation Update, each must be ticked and have its file. */
+/** Parent Entity Verification: Audit Report and Incorporation Update. Once a Completion Date is entered, each must be ticked and have its file. */
 export default function ParentChecks({ form, set, folder, onFiles }: {
   form: Record<string, any>
   set: (k: string, v: string) => void
@@ -26,6 +26,7 @@ export default function ParentChecks({ form, set, folder, onFiles }: {
   onFiles: (update: (files: TaggedFile[]) => TaggedFile[]) => void
 }) {
   const files = listOf(form.dossier_files)
+  const required = !!form.complete_date
   // records saved before files were asked per item
   const earlier = files.filter(f => !isTagged(f))
 
@@ -35,11 +36,11 @@ export default function ParentChecks({ form, set, folder, onFiles }: {
         {ITEMS.map(({ check, tag, label }) => (
           <div key={tag} className="space-y-2 p-2.5 border border-slate-200 rounded-lg bg-white">
             <label className="flex items-center gap-2 px-0.5 text-xs font-medium text-slate-700 cursor-pointer">
-              <input type="checkbox" required className="w-4 h-4 accent-emerald-600" checked={String(form[check]) === 'true'} onChange={e => set(check, e.target.checked ? 'true' : '')} />
-              {label}<span className="text-rose-500 -ml-1">*</span>
+              <input type="checkbox" required={required} className="w-4 h-4 accent-emerald-600" checked={String(form[check]) === 'true'} onChange={e => set(check, e.target.checked ? 'true' : '')} />
+              {label}{required && <span className="text-rose-500 -ml-1">*</span>}
             </label>
             <DossierFiles
-              required
+              required={required}
               compact
               label={`${label} file`}
               folder={folder}
