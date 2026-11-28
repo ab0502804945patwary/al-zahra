@@ -8,6 +8,7 @@ import CompanyModal, { computeNextCompanyId } from './CompanyModal'
 import { matchesQuery } from '@/lib/search'
 import { createClient } from '@/lib/supabase/client'
 import RenewalHub from './RenewalHub'
+import ExpiryAlerts from '@/components/dashboard/ExpiryAlerts'
 
 function StatusSwitch({ on, busy, onClick }: { on: boolean; busy: boolean; onClick: () => void }) {
   return (
@@ -156,6 +157,8 @@ export default function CompaniesClient({ companies: initialCompanies, mode = 'n
       </div>
 
       {/* Search and filters */}
+      {renewalMode && <ExpiryAlerts companies={modeList} isAdmin={isAdmin} owners={owners} ownerAvatars={ownerAvatars} />}
+
       {renewalMode && <RenewalHub companies={modeList} isAdmin={isAdmin} canEdit={canEdit} onCompanyChange={handleSave} owners={owners} ownerAvatars={ownerAvatars}
         rowTools={c => (
           <>

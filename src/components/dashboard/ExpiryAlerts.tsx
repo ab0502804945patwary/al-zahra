@@ -30,6 +30,15 @@ function daysLeft(date: string) {
   return Math.round((d.getTime() - today.getTime()) / 86400000)
 }
 
+// same colours as the renewal hub's four services
+const DOC_TONE: Record<string, string> = {
+  CR: 'bg-[#eef2ff] text-[#3730a3] border-[#c7d2fe]',
+  MISA: 'bg-sky-50 text-sky-800 border-sky-200',
+  'RJSC Annual Return': 'bg-emerald-50 text-emerald-800 border-emerald-200',
+  'BD Audit': 'bg-emerald-50 text-emerald-800 border-emerald-200',
+  'Saudi Audit': 'bg-amber-50 text-amber-800 border-amber-200',
+}
+
 const waLink = (n?: string) => {
   const digits = (n || '').replace(/\D/g, '')
   return digits ? `https://wa.me/${digits}` : ''
@@ -79,45 +88,59 @@ export default function ExpiryAlerts({ companies: initial, isAdmin = false, owne
     : days <= 30 ? 'bg-amber-50 text-amber-700 border-amber-200'
     : 'bg-emerald-50 text-emerald-700 border-emerald-200'
 
+  const select = 'px-3 py-2 text-xs border border-slate-200 rounded-xl bg-white text-slate-700 font-semibold cursor-pointer'
+  const contact = 'p-2 rounded-xl border transition'
+
   return (
-    <div className="bg-white rounded-xl border border-slate-200 shadow-sm">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 p-4 border-b border-slate-100">
-        <div className="flex items-center gap-2">
-          <CalendarClock className="w-4 h-4 text-amber-600" />
-          <h2 className="text-sm font-bold text-slate-900">Upcoming Expiries — Contact List</h2>
-          <span className="text-[11px] text-slate-400">CR, MISA, RJSC &amp; audit due dates</span>
+    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+      <div className="p-4 sm:p-5 space-y-3 border-b border-slate-100">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5">
+            <span className="w-8 h-8 rounded-xl bg-amber-50 text-amber-700 border border-amber-200 flex items-center justify-center shrink-0"><CalendarClock className="w-4 h-4" /></span>
+            <div>
+              <h2 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Upcoming Expiries — Contact List</h2>
+              <p className="text-[11px] text-slate-500">CR, MISA, RJSC &amp; audit due dates</p>
+            </div>
+          </div>
+          <div className="flex flex-wrap items-center gap-2.5">
+            <select value={docSel} onChange={ev => setDocSel(ev.target.value)} aria-label="Document" className={select}>
+              <option value="">All documents</option>
+              {DOC_FIELDS.map(d => <option key={d.doc} value={d.doc}>{d.doc}</option>)}
+            </select>
+            {isAdmin && (
+              <select value={who} onChange={ev => setWho(ev.target.value)} aria-label="Employee" className={select}>
+                <option value="">All employees</option>
+                {Object.entries(owners).filter(([id]) => initial.some(c => c.created_by === id)).sort((a, b) => a[1].localeCompare(b[1])).map(([id, name]) => <option key={id} value={id}>{name}</option>)}
+                {initial.some(c => !c.created_by) && <option value="__none">AL ZAHRA (no person)</option>}
+              </select>
+            )}
+          </div>
         </div>
-        <select value={docSel} onChange={ev => setDocSel(ev.target.value)} className="px-2.5 py-1.5 text-xs border border-slate-200 rounded-lg bg-white text-slate-700 font-semibold">
-          <option value="">All documents</option>
-          {DOC_FIELDS.map(d => <option key={d.doc} value={d.doc}>{d.doc}</option>)}
-        </select>
-        {isAdmin && (
-          <select value={who} onChange={ev => setWho(ev.target.value)} className="px-2.5 py-1.5 text-xs border border-slate-200 rounded-lg bg-white text-slate-700 font-semibold">
-            <option value="">All employees</option>
-            {Object.entries(owners).filter(([id]) => initial.some(c => c.created_by === id)).sort((a, b) => a[1].localeCompare(b[1])).map(([id, name]) => <option key={id} value={id}>{name}</option>)}
-            {initial.some(c => !c.created_by) && <option value="__none">AL ZAHRA (no person)</option>}
-          </select>
-        )}
-        <div className="inline-flex flex-wrap rounded-lg border border-slate-200 bg-white p-0.5 text-xs font-semibold">
+        <div className="flex flex-wrap items-center gap-2">
           {wins.map(w => {
             const n = all.filter(i => inWindow(i, w.key)).length
+            const on = win === w.key
             return (
               <button
                 key={String(w.key)}
+                type="button"
                 onClick={() => setWin(w.key)}
-                className={`px-2.5 py-1.5 rounded-md transition ${win === w.key ? 'bg-blue-600 text-white' : 'text-slate-600 hover:bg-slate-50'}`}
-              >{w.label} ({n})</button>
+                className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold transition ${on ? 'bg-[#1e3a8a] text-white shadow-sm' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}
+              >
+                {w.label}
+                <span className={`px-1.5 rounded-full text-[10px] font-bold ${on ? 'bg-white/20' : w.key === 'expired' && n ? 'bg-red-100 text-red-700' : 'bg-white text-slate-600'}`}>{n}</span>
+              </button>
             )
           })}
         </div>
       </div>
 
-      <div className="overflow-x-auto">
+      <div className="overflow-auto max-h-96">
         <table className="w-full text-xs min-w-[760px]">
-          <thead className="bg-slate-50 text-slate-500 uppercase text-[10px] tracking-wide">
+          <thead className="bg-slate-50 text-slate-500 uppercase text-[11px] tracking-wider sticky top-0">
             <tr>
-              {['Company', 'Service', ...(isAdmin ? ['Registered by'] : []), 'Document', 'Expiry Date', 'Days Left', 'Contact'].map(h => (
-                <th key={h} className="text-left font-semibold px-3 py-2.5 whitespace-nowrap">{h}</th>
+              {['Company & ID', 'Service', ...(isAdmin ? ['Registered by'] : []), 'Document', 'Expiry Date', 'Days Left', 'Contact'].map(h => (
+                <th key={h} className="text-left font-bold px-4 py-3 whitespace-nowrap">{h}</th>
               ))}
             </tr>
           </thead>
@@ -126,30 +149,30 @@ export default function ExpiryAlerts({ companies: initial, isAdmin = false, owne
               const c = i.company
               const wa = waLink(c.whatsapp_number || c.shareholder_phone)
               return (
-                <tr key={`${c.company_id}-${i.doc}`} className="hover:bg-slate-50/70">
-                  <td className="px-3 py-2.5">
-                    <div className="font-semibold text-slate-900">{c.company_name}</div>
-                    <div className="font-mono text-[11px] text-blue-700">{c.company_id}</div>
+                <tr key={`${c.company_id}-${i.doc}`} className="hover:bg-[#eff6ff]/50">
+                  <td className="px-4 py-3">
+                    <span className="font-bold text-[#1d4ed8] mr-2">{c.company_id}</span>
+                    <span className="font-bold text-slate-800">{c.company_name}</span>
                   </td>
-                  <td className="px-3 py-2.5">
+                  <td className="px-4 py-3 whitespace-nowrap">
                     {c.service_type === 'renewal'
-                      ? <span className="inline-flex items-center gap-1 text-amber-700"><RefreshCw className="w-3 h-3" />Renewal Company</span>
-                      : <span className="text-indigo-700">New Company</span>}
+                      ? <span className="inline-flex items-center gap-1 text-amber-700 font-semibold"><RefreshCw className="w-3 h-3" />Renewal Company</span>
+                      : <span className="text-[#4338ca] font-semibold">New Company</span>}
                   </td>
-                  {isAdmin && <td className="px-3 py-2.5"><OwnerTag name={c.created_by ? (owners[c.created_by] || 'Unknown') : null} avatar={c.created_by ? ownerAvatars[c.created_by] : null} /></td>}
-                  <td className="px-3 py-2.5 font-semibold text-slate-700">{i.doc}</td>
-                  <td className="px-3 py-2.5 font-mono text-slate-600">{i.date}</td>
-                  <td className="px-3 py-2.5">
-                    <span className={`px-2 py-0.5 rounded-full border text-[10px] font-bold ${tone(i.days)}`}>
-                      {i.days < 0 ? `${Math.abs(i.days)}d overdue` : i.days === 0 ? 'Today' : `${i.days} days`}
+                  {isAdmin && <td className="px-4 py-3"><OwnerTag name={c.created_by ? (owners[c.created_by] || 'Unknown') : null} avatar={c.created_by ? ownerAvatars[c.created_by] : null} /></td>}
+                  <td className="px-4 py-3 whitespace-nowrap"><span className={`px-2.5 py-0.5 rounded-full border text-[11px] font-bold ${DOC_TONE[i.doc]}`}>{i.doc}</span></td>
+                  <td className="px-4 py-3 font-semibold text-slate-700 whitespace-nowrap">{i.date}</td>
+                  <td className="px-4 py-3 whitespace-nowrap">
+                    <span className={`px-2 py-0.5 rounded-full border text-[10.5px] font-bold ${tone(i.days)}`}>
+                      {i.days < 0 ? `${Math.abs(i.days)}d overdue` : i.days === 0 ? 'Today' : `${i.days}d left`}
                     </span>
                   </td>
-                  <td className="px-3 py-2.5">
+                  <td className="px-4 py-3">
                     <div className="flex items-center gap-1.5">
-                      {wa && <a href={wa} target="_blank" rel="noreferrer" title={`WhatsApp ${c.whatsapp_number || ''}`} className="p-1.5 rounded-md bg-emerald-50 text-emerald-700 hover:bg-emerald-100"><MessageCircle className="w-3.5 h-3.5" /></a>}
-                      {c.whatsapp_number && <a href={`tel:${c.whatsapp_number}`} title="Call" className="p-1.5 rounded-md bg-blue-50 text-blue-700 hover:bg-blue-100"><Phone className="w-3.5 h-3.5" /></a>}
-                      {c.official_email && <a href={`mailto:${c.official_email}`} title={c.official_email} className="p-1.5 rounded-md bg-slate-100 text-slate-700 hover:bg-slate-200"><Mail className="w-3.5 h-3.5" /></a>}
-                      {!wa && !c.official_email && <span className="text-slate-300">No contact saved</span>}
+                      {wa && <a href={wa} target="_blank" rel="noreferrer" title={`WhatsApp ${c.whatsapp_number || ''}`} className={`${contact} bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100`}><MessageCircle className="w-3.5 h-3.5" /></a>}
+                      {c.whatsapp_number && <a href={`tel:${c.whatsapp_number}`} title="Call" className={`${contact} bg-[#eff6ff] border-[#bfdbfe] text-[#1d4ed8] hover:bg-[#dbeafe]`}><Phone className="w-3.5 h-3.5" /></a>}
+                      {c.official_email && <a href={`mailto:${c.official_email}`} title={c.official_email} className={`${contact} bg-slate-100 border-slate-200 text-slate-700 hover:bg-slate-200`}><Mail className="w-3.5 h-3.5" /></a>}
+                      {!wa && !c.official_email && <span className="text-slate-400 italic">No contact saved</span>}
                     </div>
                   </td>
                 </tr>
