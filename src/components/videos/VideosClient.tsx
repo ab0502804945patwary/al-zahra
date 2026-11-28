@@ -43,6 +43,9 @@ export default function VideosClient({ videos, staff, meName }: { videos: VideoR
   const [month, setMonth] = useState(today().slice(0, 7))
   const [last7, setLast7] = useState(false)
   const [search, setSearch] = useState('')
+  const [tab, setTab] = useState<'pending' | 'completed'>('pending')
+  // headlines opened by a click
+  const [openHeadlines, setOpenHeadlines] = useState<string[]>([])
   const [editing, setEditing] = useState<string | null>(null) // 'new' or a row id
   const [draft, setDraft] = useState<Draft | null>(null)
   const [saving, setSaving] = useState(false)
@@ -55,7 +58,7 @@ export default function VideosClient({ videos, staff, meName }: { videos: VideoR
   const who = (n?: string | null) => n ? <span title={n} aria-label={n} role="img" className="inline-flex cursor-default"><Avatar name={n} src={avatarOf.get(n)} size={28} /></span> : <>—</>
 
   const sevenAgo = (() => { const d = new Date(); d.setDate(d.getDate() - 6); return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10) })()
-  const rows = useMemo(() => videos.filter(v =>
+  const matched = useMemo(() => videos.filter(v =>
     (!employee || v.employee_name === employee) &&
     (!editor || v.video_creator === editor) &&
     (!platform || v.platform === platform) &&
@@ -63,6 +66,12 @@ export default function VideosClient({ videos, staff, meName }: { videos: VideoR
     (last7 ? v.posted_on >= sevenAgo : (!month || v.posted_on.startsWith(month))) &&
     matchesQuery(search, 0, [v.channel_name, v.headline, v.platform, v.employee_name, v.video_creator, v.url])
   ), [videos, employee, editor, platform, channel, month, last7, search, sevenAgo])
+
+  const isDone = (v: VideoRow) => !!v.publish_date && !!v.url
+  const doneCount = matched.filter(isDone).length
+  // the table and both reports follow the chosen tab
+  const rows = useMemo(() => matched.filter(v => isDone(v) === (tab === 'completed')), [matched, tab])
+  const tabName = tab === 'completed' ? 'Completed' : 'Pending'
 
   const byPlatform = useMemo(() => {
     const m = new Map<string, number>()
@@ -72,7 +81,7 @@ export default function VideosClient({ videos, staff, meName }: { videos: VideoR
 
   function startNew() {
     setError('')
-    setDraft({ posted_on: today(), publish_date: today(), posted_time: nowTime(), channel_name: '', headline: '', platform: '', employee_name: meName, video_creator: meName, url: '' })
+    setDraft({ posted_on: today(), publish_date: '', posted_time: nowTime(), channel_name: '', headline: '', platform: '', employee_name: meName, video_creator: meName, url: '' })
     setEditing('new')
   }
   function startEdit(v: VideoRow) {
@@ -87,9 +96,7 @@ export default function VideosClient({ videos, staff, meName }: { videos: VideoR
     setError('')
     if (!draft.platform.trim()) return setError('Choose the platform')
     if (!draft.posted_on) return setError('Choose the editing date')
-    if (!draft.publish_date) return setError('Choose the publish date')
-    if (!draft.url.trim()) return setError('Enter the URL address')
-    if (!/^https?:\/\/\S+$/i.test(draft.url.trim())) return setError('The URL must start with http:// or https://')
+    if (draft.url.trim() && !/^https?:\/\/\S+$/i.test(draft.url.trim())) return setError('The URL must start with http:// or https://')
     setSaving(true)
     const row = {
       posted_on: draft.posted_on, publish_date: draft.publish_date || null, posted_time: draft.posted_time || null, channel_name: draft.channel_name.trim() || null, headline: draft.headline.trim() || null, platform: draft.platform.trim(),
@@ -114,7 +121,7 @@ export default function VideosClient({ videos, staff, meName }: { videos: VideoR
     const blob = new Blob(['﻿' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' })
     const a = document.createElement('a')
     a.href = URL.createObjectURL(blob)
-    a.download = `video-report-${last7 ? 'last-7-days' : month || 'all'}.csv`
+    a.download = `video-report-${tab}-${last7 ? 'last-7-days' : month || 'all'}.csv`
     a.click()
     URL.revokeObjectURL(a.href)
   }
@@ -123,7 +130,7 @@ export default function VideosClient({ videos, staff, meName }: { videos: VideoR
     const w = window.open('', '_blank')
     if (!w) return
     const picked = [platform, channel, employee && `Creator: ${employee}`, editor && `Editor: ${editor}`].filter(Boolean).map(x => ' — ' + x).join('')
-    const title = `Video report — ${last7 ? 'last 7 days' : month || 'all'}${picked}`
+    const title = `${tabName} video report — ${last7 ? 'last 7 days' : month || 'all'}${picked}`
     const esc = (x: unknown) => String(x ?? '—').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c] as string))
     w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${esc(title)}</title><style>
       body{font-family:Arial,sans-serif;padding:24px;color:#0f172a} h1{font-size:18px;margin:0 0 4px} p{margin:0 0 14px;color:#475569;font-size:12px}
@@ -143,14 +150,14 @@ export default function VideosClient({ videos, staff, meName }: { videos: VideoR
     <tr key={key} className="bg-blue-50/40 align-top">
       <td className="px-2 py-2 text-slate-500">{no}</td>
       <td className="px-2 py-2"><input type="date" aria-label="Editing date" value={draft.posted_on} onChange={e => set('posted_on', e.target.value)} className={inputCls} /></td>
-      <td className="px-2 py-2"><input type="date" aria-label="Publish date" required value={draft.publish_date} onChange={e => set('publish_date', e.target.value)} className={inputCls} /></td>
+      <td className="px-2 py-2"><input type="date" aria-label="Publish date" value={draft.publish_date} onChange={e => set('publish_date', e.target.value)} className={inputCls} /></td>
       <td className="px-2 py-2"><input type="time" aria-label="Publish time" value={draft.posted_time} onChange={e => set('posted_time', e.target.value)} className={inputCls} /></td>
       <td className="px-2 py-2 min-w-[150px]"><ComboInput value={draft.channel_name} onChange={v => set('channel_name', v)} options={channels} className={inputCls} placeholder="Channel name" /></td>
       <td className="px-2 py-2 min-w-[200px]"><input aria-label="Headline" value={draft.headline} onChange={e => set('headline', e.target.value)} placeholder="Video headline" className={inputCls} /></td>
       <td className="px-2 py-2 min-w-[150px]"><IconSelect value={draft.platform} onChange={v => set('platform', v)} placeholder="Select platform" options={(draft.platform && !PLATFORMS.includes(draft.platform) ? [...PLATFORMS, draft.platform] : PLATFORMS).map(p => ({ value: p, label: p, icon: <SourceIcon source={p} size={16} /> }))} className={`${inputCls} bg-white`} /></td>
       <td className="px-2 py-2 min-w-[170px]"><IconSelect value={draft.employee_name} onChange={v => set('employee_name', v)} placeholder="Select creator" emptyLabel="—" options={personOptions} className={`${inputCls} bg-white`} /></td>
       <td className="px-2 py-2 min-w-[170px]"><IconSelect value={draft.video_creator} onChange={v => set('video_creator', v)} placeholder="Select editor" emptyLabel="—" options={personOptions} className={`${inputCls} bg-white`} /></td>
-      <td className="px-2 py-2 min-w-[190px]"><input value={draft.url} onChange={e => set('url', e.target.value)} placeholder="https://... (required)" aria-label="URL address" required className={inputCls} /></td>
+      <td className="px-2 py-2 min-w-[190px]"><input value={draft.url} onChange={e => set('url', e.target.value)} placeholder="https://..." aria-label="URL address" className={inputCls} /></td>
       <td className="px-2 py-2">
         <div className="flex items-center gap-1.5">
           <button onClick={save} disabled={saving} title="Save" className="p-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-md disabled:opacity-60">{saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}</button>
@@ -206,10 +213,19 @@ export default function VideosClient({ videos, staff, meName }: { videos: VideoR
 
       {error && <div className="text-xs font-medium text-rose-700 bg-rose-50 border border-rose-200 rounded-lg px-3 py-2">{error}</div>}
 
+      <div className="flex gap-2 border-b border-slate-200">
+        {([['pending', 'Pending', matched.length - doneCount], ['completed', 'Completed', doneCount]] as const).map(([k, label, n]) => (
+          <button key={k} type="button" disabled={editing !== null} onClick={() => setTab(k)} className={`px-3.5 py-2 text-xs font-semibold border-b-2 -mb-px transition disabled:opacity-60 ${tab === k ? 'border-blue-600 text-blue-700' : 'border-transparent text-slate-500 hover:text-slate-700'}`}>
+            {label} <span className={`ml-1 px-1.5 py-0.5 rounded-full text-[10px] ${tab === k ? 'bg-blue-50 text-blue-700' : 'bg-slate-100 text-slate-500'}`}>{n}</span>
+          </button>
+        ))}
+        <span className="ml-auto self-center text-[11px] text-slate-400">Completed = publish date and URL both given</span>
+      </div>
+
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-x-auto">
         <table className="w-full text-xs min-w-[1250px]">
           <thead className="bg-slate-50 text-slate-600 text-[11px] tracking-wide">
-            <tr>{['SL No', 'Editing Date', 'Publish Date *', 'Publish Time', 'Channel Name', 'Headline', 'Platform', 'Video Creator', 'Video Editor', 'URL Address *', 'Action'].map(h => <th key={h} className="text-left font-semibold px-3 py-3 whitespace-nowrap">{h}</th>)}</tr>
+            <tr>{['SL No', 'Editing Date', 'Publish Date', 'Publish Time', 'Channel Name', 'Headline', 'Platform', 'Video Creator', 'Video Editor', 'URL Address', 'Action'].map(h => <th key={h} className="text-left font-semibold px-3 py-3 whitespace-nowrap">{h}</th>)}</tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
             {editing === 'new' && editorRow('new', '+')}
@@ -220,7 +236,12 @@ export default function VideosClient({ videos, staff, meName }: { videos: VideoR
                 <td className="px-3 py-3 whitespace-nowrap text-slate-800">{dmy(v.publish_date)}</td>
                 <td className="px-3 py-3 whitespace-nowrap text-slate-600">{ampm(v.posted_time)}</td>
                 <td className="px-3 py-3 text-slate-900 font-medium">{v.channel_name || '—'}</td>
-                <td className="px-3 py-3 text-slate-700 min-w-[200px] max-w-[320px] break-words">{v.headline || '—'}</td>
+                <td className="px-3 py-3 text-slate-700 min-w-[180px] max-w-[220px]">
+                  {v.headline ? (
+                    <button type="button" title={v.headline} onClick={() => setOpenHeadlines(p => (p.includes(v.id) ? p.filter(x => x !== v.id) : [...p, v.id]))}
+                      className={`w-full text-left break-all ${openHeadlines.includes(v.id) ? 'block' : 'line-clamp-1'}`}>{v.headline}</button>
+                  ) : '—'}
+                </td>
                 <td className="px-3 py-3"><span title={v.platform} aria-label={v.platform} role="img" className="inline-flex cursor-default"><SourceIcon source={v.platform} size={24} /></span></td>
                 <td className="px-3 py-3 text-slate-700 whitespace-nowrap">{who(v.employee_name)}</td>
                 <td className="px-3 py-3 text-slate-700 whitespace-nowrap">{who(v.video_creator)}</td>
@@ -236,7 +257,7 @@ export default function VideosClient({ videos, staff, meName }: { videos: VideoR
               </tr>
             ))}
             {rows.length === 0 && editing !== 'new' && (
-              <tr><td colSpan={11} className="text-center py-14 text-slate-400"><FileText className="w-10 h-10 mx-auto mb-2 opacity-20" />No videos for this selection. Click “Add Video”.</td></tr>
+              <tr><td colSpan={11} className="text-center py-14 text-slate-400"><FileText className="w-10 h-10 mx-auto mb-2 opacity-20" />No {tab} videos for this selection.</td></tr>
             )}
           </tbody>
         </table>
