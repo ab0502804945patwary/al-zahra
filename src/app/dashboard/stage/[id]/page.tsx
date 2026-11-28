@@ -9,7 +9,7 @@ import { enrichTiming, enrichExpiry } from '@/lib/utils'
 import { STAGE_CONFIG } from '@/lib/stageData'
 import { getSessionInfo } from '@/lib/session'
 import { canAccessStage, canDo } from '@/lib/access'
-import { isEligibleForStage, eligibilityColumns, parentReadyDate, phaseStaffAllows, OTHERS_SERVICE, ELIGIBILITY_HINT, type StageEntriesMap } from '@/lib/stageRules'
+import { isEligibleForStage, eligibilityColumns, parentReadyDate, stageReadyDate, phaseStaffAllows, OTHERS_SERVICE, ELIGIBILITY_HINT, type StageEntriesMap } from '@/lib/stageRules'
 
 export const dynamic = 'force-dynamic'
 
@@ -121,6 +121,15 @@ export default async function StagePage({ params }: { params: Promise<{ id: stri
     : companies
   const eligibilityHint = gated ? ELIGIBILITY_HINT[id] : undefined
 
+  const waitingIds = eligibleCompanies.filter(c => c.account_status !== 'Inactive' && !entries.some(e => e.company_id === c.company_id)).map(c => c.company_id)
+  // how long each of them has been waiting, counted in Saudi days
+  const todayKsa = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Riyadh' })
+  companies = companies.map(c => {
+    if (!waitingIds.includes(c.company_id)) return c
+    const since = stageReadyDate(id, c, allEntries)
+    return since ? { ...c, waiting_since: since, waiting_days: Math.max(0, Math.round((Date.parse(todayKsa) - Date.parse(since)) / 86400000)) } : c
+  })
+
   const stats = {
     total: entries.length,
     green: entries.filter(e => (e.status || e.usa_status) === 'Green').length,
@@ -138,7 +147,7 @@ export default async function StagePage({ params }: { params: Promise<{ id: stri
         stats={stats}
         companies={companies}
         employees={employees}
-        eligibleIds={eligibleCompanies.filter(c => c.account_status !== 'Inactive' && !entries.some(e => e.company_id === c.company_id)).map(c => c.company_id)}
+        eligibleIds={waitingIds}
         eligibilityHint={eligibilityHint}
         canEdit={canEdit}
         isAdmin={isAdmin}

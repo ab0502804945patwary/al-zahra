@@ -52,7 +52,8 @@ export default function StageHeader({ stageId, config, stats, companies, employe
     router.refresh()
   }
   // Companies that reached this stage and are waiting for the assigned staff to start
-  const waiting = canEdit && eligibleIds ? companies.filter(c => eligibleIds.includes(c.company_id) && c.service_type !== 'renewal') : []
+  // longest waiting first
+  const waiting = canEdit && eligibleIds ? companies.filter(c => eligibleIds.includes(c.company_id) && c.service_type !== 'renewal').sort((a, b) => (b.waiting_days ?? -1) - (a.waiting_days ?? -1)) : []
   const kpis = [
     { label: 'Total Files', value: stats.total, icon: Layers, color: 'text-blue-600', bg: 'bg-blue-50' },
     { label: 'On Time', value: stats.green, icon: CheckCircle2, color: 'text-emerald-600', bg: 'bg-emerald-50' },
@@ -124,6 +125,12 @@ export default function StageHeader({ stageId, config, stats, companies, employe
                   <span className="block text-[11px] text-slate-500 truncate">
                     {[c.entity_type, isAdmin && `Reg. by ${c.created_by ? (assignments.people[c.created_by]?.name || 'Unknown') : 'AL ZAHRA'}`].filter(Boolean).join(' · ') || '—'}
                   </span>
+                  {c.waiting_since && (
+                    <span title={`Waiting since ${c.waiting_since}`} className={`mt-1 inline-flex items-center gap-1 px-1.5 py-0.5 rounded border text-[10px] font-semibold ${c.waiting_days > 7 ? 'bg-rose-50 text-rose-700 border-rose-200' : c.waiting_days > 3 ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-emerald-50 text-emerald-700 border-emerald-200'}`}>
+                      <Clock className="w-3 h-3" />
+                      {c.waiting_days === 0 ? 'Waiting since today' : `Waiting ${c.waiting_days} day${c.waiting_days === 1 ? '' : 's'}`}
+                    </span>
+                  )}
                 </button>
                 <div className="ml-auto shrink-0 flex items-center gap-1.5">
                 <AssignStaff stageId={stageId} company={c} data={assignments} isAdmin={isAdmin} />

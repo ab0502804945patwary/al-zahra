@@ -237,6 +237,34 @@ export function parentReadyDate(company: { company_id: string; entity_type?: str
   return company.created_at ? new Date(company.created_at).toLocaleDateString('en-CA', { timeZone: 'Asia/Riyadh' }) : null
 }
 
+/**
+ * The first day a company could start a stage: the entry rules are replayed with only what had happened by each day.
+ * Falls back to the day the company was registered when no earlier step carries a date.
+ */
+export function stageReadyDate(stageId: string, company: Parameters<typeof isEligibleForStage>[1] & { created_at?: string }, all: StageEntriesMap): string | null {
+  if (stageId === '1') return parentReadyDate(company, all)
+  const day = (v: unknown) => (v ? String(v).slice(0, 10) : '')
+  const registered = company.created_at ? new Date(company.created_at).toLocaleDateString('en-CA', { timeZone: 'Asia/Riyadh' }) : ''
+  const rows = Object.entries(all).map(([sid, list]) => [sid, list.filter(e => e.company_id === company.company_id) as any[]] as const)
+  const dates = rows.flatMap(([, list]) => list.flatMap(e => [e.submit_date, e.complete_date, e.usa_complete_date, e.approval_date, e.approved_at].map(day))).filter(Boolean)
+  const days = [...new Set([registered, ...dates].filter(d => d && d >= registered))].sort()
+  for (const d of days) {
+    const upTo: StageEntriesMap = {}
+    for (const [sid, list] of rows) {
+      upTo[sid] = list
+        .filter(e => { const first = [e.submit_date, e.complete_date, e.approval_date, e.approved_at].map(day).filter(Boolean).sort()[0]; return !first || first <= d })
+        .map(e => {
+          const copy: any = { ...e }
+          for (const k of ['complete_date', 'usa_complete_date', 'approval_date']) if (day(copy[k]) > d) copy[k] = null
+          if (day(e.approved_at || e.complete_date) > d) copy.approval_status = null
+          return copy
+        })
+    }
+    if (isEligibleForStage(stageId, company, upTo)) return d
+  }
+  return days[days.length - 1] || null
+}
+
 /** Columns the eligibility check needs, limited to those that exist in the given stage table. */
 export function eligibilityColumns(stageId: string, extra: string[] = []): string {
   const wanted = ['company_id', 'submit_date', 'complete_date', 'usa_complete_date', 'approval_date', 'approval_status', 'approved_at', ...extra]
