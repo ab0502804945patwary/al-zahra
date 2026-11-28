@@ -321,13 +321,16 @@ export default function ClientInfoDialog({ stageId, companyId, onClose }: { stag
                   ))}
                 </ul>
                 <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-400 mb-1.5">Attached files</div>
-                {docs.length + auditFiles.length + holders.filter(h => h.passport_file?.key).length === 0 ? (
+                {docs.length + auditFiles.length + holders.filter(h => h.passport_file?.key).length + holders.flatMap(h => Object.values(h.doc_files || {}).filter(f => f?.key)).length === 0 ? (
                   <p className="text-xs text-slate-400">No file was attached.</p>
                 ) : (
                   <ul className="divide-y divide-slate-100 border border-slate-200 rounded-lg">
                     {holders.map((h, i) => h.passport_file?.key && (
                       <FileRow key={`p${i}`} title={`Passport · Shareholder ${i + 1}${h.name ? ` (${h.name})` : ''}`} name={h.passport_file.name} onOpen={() => openFile(h.passport_file!.key)} />
                     ))}
+                    {holders.flatMap((h, i) => Object.entries(h.doc_files || {}).map(([k, f]) => f?.key && (
+                      <FileRow key={`s${i}${k}`} title={`${SH_DOCS.find(d => d.key === k)?.label || k} · Shareholder ${i + 1}${h.name ? ` (${h.name})` : ''}`} name={f.name} onOpen={() => openFile(f.key)} />
+                    )))}
                     {docs.map(d => (
                       <FileRow key={d.id} name={d.name} onOpen={() => openDoc(d)}
                         title={`${VERIFY_ITEMS.find(v => v.key === d.type)?.label || d.type}${d.shareholder != null ? ` · Shareholder ${d.shareholder + 1}${holders[d.shareholder]?.name ? ` (${holders[d.shareholder].name})` : ''}` : ''}`} />

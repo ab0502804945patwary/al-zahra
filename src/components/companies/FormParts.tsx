@@ -23,6 +23,7 @@ export interface Shareholder {
   passport_no: string; tin_no: string; email: string; phone: string; designation: string; share_percent: string
   docs: Record<string, 'Collected' | 'Pending' | ''>
   passport_file?: StoredFile | null // scanned passport kept in R2; missing on records saved before it was required
+  doc_files?: Record<string, StoredFile | null> // signature, photo, NID copy: asked when Bangladesh Company is ticked
 }
 
 export const blankShareholder = (): Shareholder => ({
@@ -31,15 +32,22 @@ export const blankShareholder = (): Shareholder => ({
 })
 
 export const isBlankShareholder = (s: Shareholder) =>
-  !Object.entries(s).some(([k, v]) => (k === 'docs' ? Object.values(v as object).some(Boolean) : String(v || '').trim() !== ''))
+  !Object.entries(s).some(([k, v]) => (k === 'docs' || k === 'doc_files' ? Object.values((v || {}) as object).some(Boolean) : String(v || '').trim() !== ''))
 
-/** Positions of the shareholders that will be saved but have no passport uploaded (empty extra cards are dropped on save). */
-export const missingPassports = (list: Shareholder[]) =>
-  list.map((s, i) => ((i === 0 || !isBlankShareholder(s)) && !s.passport_file?.key ? i : -1)).filter(i => i >= 0)
+/** The uploaded file of one document; the passport has its own older field */
+export const shareholderFile = (s: Shareholder, key: string) => (key === 'passport_copy' ? s.passport_file : s.doc_files?.[key]) || null
 
-/** Passport scan of one shareholder: upload, view, replace, remove. The old file is deleted from storage only after the company is saved. */
-function PassportUpload({ file, required, invalid, busy, error, onPick, onRemove }: {
-  file?: StoredFile | null; required: boolean; invalid: boolean; busy: boolean; error: string
+/** Shareholder cards that miss a required file. Every card on screen counts, also an empty one (remove it if not needed).
+ *  The passport is always required; with allDocs, every document in SH_DOCS is. */
+export const missingShareholderFiles = (list: Shareholder[], allDocs: boolean) =>
+  list.map((s, i) => ({
+    i,
+    labels: SH_DOCS.filter(d => (allDocs || d.key === 'passport_copy') && !shareholderFile(s, d.key)?.key).map(d => d.label),
+  })).filter(x => x.labels.length)
+
+/** One scanned document of a shareholder: upload, view, replace, remove. The old file is deleted from storage only after the company is saved. */
+function DocUpload({ what, file, required, invalid, busy, error, onPick, onRemove }: {
+  what: string; file?: StoredFile | null; required: boolean; invalid: boolean; busy: boolean; error: string
   onPick: (f: File) => void; onRemove: () => void
 }) {
   const ref = useRef<HTMLInputElement>(null)
@@ -70,24 +78,24 @@ function PassportUpload({ file, required, invalid, busy, error, onPick, onRemove
       ) : (
         <button type="button" onClick={() => ref.current?.click()} disabled={busy} title="JPG, PNG, WebP or PDF. PDF max 5 MB."
           className={`w-full inline-flex items-center justify-center gap-1.5 px-2 py-1.5 text-[11px] font-semibold border border-dashed rounded-md disabled:opacity-60 ${invalid ? 'text-rose-700 border-rose-400 bg-rose-50' : 'text-blue-700 border-blue-300 bg-blue-50/60 hover:bg-blue-50'}`}>
-          {busy ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />} {busy ? 'Uploading...' : 'Upload passport'}
+          {busy ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />} {busy ? 'Uploading...' : `Upload ${what}`}
           {required && !busy && <span className="text-rose-500">*</span>}
         </button>
       )}
-      {invalid && !file && <div className="mt-1 text-[10px] font-semibold text-rose-600">Passport upload is required.</div>}
+      {invalid && !file && <div className="mt-1 text-[10px] font-semibold text-rose-600">This upload is required.</div>}
       {(error || openError) && <div className="mt-1 text-[10px] text-rose-700">{error || openError}</div>}
     </div>
   )
 }
 
-function ShareholderCard({ index, total, value, onChange, onDuplicate, onRemove, locked, passport }: {
+function ShareholderCard({ index, total, value, onChange, onDuplicate, onRemove, locked, allDocs, upload }: {
   index: number; total: number; value: Shareholder; onChange: (s: Shareholder) => void
   onDuplicate: () => void; onRemove: () => void
-  locked: boolean; passport: React.ReactNode
+  locked: boolean; allDocs: boolean; upload: (docKey: string) => React.ReactNode
 }) {
   const set = (k: keyof Shareholder, v: string) => onChange({ ...value, [k]: v })
-  // Shareholder 1 must be filled in, except TIN No. and E-mail; the other shareholders stay optional
-  const must = index === 0
+  // Every shareholder card must be filled in, except TIN No. and E-mail
+  const must = true
   const star = <span className="text-rose-500 ml-0.5">*</span>
   const text = (label: string, k: keyof Shareholder, type = 'text', placeholder = '', required = must) => (
     <div>
@@ -143,12 +151,12 @@ function ShareholderCard({ index, total, value, onChange, onDuplicate, onRemove,
       </div>
 
       <div className="border-t border-slate-100 pt-2.5">
-        <div className="text-[11px] font-bold tracking-wider text-slate-500 uppercase mb-1.5">Documents</div>
+        <div className="text-[11px] font-bold tracking-wider text-slate-500 uppercase mb-1.5">Documents{allDocs && <span className="ml-1.5 normal-case tracking-normal font-semibold text-rose-600">All four files are required (Bangladesh Company)</span>}</div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-2 items-start">
           {SH_DOCS.map(d => (
             <div key={d.key} className="bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5">
-              <div className="text-[11px] font-semibold text-slate-700 mb-1">{d.label}</div>
-              <div className="flex gap-1">
+              <div className="text-[11px] font-semibold text-slate-700 mb-1">{d.label}{allDocs && star}</div>
+              {!allDocs && <div className="flex gap-1">
                 {(['Collected', 'Pending'] as const).map(st => {
                   const on = value.docs?.[d.key] === st
                   return (
@@ -164,8 +172,8 @@ function ShareholderCard({ index, total, value, onChange, onDuplicate, onRemove,
                     </button>
                   )
                 })}
-              </div>
-              {d.key === 'passport_copy' && passport}
+              </div>}
+              {(allDocs || d.key === 'passport_copy') && upload(d.key)}
             </div>
           ))}
         </div>
@@ -175,10 +183,12 @@ function ShareholderCard({ index, total, value, onChange, onDuplicate, onRemove,
 }
 
 /** One card by default. "Add shareholder" adds a blank one, "Duplicate" copies a card. No limit. */
-export function ShareholdersEditor({ value, onChange, folder, showMissing, onUploading, onUploaded }: {
+export function ShareholdersEditor({ value, onChange, folder, allDocs = false, showMissing, onUploading, onUploaded }: {
   value: Shareholder[]; onChange: (v: Shareholder[]) => void
   folder: string
-  /** true after a save was refused: cards without a passport are marked */
+  /** Bangladesh Company is ticked: every document needs its file */
+  allDocs?: boolean
+  /** true after a save was refused: missing files are marked */
   showMissing: boolean
   onUploading: (delta: 1 | -1) => void
   onUploaded: (key: string) => void
@@ -187,29 +197,36 @@ export function ShareholdersEditor({ value, onChange, folder, showMissing, onUpl
   // an upload takes a while: apply its result to the newest list so typing done meanwhile is kept
   const latest = useRef(list)
   latest.current = list
-  const [busy, setBusy] = useState<number[]>([])
-  const [errors, setErrors] = useState<Record<number, string>>({})
+  // keys are "card:document"
+  const [busy, setBusy] = useState<string[]>([])
+  const [errors, setErrors] = useState<Record<string, string>>({})
   // cards are matched by position, so no adding / copying / removing while a file is on its way
   const locked = busy.length > 0
-  const missing = missingPassports(list)
+  const missing = missingShareholderFiles(list, allDocs)
 
-  const setPassport = (i: number, file: StoredFile | null) => {
-    latest.current = latest.current.map((x, k) => (k === i ? { ...x, passport_file: file } : x))
+  // a file also marks the document as Collected, which other screens show
+  const setFile = (i: number, docKey: string, file: StoredFile | null) => {
+    latest.current = latest.current.map((x, k) => (k !== i ? x : {
+      ...x,
+      ...(docKey === 'passport_copy' ? { passport_file: file } : { doc_files: { ...x.doc_files, [docKey]: file } }),
+      docs: { ...x.docs, [docKey]: file ? 'Collected' as const : '' as const },
+    }))
     onChange(latest.current)
   }
 
-  async function uploadPassport(i: number, file: File) {
-    setErrors(p => ({ ...p, [i]: '' }))
-    setBusy(b => [...b, i])
+  async function uploadFile(i: number, docKey: string, file: File) {
+    const id = `${i}:${docKey}`
+    setErrors(p => ({ ...p, [id]: '' }))
+    setBusy(b => [...b, id])
     onUploading(1)
     try {
       const saved = await uploadToR2(file, folder || 'unassigned')
       onUploaded(saved.key)
-      setPassport(i, saved)
+      setFile(i, docKey, saved)
     } catch (e: any) {
-      setErrors(p => ({ ...p, [i]: e?.message || 'Upload failed.' }))
+      setErrors(p => ({ ...p, [id]: e?.message || 'Upload failed.' }))
     }
-    setBusy(b => b.filter(k => k !== i))
+    setBusy(b => b.filter(k => k !== id))
     onUploading(-1)
   }
   const update = (i: number, s: Shareholder) => onChange(list.map((x, k) => (k === i ? s : x)))
@@ -224,20 +241,26 @@ export function ShareholdersEditor({ value, onChange, folder, showMissing, onUpl
           total={list.length}
           value={s}
           onChange={x => update(i, x)}
-          onDuplicate={() => { setErrors({}); onChange([...list.slice(0, i + 1), { ...s, docs: { ...s.docs }, passport_file: null }, ...list.slice(i + 1)]) }}
+          onDuplicate={() => { setErrors({}); onChange([...list.slice(0, i + 1), { ...s, docs: Object.fromEntries(Object.entries(s.docs || {}).filter(([k]) => !shareholderFile(s, k))), passport_file: null, doc_files: {} }, ...list.slice(i + 1)]) }}
           onRemove={() => { setErrors({}); onChange(list.filter((_, k) => k !== i)) }}
           locked={locked}
-          passport={
-            <PassportUpload
-              file={s.passport_file}
-              required={i === 0 || !isBlankShareholder(s)}
-              invalid={showMissing && missing.includes(i)}
-              busy={busy.includes(i)}
-              error={errors[i] || ''}
-              onPick={f => uploadPassport(i, f)}
-              onRemove={() => { if (confirm(`Remove "${s.passport_file?.name}"?`)) setPassport(i, null) }}
-            />
-          }
+          allDocs={allDocs}
+          upload={docKey => {
+            const label = SH_DOCS.find(d => d.key === docKey)!.label
+            const file = shareholderFile(s, docKey)
+            return (
+              <DocUpload
+                what={docKey === 'passport_copy' ? 'passport' : label}
+                file={file}
+                required
+                invalid={showMissing && !!missing.find(m => m.i === i)?.labels.includes(label)}
+                busy={busy.includes(`${i}:${docKey}`)}
+                error={errors[`${i}:${docKey}`] || ''}
+                onPick={f => uploadFile(i, docKey, f)}
+                onRemove={() => { if (confirm(`Remove "${file?.name}"?`)) setFile(i, docKey, null) }}
+              />
+            )
+          }}
         />
       ))}
       <div className="flex flex-wrap items-center justify-between gap-2">
