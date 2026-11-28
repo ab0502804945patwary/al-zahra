@@ -9,6 +9,7 @@ import { cn, formatDate } from '@/lib/utils'
 import { Flag } from '@/components/ui/CountrySelect'
 import OwnerBadge, { type Owner } from '@/components/ui/OwnerBadge'
 import EditEntryModal from './EditEntryModal'
+import ReopenButton from './ReopenButton'
 import ClientInfoDialog from './ClientInfoDialog'
 import AssignStaff, { type Assignments } from './AssignStaff'
 
@@ -291,7 +292,8 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
                   </td>
                   <td className="py-3 px-4">{e.expire_date ? <StatusBadge status={e.status} /> : '—'}</td>
                   <td className="py-3 px-4 text-slate-400 max-w-32 truncate">{e.notes || '—'}</td>
-                  <td className="py-3 px-4 text-right">
+                  <td className="py-3 px-4 text-right whitespace-nowrap">
+                    {isAdmin && <ReopenButton stageId={stageId} entry={e} />}
                     {canEdit && isLocked(e) ? (<span title="Submitted — locked. Only an admin can edit." className="p-1.5 text-slate-300 inline-block"><Lock className="w-3.5 h-3.5" /></span>) : canEdit && (<button onClick={() => setEditEntry(e)} className="p-1.5 hover:bg-slate-100 rounded-md transition text-slate-400 hover:text-slate-600">
                       <Edit2 className="w-3.5 h-3.5" />
                     </button>)}
@@ -590,7 +592,8 @@ export default function StageTable({ stageId, entries: serverEntries, companies,
                   <DossierCell files={e.dossier_files} />
                 </td>
                 )}
-                <td className="py-3 px-4 text-right">
+                <td className="py-3 px-4 text-right whitespace-nowrap">
+                  {isAdmin && <ReopenButton stageId={stageId} entry={e} />}
                   {canEdit && isLocked(e) ? (<span title="Submitted — locked. Only an admin can edit." className="p-1.5 text-slate-300 inline-block"><Lock className="w-3.5 h-3.5" /></span>) : canEdit && (<button onClick={() => setEditEntry(e)} className="p-1.5 hover:bg-slate-100 rounded-md transition text-slate-400 hover:text-slate-600">
                     <Edit2 className="w-3.5 h-3.5" />
                   </button>)}
